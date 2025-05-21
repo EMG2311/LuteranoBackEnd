@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: luterano-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: luterano
+      MYSQL_ROOT_PASSWORD: 44575808
+      TZ: America/Argentina/Buenos_Aires
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: luterano-app
+    depends_on:
+      - mysql
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://luterano-mysql:3306/luterano?createDatabaseIfNotExist=true&serverTimezone=America/Argentina/Buenos_Aires
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 44575808
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      TZ: America/Argentina/Buenos_Aires
+volumes:
+  mysql-data:
