@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ public class AuthenticationController {
     private AuthenticationService authenticationService;
 
 
-    @RequestMapping("/authenticate")
+    @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest){
         try{
             return ResponseEntity.ok(authenticationService.authenticate(authenticationRequest));
@@ -30,7 +31,7 @@ public class AuthenticationController {
         }
     }
 
-    @RequestMapping("/register")
+    @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest registerRequest) throws AuthenticateException {
         try {
             AuthenticationResponse response = authenticationService.register(registerRequest);

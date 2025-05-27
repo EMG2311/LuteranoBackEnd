@@ -19,9 +19,9 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 public class WebSecurityConfig {
     @Autowired
     private AuthenticationProvider AuthenticationProvider;
-
+    @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
-
+    @Bean
     public JwtAuthFilter jwtAuthFilter(){return new JwtAuthFilter(handlerExceptionResolver);}
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

@@ -4,11 +4,15 @@ import com.grup14.luterano.auth.infrastructure.AuthenticateException;
 import com.grup14.luterano.auth.infrastructure.AuthenticationRequest;
 import com.grup14.luterano.auth.infrastructure.RegisterRequest;
 import com.grup14.luterano.auth.infrastructure.AuthenticationResponse;
+import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
+import com.grup14.luterano.entities.enums.UserStatus;
+import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,15 +27,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-
+    @Autowired
+    private RoleRepository roleRepository;
 
     public AuthenticationResponse register(RegisterRequest registerRequest) throws AuthenticateException {
+
+
 
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) throw new AuthenticateException("El email ya se encuentra registrado");
         User user=new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRol(Rol.ALUMNO);
+        user.setRol(roleRepository.findByName(Rol.ROLE_VISITA.toString()).get());
+        user.setUserStatus(UserStatus.CREADO);
 
         User saved = userRepository.save(user);
 
@@ -70,4 +78,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .code(0)
                 .build();
     }
+
 }
