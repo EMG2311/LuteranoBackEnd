@@ -26,8 +26,14 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping
+    @Operation(summary = "Lista todos los usuarios", description = "Lista todos los usuarios, solo ADMIN y DIRECTOR pueden usar")
+    public ResponseEntity<List<UserResponse>> listarTodosUsuarios() {
+        return ResponseEntity.ok(userService.listAllUser());
+    }
+
     @GetMapping("/{status}")
-    @Operation(summary = "Lista de usuarios segun filtro", description = "Lista los usuarios segun el filtro que se les pase, solo ADMIN Y DIRECTOR pueden utilizar el endpoint")
+    @Operation(summary = "Lista usuarios según filtro", description = "Lista usuarios según el filtro, solo ADMIN y DIRECTOR pueden usar")
     public ResponseEntity<List<UserResponse>> listarUsuariosFiltro(@PathVariable UserStatus status) {
         return ResponseEntity.ok(userService.listUserFiltro(status));
     }
