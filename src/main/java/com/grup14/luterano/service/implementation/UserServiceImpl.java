@@ -37,6 +37,20 @@ public class UserServiceImpl implements UserService {
         }
         return userResponses;
     }
+    public List<UserResponse> listAllUser() {
+        List<UserResponse> userResponses = new ArrayList<>();
+
+        for(User user : userRepository.findAll()){
+            userResponses.add(UserResponse.builder()
+                    .email(user.getEmail())
+                    .role(user.getRol())
+                    .userStatus(user.getUserStatus())
+                    .mensaje("")
+                    .code(0)
+                    .build());
+        }
+        return userResponses;
+    }
 
     @Override
     public UserCreadoResponse ActivarCuenta(EmailRequest email) {
