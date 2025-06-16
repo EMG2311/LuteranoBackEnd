@@ -1,6 +1,5 @@
 package com.grup14.luterano.response;
 
-
 import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.enums.UserStatus;
 import lombok.*;
@@ -10,11 +9,10 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserResponse {
+public class UserCreadoResponse {
     private String email;
     private Role role;
     private UserStatus userStatus;
     private String mensaje;
     private Integer code;
-
 }

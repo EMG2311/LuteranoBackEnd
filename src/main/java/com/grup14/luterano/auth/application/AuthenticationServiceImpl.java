@@ -10,8 +10,11 @@ import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.service.implementation.UserServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,10 +32,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     @Autowired
     private RoleRepository roleRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
-    public AuthenticationResponse register(RegisterRequest registerRequest) throws AuthenticateException {
-
-
+    public AuthenticationResponse register(RegisterRequest registerRequest)  {
 
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) throw new AuthenticateException("El email ya se encuentra registrado");
         User user=new User();
@@ -62,16 +64,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 )
         );
     }catch (BadCredentialsException e){
-        System.out.printf(request.getEmail() + " ERROR: " + e.getMessage());
+        logger.error(request.getEmail() + " ERROR: " + e.getMessage());
     }
-
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AuthenticateException("Usuario no encontrado"));
 
-
         String jwtToken = jwtService.generateToken(user);
-
+        logger.info("----------Se loggeo " + user.getEmail() + "----------");
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .mensaje("hola "+user.getEmail())
