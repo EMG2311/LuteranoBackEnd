@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public interface UserService {
     List<UserResponse> listUserFiltro(UserStatus userStatus);
+    List<UserResponse> listAllUser();
     UserCreadoResponse ActivarCuenta(EmailRequest email);
     UserUpdateResponse updateUser(UserUpdateRequest userUpdate);
     UserResponse getUsuarioByEmail(String email);
