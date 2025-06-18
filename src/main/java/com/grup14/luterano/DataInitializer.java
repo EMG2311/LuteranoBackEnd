@@ -35,10 +35,10 @@ public class DataInitializer {
                             return roleRepository.save(role);
                         });
             }
-            userRepository.findByEmail("admnin@gmail.com").orElseGet(()->
+            userRepository.findByEmail("admin@gmail.com").orElseGet(()->
                  userRepository.save(User.builder()
-                                .email("admnin@gmail.com")
-                                .password(passwordEncoder.encode("44575808"))
+                                .email("admin@gmail.com")
+                                .password(passwordEncoder.encode("1234"))
                     .userStatus(UserStatus.CREADO)
                             .rol(roleRepository.findByName("ROLE_ADMIN").get())
                             .build())

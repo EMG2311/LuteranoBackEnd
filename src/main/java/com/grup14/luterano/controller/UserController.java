@@ -22,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@CrossOrigin(origins = "*")
 public class UserController {
     @Autowired
     private UserService userService;
