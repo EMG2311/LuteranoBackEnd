@@ -22,6 +22,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -44,8 +47,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setUserStatus(UserStatus.CREADO);
 
         User saved = userRepository.save(user);
-
-        String jwtToken = jwtService.generateToken(user);
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", user.getRol().getName());
+        System.out.printf("aaaa "+user.getRol().getName());
+        String jwtToken = jwtService.generateToken(extraClaims,user);
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -63,19 +68,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         request.getPassword()
                 )
         );
-    }catch (BadCredentialsException e){
-        logger.error(request.getEmail() + " ERROR: " + e.getMessage());
-    }
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AuthenticateException("Usuario no encontrado"));
-
-        String jwtToken = jwtService.generateToken(user);
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", user.getRol().getName());
+        String jwtToken = jwtService.generateToken(extraClaims,user);
         logger.info("----------Se loggeo " + user.getEmail() + "----------");
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .mensaje("hola "+user.getEmail())
                 .code(0)
                 .build();
+    }catch (BadCredentialsException e){
+        logger.error(request.getEmail() + " ERROR: " + e.getMessage());
+    }
+    return null;
     }
 
 }
