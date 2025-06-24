@@ -9,5 +9,5 @@ import jakarta.persistence.Id;
 @Entity
 public class Tutor extends Persona {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 }
