@@ -1,4 +1,4 @@
-package com.grup14.luterano.response;
+package com.grup14.luterano.response.user;
 
 import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.enums.UserStatus;

@@ -1,17 +1,15 @@
 package com.grup14.luterano.controller;
 
-import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
 import com.grup14.luterano.request.EmailRequest;
 import com.grup14.luterano.request.UserUpdateRequest;
-import com.grup14.luterano.response.UserCreadoResponse;
-import com.grup14.luterano.response.UserResponse;
-import com.grup14.luterano.response.UserUpdateResponse;
+import com.grup14.luterano.response.user.UserCreadoResponse;
+import com.grup14.luterano.response.user.UserResponse;
+import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
