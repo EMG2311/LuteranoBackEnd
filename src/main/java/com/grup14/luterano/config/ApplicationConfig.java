@@ -49,10 +49,10 @@ public class ApplicationConfig {
         configuration.setAllowedOrigins(List.of("*")); // 👈 o ["http://localhost:5175"]
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // 👈 solo funciona si NO usás "*"
+        //configuration.setAllowCredentials(true); // 👈 solo funciona si NO usás "*"
 
         // Si usás allowCredentials(true), DEBÉS usar un origen específico (no "*")
-        configuration.setAllowedOrigins(List.of("http://localhost:5175"));
+        //configuration.setAllowedOrigins(List.of("http://localhost:5175"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
