@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.Logger;
@@ -39,5 +40,16 @@ public class LoggingAspect {
     @After("execution(* com.grup14.luterano.service..*(..))")
     public void clearMDC(JoinPoint joinPoint) {
         MDC.clear();
+    }
+
+    @AfterThrowing(pointcut = "execution(* com.grup14.luterano.service..*(..))", throwing = "ex")
+    public void logAfterThrowing(JoinPoint joinPoint, Throwable ex) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = (auth != null) ? auth.getName() : "desconocido";
+
+        logger.error(" [{}] El método {} lanzó la excepción: {}",
+                email,
+                joinPoint.getSignature().toShortString(),
+                ex.getMessage());
     }
 }

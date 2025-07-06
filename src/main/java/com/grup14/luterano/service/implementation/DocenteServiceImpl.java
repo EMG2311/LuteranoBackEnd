@@ -30,11 +30,9 @@ public class DocenteServiceImpl implements DocenteService {
         Optional<Docente> existentePorDni = docenteRepository.findByDni(docenteRequest.getDni());
         Optional<User> existeUser = userRepository.findByEmail(docenteRequest.getEmail());
         if (existentePorEmail.isPresent() || existentePorDni.isPresent()) {
-            logger.error("Ya existe un docente registrado con ese email o DNI");
             throw new DocenteException("Ya existe un docente registrado con ese email o DNI");
         }
         if(existeUser.isEmpty()){
-            logger.error("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
             throw new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
         }
 
