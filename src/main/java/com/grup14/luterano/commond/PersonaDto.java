@@ -9,10 +9,7 @@ import com.grup14.luterano.validation.MayorDeEdad;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
@@ -20,6 +17,7 @@ import java.util.Date;
 @Setter
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor@NoArgsConstructor
+@Data
 public class PersonaDto {
 
     @NotBlank(message = "El nombre no puede estar vacío")

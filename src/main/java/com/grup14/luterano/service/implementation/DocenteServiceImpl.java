@@ -53,7 +53,7 @@ public class DocenteServiceImpl implements DocenteService {
                 .build();
 
         docenteRepository.save(docente);
-
+        logger.info("Se creo correctamente el docente {} {}", docente.getNombre(), docente.getApellido());
         return docenteRequest.toResponse("Docente creado correctamente",0);
     }
 

@@ -1,5 +1,7 @@
 package com.grup14.luterano.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,17 +20,20 @@ import java.util.Arrays;
 public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
-
+    private final ObjectMapper mapper = new ObjectMapper();
     @Before("execution(* com.grup14.luterano.service..*(..))")
     public void logBefore(JoinPoint joinPoint) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = (auth != null) ? auth.getName() : "desconocido";
         MDC.put("usuario", email);
-        logger.info("[{}] invocó {} con argumentos {}",
-                email,
-                joinPoint.getSignature().toShortString(),
-                Arrays.toString(joinPoint.getArgs())
-        );
+        for (Object arg : joinPoint.getArgs()) {
+            try {
+                String json = mapper.writeValueAsString(arg);
+                logger.info("👤 [{}] invocó {} con argumento JSON: {}", email, joinPoint.getSignature().toShortString(), json);
+            } catch (JsonProcessingException e) {
+                logger.warn("No se pudo serializar argumento para loguear", e);
+            }
+        }
     }
 
     @After("execution(* com.grup14.luterano.service..*(..))")
