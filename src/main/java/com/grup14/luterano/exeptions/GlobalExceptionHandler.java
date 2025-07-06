@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = (authentication != null) ? authentication.getName() : "desconocido";
 
-        logger.warn("❌ Error de validación en {} por el usuario [{}] - Campos con errores: {}",
+        logger.warn("Error de validación en {} por el usuario [{}] - Campos con errores: {}",
                 request.getRequestURI(), email, errores);
 
         errorResponse.put("path", request.getRequestURI()); // ejemplo: "/docente"
