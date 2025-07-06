@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,7 +28,13 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(err -> {
             errores.put(err.getField(), err.getDefaultMessage());
         });
-        logger.warn(" Error de validación en endpoint {}: {}", request.getRequestURI(), errores);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = (authentication != null) ? authentication.getName() : "desconocido";
+
+        logger.warn("❌ Error de validación en {} por el usuario [{}] - Campos con errores: {}",
+                request.getRequestURI(), email, errores);
+
         errorResponse.put("path", request.getRequestURI()); // ejemplo: "/docente"
         errorResponse.put("status", 400);
         errorResponse.put("message", "Error de validación en endpoint" + request.getRequestURI());
