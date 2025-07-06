@@ -7,8 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-@Entity@Data@AllArgsConstructor@Builder@NoArgsConstructor
+@Entity@Data@AllArgsConstructor@SuperBuilder
+@NoArgsConstructor
 public class Alumno extends Persona {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
