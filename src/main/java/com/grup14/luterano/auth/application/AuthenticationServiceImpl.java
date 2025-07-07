@@ -12,15 +12,19 @@ import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.service.implementation.UserServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     private RoleRepository roleRepository;
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
-
+    @Transactional
     public AuthenticationResponse register(RegisterRequest registerRequest)  {
 
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) throw new AuthenticateException("El email ya se encuentra registrado");

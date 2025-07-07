@@ -10,6 +10,7 @@ import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,13 +34,13 @@ public class UserController {
 
     @GetMapping("/{status}")
     @Operation(summary = "Lista usuarios según filtro", description = "Lista usuarios según el filtro, solo ADMIN y DIRECTOR pueden usar")
-    public ResponseEntity<List<UserResponse>> listarUsuariosFiltro(@PathVariable UserStatus status) {
+    public ResponseEntity<List<UserResponse>> listarUsuariosFiltro(@PathVariable@Valid UserStatus status) {
         return ResponseEntity.ok(userService.listUserFiltro(status));
     }
 
     @PostMapping("/activar")
     @Operation(summary = "Completar creacion Usuarios", description = "Cambia el status del usuario a CREADO")
-    public ResponseEntity<UserCreadoResponse> ActivarCuenta(@RequestBody EmailRequest email){
+    public ResponseEntity<UserCreadoResponse> ActivarCuenta(@RequestBody @Valid EmailRequest email){
         try{
             return ResponseEntity.ok(userService.ActivarCuenta(email));
         }catch (UserException e){
@@ -54,8 +55,8 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    @Operation(summary = "Actualiza los usuarios", description = "Actualiza el usuario")
-    public ResponseEntity<UserUpdateResponse> updateUser(@RequestBody UserUpdateRequest userUpdateRequest){
+    @Operation(summary = "Actualiza los usuarios", description = "Actualiza el usuario, se pasa el id, los demas campos se completan por el valor a actualizar")
+    public ResponseEntity<UserUpdateResponse> updateUser(@Valid@RequestBody  UserUpdateRequest userUpdateRequest){
         try{
             return ResponseEntity.ok(userService.updateUser(userUpdateRequest));
         }catch (UserException u){
@@ -69,7 +70,7 @@ public class UserController {
     }
     @GetMapping("/email")
     @Operation(summary = "Busca un usuario con mail")
-    public ResponseEntity<UserResponse> getUsuarioByEmail(@RequestBody EmailRequest emailRequest){
+    public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid@RequestBody EmailRequest emailRequest){
         try{
             return ResponseEntity.ok(userService.getUsuarioByEmail(emailRequest.getEmail()));
         }catch (EntityNotFoundException u){
@@ -83,7 +84,7 @@ public class UserController {
 
     @DeleteMapping("/email")
     @Operation(summary = "Elimina un usuario con mail")
-    public ResponseEntity<UserResponse> borrarUser(@RequestBody EmailRequest emailRequest){
+    public ResponseEntity<UserResponse> borrarUser(@Valid@RequestBody EmailRequest emailRequest){
         try{
             return ResponseEntity.ok(userService.borrarUsuario(emailRequest.getEmail()));
         }catch (EntityNotFoundException e){
