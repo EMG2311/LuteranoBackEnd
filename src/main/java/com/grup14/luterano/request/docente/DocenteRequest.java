@@ -2,6 +2,7 @@ package com.grup14.luterano.request.docente;
 
 import com.grup14.luterano.commond.Persona;
 import com.grup14.luterano.commond.PersonaDto;
+import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.response.docente.DocenteResponse;
@@ -22,17 +23,19 @@ public class DocenteRequest extends PersonaDto {
     private List<Materia> materias;
     public DocenteResponse toResponse(String mensaje,Integer code) {
         return DocenteResponse.builder()
-                .nombre(this.getNombre())
-                .apellido(this.getApellido())
-                .genero(this.getGenero())
-                .tipoDoc(this.getTipoDoc())
-                .dni(this.getDni())
-                .email(this.getEmail())
-                .direccion(this.getDireccion())
-                .telefono(this.getTelefono())
-                .fechaNacimiento(this.getFechaNacimiento())
-                .fechaIngreso(this.getFechaIngreso())
-                .materias(this.getMaterias())
+                .docente(DocenteDto.builder()
+                        .nombre(this.getNombre())
+                        .apellido(this.getApellido())
+                        .genero(this.getGenero())
+                        .tipoDoc(this.getTipoDoc())
+                        .dni(this.getDni())
+                        .email(this.getEmail())
+                        .direccion(this.getDireccion())
+                        .telefono(this.getTelefono())
+                        .fechaNacimiento(this.getFechaNacimiento())
+                        .fechaIngreso(this.getFechaIngreso())
+                        .materias(this.getMaterias())
+                        .build())
                 .code(code)
                 .mensaje(mensaje)
                 .build();

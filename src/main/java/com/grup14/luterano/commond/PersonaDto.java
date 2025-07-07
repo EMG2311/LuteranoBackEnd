@@ -7,6 +7,7 @@ import com.grup14.luterano.entities.enums.TipoDoc;
 import com.grup14.luterano.request.docente.DocenteRequest;
 import com.grup14.luterano.validation.MayorDeEdad;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
+import com.grup14.luterano.validation.UpdateValidacion;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -19,7 +20,8 @@ import java.util.Date;
 @AllArgsConstructor@NoArgsConstructor
 @Data
 public class PersonaDto {
-
+    @NotNull(groups = {UpdateValidacion.class})
+    private Long id;
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
 
@@ -44,7 +46,7 @@ public class PersonaDto {
     @NotBlank(message = "El teléfono es obligatorio")
     private String telefono;
     @NotNull(message = "La fecha de nacimiento es obligatoria")
-    @MayorDeEdad(groups = {MayorDeEdadGruoup.class})
+    @MayorDeEdad(groups = {MayorDeEdadGruoup.class,UpdateValidacion.class})
     private Date fechaNacimiento;
 
     @NotNull(message = "La fecha de ingreso es obligatoria")
