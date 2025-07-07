@@ -21,6 +21,8 @@ import java.util.List;
 @Data@AllArgsConstructor@NoArgsConstructor
 public class DocenteRequest extends PersonaDto {
     private List<Materia> materias;
+
+
     public DocenteResponse toResponse(String mensaje,Integer code) {
         return DocenteResponse.builder()
                 .docente(DocenteDto.builder()

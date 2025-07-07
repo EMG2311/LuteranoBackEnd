@@ -6,17 +6,13 @@ import com.grup14.luterano.request.docente.DocenteUpdateRequest;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
-import com.grup14.luterano.service.implementation.DocenteServiceImpl;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
-import com.grup14.luterano.validation.UpdateValidacion;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +43,7 @@ public class DocenteController {
     @PutMapping("/update")
     @Operation(summary = "Actualiza un docente", description = "Actualiza un docente con los datos que se envíen")
     public ResponseEntity<DocenteResponse> updateDocente(
-            @RequestBody  @Validated({Default.class, MayorDeEdadGruoup.class, UpdateValidacion.class}) DocenteUpdateRequest updateRequest) {
+            @RequestBody  @Validated({Default.class, MayorDeEdadGruoup.class}) DocenteUpdateRequest updateRequest) {
         try {
             return ResponseEntity.ok(docenteService.updateDocente(updateRequest));
         } catch (DocenteException d) {
