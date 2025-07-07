@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    @Operation(summary = "Actualiza los usuarios", description = "Actualiza el usuario")
+    @Operation(summary = "Actualiza los usuarios", description = "Actualiza el usuario, se pasa el id, los demas campos se completan por el valor a actualizar")
     public ResponseEntity<UserUpdateResponse> updateUser(@Valid@RequestBody  UserUpdateRequest userUpdateRequest){
         try{
             return ResponseEntity.ok(userService.updateUser(userUpdateRequest));
