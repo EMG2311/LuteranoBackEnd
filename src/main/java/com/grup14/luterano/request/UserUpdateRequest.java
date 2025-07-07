@@ -10,9 +10,9 @@ import lombok.Setter;
 
 @Getter@Setter@Builder
 public class UserUpdateRequest {
-    @NotNull(message = "El mail es un campo obligatorio")
+    @NotNull(message = "El Id es un campo obligatorio")
+    private Long id;
     private String email;
-    private String emailNuevo;
     private String password;
     private Role rol;
     private UserStatus userStatus;
