@@ -10,6 +10,7 @@ import com.grup14.luterano.response.user.UserCreadoResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.UserService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
 
         for(User user : userRepository.findByUserStatus(userStatus).get()){
             userResponses.add(UserResponse.builder()
+                            .id(user.getId())
                             .email(user.getEmail())
                             .role(user.getRol())
                             .userStatus(user.getUserStatus())
@@ -42,6 +44,7 @@ public class UserServiceImpl implements UserService {
 
         for(User user : userRepository.findAll()){
             userResponses.add(UserResponse.builder()
+                    .id(user.getId())
                     .email(user.getEmail())
                     .role(user.getRol())
                     .userStatus(user.getUserStatus())
@@ -53,6 +56,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserCreadoResponse ActivarCuenta(EmailRequest email) {
         User user = userRepository.findByEmail(email.getEmail())
                 .orElseThrow(() -> new UserException("Usuario " + email.getEmail() + " no encontrado"));
@@ -75,18 +79,31 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserUpdateResponse updateUser(UserUpdateRequest userUpdate) {
-        User user = userRepository.findByEmail(userUpdate.getEmail()).get();
-        user.setEmail(userUpdate.getEmailNuevo()!=null?userUpdate.getEmailNuevo() : user.getEmail());
-        user.setPassword(userUpdate.getPassword() != null ? userUpdate.getPassword() : user.getPassword());
-        user.setUserStatus(userUpdate.getUserStatus() != null ? userUpdate.getUserStatus() : user.getUserStatus());
-        user.setRol(userUpdate.getRol() != null ? userUpdate.getRol() : user.getRol());
+        User user = userRepository.findById(userUpdate.getId())
+                .orElseThrow(() -> new UserException("No existe el id "+userUpdate.getId()));
+
+        if (userUpdate.getEmail() != null) {
+            user.setEmail(userUpdate.getEmail());
+        }
+        if (userUpdate.getPassword() != null) {
+            user.setPassword(userUpdate.getPassword());
+        }
+        if (userUpdate.getUserStatus() != null) {
+            user.setUserStatus(userUpdate.getUserStatus());
+        }
+        if (userUpdate.getRol() != null) {
+            user.setRol(userUpdate.getRol());
+        }
+
         userRepository.save(user);
+
         return UserUpdateResponse.builder()
-                .email(userUpdate.getEmail())
-                .rol(userUpdate.getRol())
-                .userStatus(userUpdate.getUserStatus())
-                .mensaje("Se actualizo correctamente el usuario")
+                .email(user.getEmail())
+                .rol(user.getRol())
+                .userStatus(user.getUserStatus())
+                .mensaje("Se actualizó correctamente el usuario")
                 .code(0)
                 .build();
     }
@@ -102,10 +119,10 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserResponse borrarUsuario(String email) {
         User user = userRepository.findByEmail(email).get();
         if(user.getUserStatus()==UserStatus.BORRADO){
-            logger.error("El usuario "+email+" esta borrado");
             throw new UserException("El usuario "+email+" ya esta borrado");
         }
         user.setUserStatus(UserStatus.BORRADO);

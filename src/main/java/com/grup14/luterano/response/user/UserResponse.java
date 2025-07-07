@@ -11,6 +11,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 public class UserResponse {
+    private Long id;
     private String email;
     private Role role;
     private UserStatus userStatus;
