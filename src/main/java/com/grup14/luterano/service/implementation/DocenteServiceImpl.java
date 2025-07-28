@@ -2,15 +2,18 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Docente;
+import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.repository.DocenteRepository;
+import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.docente.DocenteRequest;
 import com.grup14.luterano.request.docente.DocenteUpdateRequest;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +21,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class DocenteServiceImpl implements DocenteService {
     @Autowired
     private DocenteRepository docenteRepository;
+    @Autowired
+    private MateriaRepository materiaRepository;
     @Autowired
     private UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
@@ -150,12 +156,73 @@ public class DocenteServiceImpl implements DocenteService {
 
     @Override
     public DocenteResponse asignarMateria(Long docenteId, Long materiaId) {
-        return null;
+        Docente docente = docenteRepository.findById(docenteId)
+                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
+
+        Materia materia = materiaRepository.findById(materiaId)
+                .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
+
+        if (docente.getMaterias() == null) {
+            docente.setMaterias(new HashSet<>());
+        }
+
+        if (!docente.getMaterias().contains(materia)) {
+            docente.getMaterias().add(materia);
+            docente = docenteRepository.save(docente);
+        }
+        DocenteDto docenteDto = DocenteDto.builder()
+                .nombre(docente.getNombre())
+                .apellido(docente.getApellido())
+                .genero(docente.getGenero())
+                .tipoDoc(docente.getTipoDoc())
+                .dni(docente.getDni())
+                .email(docente.getEmail())
+                .direccion(docente.getDireccion())
+                .telefono(docente.getTelefono())
+                .fechaNacimiento(docente.getFechaNacimiento())
+                .fechaIngreso(docente.getFechaIngreso())
+                .materias(docente.getMaterias())
+                .build();
+
+        return DocenteResponse.builder()
+                .docente(docenteDto)
+                .code(0)
+                .mensaje("Materia asignada correctamente")
+                .build();
     }
 
     @Override
     public DocenteResponse desasignarMateria(Long docenteId, Long materiaId) {
-        return null;
+        Docente docente = docenteRepository.findById(docenteId)
+                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
+
+        Materia materia = materiaRepository.findById(materiaId)
+                .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
+
+        if (docente.getMaterias() != null && docente.getMaterias().contains(materia)) {
+            docente.getMaterias().remove(materia);
+            docenteRepository.save(docente);
+        }
+
+        DocenteDto docenteDto = DocenteDto.builder()
+                .nombre(docente.getNombre())
+                .apellido(docente.getApellido())
+                .genero(docente.getGenero())
+                .tipoDoc(docente.getTipoDoc())
+                .dni(docente.getDni())
+                .email(docente.getEmail())
+                .direccion(docente.getDireccion())
+                .telefono(docente.getTelefono())
+                .fechaNacimiento(docente.getFechaNacimiento())
+                .fechaIngreso(docente.getFechaIngreso())
+                .materias(docente.getMaterias())
+                .build();
+
+        return DocenteResponse.builder()
+                .docente(docenteDto)
+                .code(0)
+                .mensaje("Materia desasignada correctamente")
+                .build();
     }
 
     @Override

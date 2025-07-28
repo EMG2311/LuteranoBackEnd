@@ -8,6 +8,7 @@ import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -88,8 +89,58 @@ public class DocenteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(DocenteResponseList.builder()
                             .docenteDtos(Collections.emptyList())
-                            .code(-1)
+                            .code(-2)
                             .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/{docenteId}/materias/{materiaId}")
+    @Operation(summary = "Asigna una materia a un docente")
+    public ResponseEntity<DocenteResponse> asignarMateria(
+            @PathVariable Long docenteId,
+            @PathVariable Long materiaId) {
+        try {
+            DocenteResponse response = docenteService.asignarMateria(docenteId, materiaId);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @DeleteMapping("/{docenteId}/materias/{materiaId}")
+    @Operation(summary = "Desasigna una materia de un docente")
+    public ResponseEntity<DocenteResponse> desasignarMateria(
+            @PathVariable Long docenteId,
+            @PathVariable Long materiaId) {
+        try {
+            DocenteResponse response = docenteService.desasignarMateria(docenteId, materiaId);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }

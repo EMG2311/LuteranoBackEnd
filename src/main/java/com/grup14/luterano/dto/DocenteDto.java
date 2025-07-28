@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Set;
+
 @SuperBuilder@Data@NoArgsConstructor@AllArgsConstructor
 public class DocenteDto extends PersonaDto {
-    private List<Materia> materias;
+    private Set<Materia> materias;
 }

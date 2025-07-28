@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity@SuperBuilder@AllArgsConstructor@NoArgsConstructor@Data
 public class Docente extends Persona {
@@ -16,6 +17,6 @@ public class Docente extends Persona {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToMany
-    private List<Materia> materias;
+    private Set<Materia> materias;
 
 }
