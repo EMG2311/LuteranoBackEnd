@@ -147,6 +147,7 @@ public class DocenteServiceImpl implements DocenteService {
         docente.setUser(user); //Por si se hicieron cambios en el usuario
         docente = docenteRepository.save(docente);
 
+        logger.info("Se actualizo correctamente el docente "+ docente.getId());
         return DocenteResponse.builder()
                 .docente(DocenteDto.builder()
                         .id(docente.getId())
@@ -170,6 +171,7 @@ public class DocenteServiceImpl implements DocenteService {
     public DocenteResponse deleteDocente(Long id) {
         Docente docente = docenteRepository.findById(id).orElseThrow(() -> new DocenteException("No existe el docente id " + id));
         docenteRepository.deleteById(id);
+        logger.info("Se elimino correctamente el docente " + id);
         return DocenteResponse.builder()
                 .docente(new DocenteDto())
                 .code(0)
@@ -209,6 +211,8 @@ public class DocenteServiceImpl implements DocenteService {
                 .materias(docente.getMaterias())
                 .build();
 
+        logger.info("Se asigno correctamente la materia" + materiaId + " para el docente "+ docenteId);
+
         return DocenteResponse.builder()
                 .docente(docenteDto)
                 .code(0)
@@ -229,6 +233,7 @@ public class DocenteServiceImpl implements DocenteService {
             docenteRepository.save(docente);
         }
 
+        logger.info("Se desasigno la materia "+materiaId+" del docente "+docenteId);
         DocenteDto docenteDto = DocenteDto.builder()
                 .nombre(docente.getNombre())
                 .apellido(docente.getApellido())
