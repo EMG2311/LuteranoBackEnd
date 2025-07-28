@@ -48,7 +48,6 @@ public class AuthenticationController {
             return ResponseEntity.ok(response);
         } catch (AuthenticateException e) {
             AuthenticationResponse errorResponse = AuthenticationResponse.builder()
-                    .token(null)
                     .mensaje(e.getMessage())
                     .code(-1)
                     .build();

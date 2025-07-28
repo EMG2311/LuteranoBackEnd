@@ -47,17 +47,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user=new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRol(roleRepository.findByName(Rol.ROLE_VISITA.toString()).get());
+        user.setRol(roleRepository.findByName(registerRequest.getRole().name()).get());
         user.setUserStatus(UserStatus.CREADO);
+        user.setName(registerRequest.getName());
+        user.setLastName(registerRequest.getLastName());
 
         User saved = userRepository.save(user);
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRol().getName());
-        System.out.printf("aaaa "+user.getRol().getName());
         String jwtToken = jwtService.generateToken(extraClaims,user);
 
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .token(null)
                 .mensaje("El usuario se registro correctamente")
                 .code(0)
                 .build();
@@ -80,7 +81,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         logger.info("----------Se loggeo " + user.getEmail() + "----------");
         return AuthenticationResponse.builder()
                 .token(jwtToken)
-                .mensaje("hola "+user.getEmail())
+                .mensaje("hola "+user.getName() + " "+user.getLastName())
                 .code(0)
                 .build();
     }catch (BadCredentialsException e){
