@@ -13,6 +13,7 @@ import com.grup14.luterano.request.docente.DocenteUpdateRequest;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
+import com.grup14.luterano.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -25,11 +26,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 @Service
+@Transactional
 public class DocenteServiceImpl implements DocenteService {
     @Autowired
     private DocenteRepository docenteRepository;
     @Autowired
     private MateriaRepository materiaRepository;
+    @Autowired
+    private UserService userService;
+
+
     @Autowired
     private UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
@@ -48,6 +54,11 @@ public class DocenteServiceImpl implements DocenteService {
         if(existeUser.isEmpty()){
             throw new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
         }
+        if(!existeUser.get().getName().equals(docenteRequest.getNombre())
+        || !existeUser.get().getLastName().equals(docenteRequest.getApellido())){
+            existeUser.get().setName(docenteRequest.getNombre());
+            existeUser.get().setLastName(docenteRequest.getApellido());
+        }
 
         Docente docente =  Docente.builder()
                 .nombre(docenteRequest.getNombre())
@@ -61,6 +72,7 @@ public class DocenteServiceImpl implements DocenteService {
                 .fechaNacimiento(docenteRequest.getFechaNacimiento())
                 .fechaIngreso(docenteRequest.getFechaIngreso())
                 .materias(docenteRequest.getMaterias())
+                .user(existeUser.get())
                 .build();
 
         docenteRepository.save(docente);
@@ -89,11 +101,21 @@ public class DocenteServiceImpl implements DocenteService {
     public DocenteResponse updateDocente(DocenteUpdateRequest updateRequest) {
         Docente docente = docenteRepository.findById(updateRequest.getId())
                 .orElseThrow(() -> new DocenteException("No existe docente con id: " + updateRequest.getId()));
+        User user=docente.getUser();
+        boolean necesitaActualizarUsuario=false;
+        if (user == null) {
+            throw new RuntimeException("El docente no tiene usuario asociado");
+        }
+
         if (updateRequest.getNombre() != null) {
             docente.setNombre(updateRequest.getNombre());
+            user.setName(updateRequest.getNombre());
+            necesitaActualizarUsuario=true;
         }
         if (updateRequest.getApellido() != null) {
             docente.setApellido(updateRequest.getApellido());
+            user.setLastName(updateRequest.getApellido());
+            necesitaActualizarUsuario=true;
         }
         if (updateRequest.getGenero() != null) {
             docente.setGenero(updateRequest.getGenero());
@@ -106,6 +128,8 @@ public class DocenteServiceImpl implements DocenteService {
         }
         if (updateRequest.getEmail() != null) {
             docente.setEmail(updateRequest.getEmail());
+            user.setEmail(updateRequest.getEmail());
+            necesitaActualizarUsuario=true;
         }
         if (updateRequest.getDireccion() != null) {
             docente.setDireccion(updateRequest.getDireccion());
@@ -120,6 +144,7 @@ public class DocenteServiceImpl implements DocenteService {
             docente.setFechaIngreso(updateRequest.getFechaIngreso());
         }
 
+        docente.setUser(user); //Por si se hicieron cambios en el usuario
         docente = docenteRepository.save(docente);
 
         return DocenteResponse.builder()
