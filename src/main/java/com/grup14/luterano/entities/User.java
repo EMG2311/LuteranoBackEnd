@@ -3,6 +3,7 @@ package com.grup14.luterano.entities;
 import com.grup14.luterano.entities.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ public class User implements UserDetails {
     private String lastName;
 
     @Column(nullable = false)
+    @Size(min = 5, message = "La contraseña debe tener al menos 5 caracteres")
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)

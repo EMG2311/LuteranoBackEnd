@@ -27,7 +27,7 @@ public class RegisterRequest {
     private String lastName;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Length(min = 5, message = "La contraseña debe tener como minimo 5 caracteres")
+    @Length(min = 5, message = "La contraseña debe tener como mínimo 5 caracteres")
     private String password;
 
     @NotNull(message = "El rol es obligatorio")
