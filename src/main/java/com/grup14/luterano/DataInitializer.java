@@ -37,6 +37,8 @@ public class DataInitializer {
             }
             userRepository.findByEmail("admin@gmail.com").orElseGet(()->
                  userRepository.save(User.builder()
+                                 .name("Admin")
+                                 .lastName("Muy Admin")
                                 .email("admin@gmail.com")
                                 .password(passwordEncoder.encode("1234"))
                     .userStatus(UserStatus.CREADO)
