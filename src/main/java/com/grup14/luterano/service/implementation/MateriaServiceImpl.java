@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class MateriaServiceImpl implements MateriaService {
@@ -29,7 +30,10 @@ public class MateriaServiceImpl implements MateriaService {
         materia.setDescipcion(materiaRequest.getDescripcion());
         materia.setNivel(materiaRequest.getNivel());
         materia.setCursos(null); // no se asigna en este paso
-
+        Optional<Materia> existente = materiaRepository.findByNombreMateria(materia.getNombreMateria());
+        if(existente.isPresent()){
+            throw new MateriaException("Ya existe una materia con ese nombre");
+        }
         materiaRepository.save(materia);
 
         logger.info("Materia creada: {}", materia.getNombreMateria());
