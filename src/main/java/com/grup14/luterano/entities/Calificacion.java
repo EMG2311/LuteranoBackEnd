@@ -17,8 +17,14 @@ public class Calificacion {
 
     @Max(value = 10,message = "La nota no puede ser mayor a 10")
     @Min(value = 1,message = "La nota no puede ser menor a 1")
-    private int nota;
-    private int PG;
+    private float nota;
+
+    private int numeroNota;
+
+    @Max(value = 10,message = "La nota no puede ser mayor a 10")
+    @Min(value = 1,message = "La nota no puede ser menor a 1")
+    private float PG;
+
     private LocalDate fecha;
 
     @ManyToOne
@@ -29,7 +35,7 @@ public class Calificacion {
 
     @ManyToOne
     private CicloLectivo cicloLectivo;
-
     @ManyToOne
     private HistorialCalificaciones historialCalificaciones;
+
 }

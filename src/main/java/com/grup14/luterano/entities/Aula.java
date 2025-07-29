@@ -11,8 +11,11 @@ public class Aula {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String nombre;
+    @Column(nullable = false)
     private String ubicacion;
+    @Column(nullable = false)
     private int capacidad;
     @OneToOne(mappedBy = "aula")
     private Curso curso;

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity@Data@AllArgsConstructor@NoArgsConstructor@Builder
 public class HistorialCurso {
@@ -26,4 +28,7 @@ public class HistorialCurso {
 
     @ManyToOne
     private CicloLectivo cicloLectivo;
+
+    @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL)
+    private List<HistorialCalificaciones> historialesCalificaciones;
 }

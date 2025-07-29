@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity@Data@Builder@AllArgsConstructor@NoArgsConstructor
 public class HistorialCalificaciones {
     @Id
@@ -22,4 +24,11 @@ public class HistorialCalificaciones {
     private CicloLectivo cicloLectivo;
 
     private float promedio;
+
+    @ManyToOne
+    private HistorialCurso historialCurso;
+
+
+    @OneToMany(mappedBy = "historialCalificaciones", cascade = CascadeType.ALL)
+    private List<Calificacion> calificaciones;
 }
