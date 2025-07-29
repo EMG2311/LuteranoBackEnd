@@ -31,6 +31,8 @@ public class UserServiceImpl implements UserService {
             userResponses.add(UserResponse.builder()
                             .id(user.getId())
                             .email(user.getEmail())
+                            .name(user.getName())
+                            .lastName(user.getLastName())
                             .role(user.getRol())
                             .userStatus(user.getUserStatus())
                             .mensaje("")
@@ -46,6 +48,8 @@ public class UserServiceImpl implements UserService {
             userResponses.add(UserResponse.builder()
                     .id(user.getId())
                     .email(user.getEmail())
+                    .name(user.getName())
+                    .lastName(user.getLastName())
                     .role(user.getRol())
                     .userStatus(user.getUserStatus())
                     .mensaje("")
@@ -70,6 +74,8 @@ public class UserServiceImpl implements UserService {
         logger.info("---------- Se completo la creacion del usuario "+ email.getEmail()+" ----------");
         return UserCreadoResponse.builder()
                 .email(user.getEmail())
+                .name(user.getName())
+                .lastName(user.getLastName())
                 .role(user.getRol())
                 .code(0)
                 .mensaje("Se completo la creacion del usuario con exito")
@@ -101,6 +107,8 @@ public class UserServiceImpl implements UserService {
 
         return UserUpdateResponse.builder()
                 .email(user.getEmail())
+                .name(user.getName())
+                .lastName(user.getLastName())
                 .rol(user.getRol())
                 .userStatus(user.getUserStatus())
                 .mensaje("Se actualizó correctamente el usuario")
@@ -112,6 +120,8 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUsuarioByEmail(String email) {
         User user = userRepository.findByEmail(email).get();
         return UserResponse.builder().email(user.getEmail())
+                .name(user.getName())
+                .lastName(user.getLastName())
                 .userStatus(user.getUserStatus())
                 .role(user.getRol())
                 .build();
@@ -129,6 +139,8 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user); //No hago borrado virtual
         return UserResponse.builder()
                 .email(user.getEmail())
+                .name(user.getName())
+                .lastName(user.getLastName())
                 .role(user.getRol())
                 .userStatus(UserStatus.BORRADO)
                 .build();

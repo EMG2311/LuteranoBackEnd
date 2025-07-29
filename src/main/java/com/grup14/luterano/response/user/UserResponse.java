@@ -13,6 +13,8 @@ import lombok.*;
 public class UserResponse {
     private Long id;
     private String email;
+    private String name;
+    private String lastName;
     private Role role;
     private UserStatus userStatus;
     private String mensaje;

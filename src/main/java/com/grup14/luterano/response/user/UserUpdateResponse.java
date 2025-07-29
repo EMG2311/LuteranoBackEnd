@@ -13,6 +13,8 @@ import lombok.Setter;
 public class UserUpdateResponse {
     @NotNull(message = "El mail es un campo obligatorio")
     private String email;
+    private String name;
+    private String lastName;
     private Role rol;
     private UserStatus userStatus;
     private String mensaje;
