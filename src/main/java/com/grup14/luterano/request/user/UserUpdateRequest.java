@@ -1,8 +1,7 @@
-package com.grup14.luterano.request;
+package com.grup14.luterano.request.user;
 
 import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.enums.UserStatus;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;

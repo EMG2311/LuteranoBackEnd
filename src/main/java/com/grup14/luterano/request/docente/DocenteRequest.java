@@ -19,10 +19,8 @@ import java.util.List;
 import java.util.Set;
 
 @SuperBuilder
-@Data@AllArgsConstructor@NoArgsConstructor
-public class DocenteRequest extends PersonaDto {
-    private Set<Materia> materias;
-
+@Data@NoArgsConstructor
+public class DocenteRequest extends DocenteDto {
 
     public DocenteResponse toResponse(String mensaje,Integer code) {
         return DocenteResponse.builder()
