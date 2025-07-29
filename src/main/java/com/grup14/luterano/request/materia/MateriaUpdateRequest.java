@@ -13,6 +13,6 @@ public class MateriaUpdateRequest {
     @NotNull(message = "El id es obligatorio")
     private Long id;
     private String nombreMateria;
-    private String descripcion; // corregido también el nombre
+    private String descripcion;
     private Nivel nivel;
 }
