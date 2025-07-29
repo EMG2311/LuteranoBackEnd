@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity@Data@AllArgsConstructor@SuperBuilder
 @NoArgsConstructor
 public class Alumno extends Persona {
@@ -22,4 +25,7 @@ public class Alumno extends Persona {
 
     @ManyToOne
     private Tutor tutor;
+    @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
+    private List<HistorialCurso> historialCursos = new ArrayList<>();
+
 }

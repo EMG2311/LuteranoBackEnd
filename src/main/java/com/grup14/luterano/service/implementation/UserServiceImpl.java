@@ -5,7 +5,7 @@ import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.EmailRequest;
-import com.grup14.luterano.request.UserUpdateRequest;
+import com.grup14.luterano.request.user.UserUpdateRequest;
 import com.grup14.luterano.response.user.UserCreadoResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;

@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/docente")
@@ -95,19 +96,26 @@ public class DocenteController {
         }
     }
 
-    @PostMapping("/{docenteId}/materias/{materiaId}")
-    @Operation(summary = "Asigna una materia a un docente")
-    public ResponseEntity<DocenteResponse> asignarMateria(
+    @PostMapping("/{docenteId}/materias")
+    @Operation(summary = "Asigna una lista de materias a un docente")
+    public ResponseEntity<DocenteResponse> asignarMaterias(
             @PathVariable Long docenteId,
-            @PathVariable Long materiaId) {
+            @RequestBody List<Long> materiaIds) {
         try {
-            DocenteResponse response = docenteService.asignarMateria(docenteId, materiaId);
+            DocenteResponse response = docenteService.asignarMaterias(docenteId, materiaIds);
             return ResponseEntity.ok(response);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(DocenteResponse.builder()
                             .docente(null)
                             .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        } catch (DocenteException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-3)
                             .mensaje(e.getMessage())
                             .build());
         } catch (Exception e) {
@@ -120,13 +128,13 @@ public class DocenteController {
         }
     }
 
-    @DeleteMapping("/{docenteId}/materias/{materiaId}")
-    @Operation(summary = "Desasigna una materia de un docente")
-    public ResponseEntity<DocenteResponse> desasignarMateria(
+    @DeleteMapping("/{docenteId}/materias")
+    @Operation(summary = "Desasigna múltiples materias de un docente")
+    public ResponseEntity<DocenteResponse> desasignarMaterias(
             @PathVariable Long docenteId,
-            @PathVariable Long materiaId) {
+            @RequestBody List<Long> materiasIds) {
         try {
-            DocenteResponse response = docenteService.desasignarMateria(docenteId, materiaId);
+            DocenteResponse response = docenteService.desasignarMaterias(docenteId, materiasIds);
             return ResponseEntity.ok(response);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
