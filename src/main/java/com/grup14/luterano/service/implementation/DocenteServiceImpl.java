@@ -21,10 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 @Service
 @Transactional
 public class DocenteServiceImpl implements DocenteService {
@@ -182,21 +180,34 @@ public class DocenteServiceImpl implements DocenteService {
 
 
     @Override
-    public DocenteResponse asignarMateria(Long docenteId, Long materiaId) {
+    public DocenteResponse asignarMaterias(Long docenteId, List<Long> materiasIds) {
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
-
-        Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
 
         if (docente.getMaterias() == null) {
             docente.setMaterias(new HashSet<>());
         }
 
-        if (!docente.getMaterias().contains(materia)) {
-            docente.getMaterias().add(materia);
-            docente = docenteRepository.save(docente);
+        Set<Materia> nuevasMaterias = new HashSet<>();
+
+        for (Long materiaId : materiasIds) {
+            Materia materia = materiaRepository.findById(materiaId)
+                    .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
+
+            if (!docente.getMaterias().contains(materia)) {
+                nuevasMaterias.add(materia);
+            } else {
+                logger.warn("El docente {} ya tiene asignada la materia {}", docenteId, materiaId);
+            }
         }
+
+        if (nuevasMaterias.isEmpty()) {
+            throw new DocenteException("Todas las materias ya estaban asignadas al docente");
+        }
+
+        docente.getMaterias().addAll(nuevasMaterias);
+        docente = docenteRepository.save(docente);
+
         DocenteDto docenteDto = DocenteDto.builder()
                 .nombre(docente.getNombre())
                 .apellido(docente.getApellido())
@@ -211,29 +222,42 @@ public class DocenteServiceImpl implements DocenteService {
                 .materias(docente.getMaterias())
                 .build();
 
-        logger.info("Se asigno correctamente la materia" + materiaId + " para el docente "+ docenteId);
+        logger.info("Se asignaron {} nuevas materias al docente {}", nuevasMaterias.size(), docenteId);
 
         return DocenteResponse.builder()
                 .docente(docenteDto)
                 .code(0)
-                .mensaje("Materia asignada correctamente")
+                .mensaje("Materias asignadas correctamente")
                 .build();
     }
 
-    @Override
-    public DocenteResponse desasignarMateria(Long docenteId, Long materiaId) {
+    public DocenteResponse desasignarMaterias(Long docenteId, List<Long> materiasId) {
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
 
-        Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
-
-        if (docente.getMaterias() != null && docente.getMaterias().contains(materia)) {
-            docente.getMaterias().remove(materia);
-            docenteRepository.save(docente);
+        if (docente.getMaterias() == null || docente.getMaterias().isEmpty()) {
+            return DocenteResponse.builder()
+                    .docente(null)
+                    .code(-1)
+                    .mensaje("El docente no tiene materias asignadas")
+                    .build();
         }
 
-        logger.info("Se desasigno la materia "+materiaId+" del docente "+docenteId);
+        List<Long> noEncontradas = new ArrayList<>();
+        for (Long materiaId : materiasId) {
+            Materia materia = materiaRepository.findById(materiaId)
+                    .orElse(null);
+
+            if (materia != null && docente.getMaterias().contains(materia)) {
+                docente.getMaterias().remove(materia);
+            } else {
+                noEncontradas.add(materiaId);
+            }
+        }
+
+        docenteRepository.save(docente);
+        logger.info("Se desasignaron las materias del docente " + docenteId + ": " + materiasId);
+
         DocenteDto docenteDto = DocenteDto.builder()
                 .nombre(docente.getNombre())
                 .apellido(docente.getApellido())
@@ -250,8 +274,10 @@ public class DocenteServiceImpl implements DocenteService {
 
         return DocenteResponse.builder()
                 .docente(docenteDto)
-                .code(0)
-                .mensaje("Materia desasignada correctamente")
+                .code(noEncontradas.isEmpty() ? 0 : 1)
+                .mensaje(noEncontradas.isEmpty()
+                        ? "Materias desasignadas correctamente"
+                        : "Algunas materias no fueron encontradas o no estaban asignadas: " + noEncontradas)
                 .build();
     }
 
