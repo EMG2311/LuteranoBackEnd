@@ -7,6 +7,7 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,7 +43,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     @Operation(summary = "Registra un usuario",description = "Registra al usuario con rol DE_VISITA, devuelve el token")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest registerRequest) throws AuthenticateException {
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Validated RegisterRequest registerRequest) throws AuthenticateException {
         try {
             AuthenticationResponse response = authenticationService.register(registerRequest);
             return ResponseEntity.ok(response);
