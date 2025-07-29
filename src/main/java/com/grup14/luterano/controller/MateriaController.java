@@ -23,7 +23,8 @@ public class MateriaController {
     private MateriaService materiaService;
 
     @PostMapping("/create")
-    @Operation(summary = "Crea una materia")
+    @Operation(summary = "Crea una materia", description = "En este metodo se crea la materia, pero no se debe pasar el curso" +
+            "ya que no hace nada en este paso")
     public ResponseEntity<MateriaResponse> createMateria(
             @RequestBody @Validated MateriaRequest materiaRequest) {
         try {
