@@ -9,17 +9,7 @@ import lombok.experimental.SuperBuilder;
 import java.util.Date;
 @Getter@Setter@AllArgsConstructor@NoArgsConstructor
 @MappedSuperclass@SuperBuilder@Data
-public class PersonaConUsuario {
-    private String nombre;
-    private String apellido;
-    private GeneroEnum genero;
-    private TipoDoc tipoDoc;
-    private String dni;
-    private String email;
-    private String direccion;
-    private String telefono;
-    private Date fechaNacimiento;
-    private Date fechaIngreso;
+public class PersonaConUsuario extends Persona {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

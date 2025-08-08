@@ -3,6 +3,7 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.MateriaDto;
 import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.exeptions.MateriaException;
+import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.request.materia.MateriaRequest;
 import com.grup14.luterano.request.materia.MateriaUpdateRequest;
@@ -41,13 +42,7 @@ public class MateriaServiceImpl implements MateriaService {
         return MateriaResponse.builder()
                 .code(0)
                 .mensaje("Materia creada correctamente")
-                .materiaDto(MateriaDto.builder()
-                        .id(materia.getId())
-                        .nombreMateria(materia.getNombreMateria())
-                        .descripcion(materia.getDescipcion())
-                        .nivel(materia.getNivel())
-                        .cursos(null)
-                        .build())
+                .materiaDto(MateriaMapper.toDto(materia))
                 .build();
     }
 
@@ -75,13 +70,7 @@ public class MateriaServiceImpl implements MateriaService {
         return MateriaResponse.builder()
                 .code(0)
                 .mensaje("Materia actualizada correctamente")
-                .materiaDto(MateriaDto.builder()
-                        .id(materia.getId())
-                        .nombreMateria(materia.getNombreMateria())
-                        .descripcion(materia.getDescipcion())
-                        .nivel(materia.getNivel())
-                        .cursos(materia.getCursos())
-                        .build())
+                .materiaDto(MateriaMapper.toDto(materia))
                 .build();
     }
 
@@ -90,13 +79,7 @@ public class MateriaServiceImpl implements MateriaService {
         List<Materia> materias = materiaRepository.findAll();
 
         List<MateriaDto> materiaDtos = materias.stream()
-                .map(m -> MateriaDto.builder()
-                        .id(m.getId())
-                        .nombreMateria(m.getNombreMateria())
-                        .descripcion(m.getDescipcion())
-                        .nivel(m.getNivel())
-                        .cursos(m.getCursos())
-                        .build())
+                .map(MateriaMapper::toDto)
                 .collect(Collectors.toList());
 
         return MateriaResponseList.builder()

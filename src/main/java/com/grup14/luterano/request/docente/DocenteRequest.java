@@ -30,6 +30,7 @@ public class DocenteRequest extends DocenteDto {
                         .genero(this.getGenero())
                         .tipoDoc(this.getTipoDoc())
                         .dni(this.getDni())
+                        .user(this.getUser())
                         .email(this.getEmail())
                         .direccion(this.getDireccion())
                         .telefono(this.getTelefono())

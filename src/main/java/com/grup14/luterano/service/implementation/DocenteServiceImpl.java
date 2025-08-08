@@ -5,6 +5,7 @@ import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.exeptions.DocenteException;
+import com.grup14.luterano.mappers.DocenteMapper;
 import com.grup14.luterano.repository.DocenteRepository;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.repository.UserRepository;
@@ -76,20 +77,7 @@ public class DocenteServiceImpl implements DocenteService {
         docenteRepository.save(docente);
         logger.info("Se creo correctamente el docente {} {}", docente.getNombre(), docente.getApellido());
         return DocenteResponse.builder()
-                .docente(DocenteDto.builder()
-                        .id(docente.getId())
-                        .nombre(docente.getNombre())
-                        .apellido(docente.getApellido())
-                        .genero(docente.getGenero())
-                        .tipoDoc(docente.getTipoDoc())
-                        .dni(docente.getDni())
-                        .email(docente.getEmail())
-                        .direccion(docente.getDireccion())
-                        .telefono(docente.getTelefono())
-                        .fechaNacimiento(docente.getFechaNacimiento())
-                        .fechaIngreso(docente.getFechaIngreso())
-                        .materias(docente.getMaterias())
-                        .build())
+                .docente(DocenteMapper.toDto(docente))
                 .code(0)
                 .mensaje("Se creo correcatmente el docente")
                 .build();
@@ -142,23 +130,14 @@ public class DocenteServiceImpl implements DocenteService {
             docente.setFechaIngreso(updateRequest.getFechaIngreso());
         }
 
-        docente.setUser(user); //Por si se hicieron cambios en el usuario
+        if(necesitaActualizarUsuario){
+            docente.setUser(user); //Por si se hicieron cambios en el usuario
+        }
         docente = docenteRepository.save(docente);
 
         logger.info("Se actualizo correctamente el docente "+ docente.getId());
         return DocenteResponse.builder()
-                .docente(DocenteDto.builder()
-                        .id(docente.getId())
-                        .nombre(docente.getNombre())
-                        .apellido(docente.getApellido())
-                        .genero(docente.getGenero())
-                        .tipoDoc(docente.getTipoDoc())
-                        .dni(docente.getDni())
-                        .email(docente.getEmail())
-                        .direccion(docente.getDireccion())
-                        .telefono(docente.getTelefono())
-                        .fechaNacimiento(docente.getFechaNacimiento())
-                        .fechaIngreso(docente.getFechaIngreso()).build())
+                .docente(DocenteMapper.toDto(docente))
                 .code(0)
                 .mensaje("Docente actualizado correctamente")
                 .build();
@@ -208,24 +187,11 @@ public class DocenteServiceImpl implements DocenteService {
         docente.getMaterias().addAll(nuevasMaterias);
         docente = docenteRepository.save(docente);
 
-        DocenteDto docenteDto = DocenteDto.builder()
-                .nombre(docente.getNombre())
-                .apellido(docente.getApellido())
-                .genero(docente.getGenero())
-                .tipoDoc(docente.getTipoDoc())
-                .dni(docente.getDni())
-                .email(docente.getEmail())
-                .direccion(docente.getDireccion())
-                .telefono(docente.getTelefono())
-                .fechaNacimiento(docente.getFechaNacimiento())
-                .fechaIngreso(docente.getFechaIngreso())
-                .materias(docente.getMaterias())
-                .build();
 
         logger.info("Se asignaron {} nuevas materias al docente {}", nuevasMaterias.size(), docenteId);
 
         return DocenteResponse.builder()
-                .docente(docenteDto)
+                .docente(DocenteMapper.toDto(docente))
                 .code(0)
                 .mensaje("Materias asignadas correctamente")
                 .build();
@@ -258,22 +224,9 @@ public class DocenteServiceImpl implements DocenteService {
         docenteRepository.save(docente);
         logger.info("Se desasignaron las materias del docente " + docenteId + ": " + materiasId);
 
-        DocenteDto docenteDto = DocenteDto.builder()
-                .nombre(docente.getNombre())
-                .apellido(docente.getApellido())
-                .genero(docente.getGenero())
-                .tipoDoc(docente.getTipoDoc())
-                .dni(docente.getDni())
-                .email(docente.getEmail())
-                .direccion(docente.getDireccion())
-                .telefono(docente.getTelefono())
-                .fechaNacimiento(docente.getFechaNacimiento())
-                .fechaIngreso(docente.getFechaIngreso())
-                .materias(docente.getMaterias())
-                .build();
 
         return DocenteResponse.builder()
-                .docente(docenteDto)
+                .docente(DocenteMapper.toDto(docente))
                 .code(noEncontradas.isEmpty() ? 0 : 1)
                 .mensaje(noEncontradas.isEmpty()
                         ? "Materias desasignadas correctamente"
@@ -285,20 +238,7 @@ public class DocenteServiceImpl implements DocenteService {
     public DocenteResponseList listDocentes() {
         List<DocenteDto> docentes = new ArrayList<>();
         docenteRepository.findAll().forEach(docente->{
-            docentes.add(DocenteDto.builder()
-                    .id(docente.getId())
-                    .nombre(docente.getNombre())
-                    .apellido(docente.getApellido())
-                    .genero(docente.getGenero())
-                    .tipoDoc(docente.getTipoDoc())
-                    .dni(docente.getDni())
-                    .email(docente.getEmail())
-                    .direccion(docente.getDireccion())
-                    .telefono(docente.getTelefono())
-                    .fechaNacimiento(docente.getFechaNacimiento())
-                    .fechaIngreso(docente.getFechaIngreso())
-                    .materias(docente.getMaterias())
-                    .build());
+            docentes.add(DocenteMapper.toDto(docente));
         });
         return DocenteResponseList.builder()
                 .docenteDtos(docentes)
