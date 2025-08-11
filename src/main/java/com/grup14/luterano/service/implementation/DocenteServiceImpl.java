@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.entities.User;
+import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
 import com.grup14.luterano.mappers.MateriaMapper;
@@ -54,6 +55,9 @@ public class DocenteServiceImpl implements DocenteService {
         }
         if(existeUser.isEmpty()){
             throw new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
+        }
+        if(!existeUser.get().getRol().equals(Rol.ROLE_DOCENTE)){
+            throw new DocenteException("El usuario no tiene rol docente");
         }
         if(!existeUser.get().getName().equals(docenteRequest.getNombre())
         || !existeUser.get().getLastName().equals(docenteRequest.getApellido())){
