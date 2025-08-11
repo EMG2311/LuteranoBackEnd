@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Override
     public List<UserResponse> listUserFiltro(UserStatus userStatus) {
         List<UserResponse> userResponses = new ArrayList<>();
@@ -94,7 +97,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail(userUpdate.getEmail());
         }
         if (userUpdate.getPassword() != null) {
-            user.setPassword(userUpdate.getPassword());
+            user.setPassword(passwordEncoder.encode(userUpdate.getPassword()));
         }
         if (userUpdate.getUserStatus() != null) {
             user.setUserStatus(userUpdate.getUserStatus());

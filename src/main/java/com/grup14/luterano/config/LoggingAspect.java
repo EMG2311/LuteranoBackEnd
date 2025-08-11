@@ -30,6 +30,7 @@ public class LoggingAspect {
         for (Object arg : joinPoint.getArgs()) {
             try {
                 String json = mapper.writeValueAsString(arg);
+                json = json.replaceAll("(?i)(\"password\"\\s*:\\s*)\"[^\"]*\"", "$1\"***\"");
                 logger.info("[{}] invocó {} con argumento JSON: {}", email, joinPoint.getSignature().toShortString(), json);
             } catch (JsonProcessingException e) {
                 logger.warn("No se pudo serializar argumento para loguear", e);
