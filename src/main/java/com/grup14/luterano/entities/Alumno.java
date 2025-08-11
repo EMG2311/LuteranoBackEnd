@@ -24,7 +24,7 @@ public class Alumno extends Persona {
     private EstadoAlumno estado;
 
     @ManyToOne
-    private Tutor tutor;
+   private Tutor tutor;
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
     private List<HistorialCurso> historialCursos = new ArrayList<>();
 
