@@ -20,7 +20,8 @@ public class AlumnoDto extends PersonaDto {
     // Campos de Persona ya esta en extendida PersonaDto
 
     // Campos específicos de Alumno
-    private Curso cursoActual;  /// no deberia ser CursoDto?
+    private Curso cursoActual;  /// no deberia ser CursoDto?   traigo ID y lo defino en el servicio pero ojo porque desde el front
+    /// lo puedo enviar como objeto completo para seleccione el curso correcto .
     private EstadoAlumno estado;
    private Tutor tutor; ///
     private List<HistorialCurso> historialCursos = new ArrayList<>();
