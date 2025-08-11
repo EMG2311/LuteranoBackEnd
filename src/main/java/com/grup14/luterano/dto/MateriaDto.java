@@ -23,5 +23,5 @@ public class MateriaDto {
     private String descripcion;
     @NotNull(message ="El nivel es obligatorio")
     private Nivel nivel;
-    private List<Curso> cursos;
+    private List<CursoDto> cursos;
 }

@@ -4,6 +4,7 @@ import com.grup14.luterano.commond.GeneroEnum;
 import com.grup14.luterano.commond.Persona;
 import com.grup14.luterano.commond.PersonaDto;
 import com.grup14.luterano.entities.enums.TipoDoc;
+import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.validation.MayorDeEdad;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import jakarta.validation.constraints.NotBlank;
@@ -29,4 +30,5 @@ public class DocenteUpdateRequest {
     @MayorDeEdad(groups = {MayorDeEdadGruoup.class})
     private Date fechaNacimiento;
     private Date fechaIngreso;
+
 }

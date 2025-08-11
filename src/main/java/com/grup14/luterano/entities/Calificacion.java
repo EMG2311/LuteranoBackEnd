@@ -6,10 +6,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDate;
 
 @Entity
+@Builder@Data
 public class Calificacion {
     @Id
     @GeneratedValue

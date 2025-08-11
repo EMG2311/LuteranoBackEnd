@@ -40,18 +40,12 @@ public class AlumnoController {
     public ResponseEntity<AlumnoResponse> createAlumno(@RequestBody @Validated AlumnoRequest alumnoRequest) {
         try {
             return ResponseEntity.ok(alumnoService.crearAlumno(alumnoRequest));
-        } catch (AlumnoException e) {  ///  que es la e???? nombre la variable de excepcion
+        } catch (AlumnoException e) {
             return ResponseEntity.status(422).body(
-                    AlumnoResponse.builder()
-                            .code(-1)
-                            .mensaje(e.getMessage())
-                            .build());
+                            alumnoRequest.toResponse(e.getMessage(),-1));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(AlumnoResponse.builder()
-                            .code(-2)
-                            .mensaje("Error no controlado " )
-                            .build());
+                    .body(alumnoRequest.toResponse(e.getMessage(),-2));
         }
     }
 

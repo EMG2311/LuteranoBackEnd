@@ -3,10 +3,15 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.AlumnoDto;
 import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Alumno;
+import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.Docente;
+import com.grup14.luterano.entities.Tutor;
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.exeptions.DocenteException;
+import com.grup14.luterano.mappers.AlumnoMapper;
+import com.grup14.luterano.mappers.CursoMapper;
+import com.grup14.luterano.mappers.TutorMapper;
 import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.TutorRepository;
@@ -27,147 +32,89 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class AlumnoServiceImpl implements AlumnoService {
 
-    /// Implementa logica de negocio para manejar las operaciones CRUD de AlumnoService
-    @Autowired  ///  inyecta el repositorio de Alumno (dependencia)
+    @Autowired
     private AlumnoRepository alumnoRepository;
     @Autowired
     private CursoRepository cursoRepository;
     @Autowired
     private TutorRepository tutorRepository;
 
-
-    ///  ¿FALTAN MAS ??///
-    /// NOSE QUE HACE!!--------------
     @Autowired
     private UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(AlumnoServiceImpl.class);
 
-    ///------------------------------------------------///
     @Override
     @Transactional
-    public AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest) {
-        // 1. Validar si ya existe un alumno con el mismo DNI.
+    public AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest) {  // 1. Validar si ya existe un alumno con el mismo DNI.
         Optional<Alumno> existentePorDni = alumnoRepository.findByDni(alumnoRequest.getDni());
         if (existentePorDni.isPresent()) {
             throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
         }
 
+        // 2. Validar que el curso exista
+        Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
+                .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
 
-        // Construir la entidad Alumno a partir del Request DTO.
+        // 3. Validar que el tutor exista
+        Tutor tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
+                .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
 
-        Alumno alumno = Alumno.builder()
-                .nombre(alumnoRequest.getNombre())
-                .apellido(alumnoRequest.getApellido())
-                .genero(alumnoRequest.getGenero())
-                .tipoDoc(alumnoRequest.getTipoDoc())
-                .dni(alumnoRequest.getDni())
-                .email(alumnoRequest.getEmail())
-                .direccion(alumnoRequest.getDireccion())
-                .telefono(alumnoRequest.getTelefono())
-                .fechaNacimiento(alumnoRequest.getFechaNacimiento())
-                .fechaIngreso(alumnoRequest.getFechaIngreso())
-                .estado(alumnoRequest.getEstado())    ///  preguntar si esta bien !!----------
-                .cursoActual(alumnoRequest.getCursoActual())
-                .tutor(alumnoRequest.getTutor())
-                .build();
-        // Guardar el alumno en la base de datos.
+        // 4. Mapear el request a entidad usando el mapper
+        Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
+        alumno.setCursoActual(curso);
+        alumno.setTutor(tutor);
+
+        // 5. Guardar el alumno
         alumnoRepository.save(alumno);
-        logger.info("Alumno creado correctamente con: {} {} {}", alumno.getDni(),alumno.getNombre(),alumno.getApellido());
+
+        logger.info("Alumno creado correctamente con: {} {} {}", alumno.getDni(), alumno.getNombre(), alumno.getApellido());
+
+        // 6. Retornar respuesta usando el mapper
         return AlumnoResponse.builder()
-                .alumno(AlumnoDto.builder()
-                        .id(alumno.getId())
-                        .nombre(alumno.getNombre())
-                        .apellido(alumno.getApellido())
-                        .genero(alumno.getGenero())
-                        .tipoDoc(alumno.getTipoDoc())
-                        .dni(alumno.getDni())
-                        .email(alumno.getEmail())
-                        .direccion(alumno.getDireccion())
-                        .telefono(alumno.getTelefono())
-                        .fechaNacimiento(alumno.getFechaNacimiento())
-                        .fechaIngreso(alumno.getFechaIngreso())
-                        //.estado(EstadoAlumno.REGULAR) // Asignar estado por defecto
-                       // .cursoActual(alumno.getCursoActual())
-                        //.tutor(alumno.getTutor())
-                        .build())
+                .alumno(AlumnoMapper.toDto(alumno))
                 .code(0)
                 .mensaje("Alumno creado correctamente")
                 .build();
-
     }
 
     @Override
-    public AlumnoResponse updateAlumno(AlumnoUpdateRequest updateRequest){
-
-        // 1. Buscar al alumno por su ID y lanzar una excepción si no se encuentra
+    @Transactional
+    public AlumnoResponse updateAlumno(AlumnoUpdateRequest updateRequest) {
+        // 1. Buscar al alumno por su ID y lanzar excepción si no existe
         Alumno alumno = alumnoRepository.findById(updateRequest.getId())
                 .orElseThrow(() -> new AlumnoException("No existe alumno con id: " + updateRequest.getId()));
 
-        // 2. Actualizar los campos del alumno  si no son nulos
-        if (updateRequest.getNombre() != null) {
-            alumno.setNombre(updateRequest.getNombre());
-        }
-        if (updateRequest.getApellido() != null) {
-            alumno.setApellido(updateRequest.getApellido());
-        }
-        if (updateRequest.getGenero() != null) {
-            alumno.setGenero(updateRequest.getGenero());
-        }
-        if (updateRequest.getTipoDoc() != null) {
-            alumno.setTipoDoc(updateRequest.getTipoDoc());
-        }
-        if (updateRequest.getDni() != null) {
-            alumno.setDni(updateRequest.getDni());
-        }
-        if (updateRequest.getEmail() != null) {
-            alumno.setEmail(updateRequest.getEmail());
-        }
-        if (updateRequest.getDireccion() != null) {
-            alumno.setDireccion(updateRequest.getDireccion());
-        }
-        if (updateRequest.getTelefono() != null) {
-            alumno.setTelefono(updateRequest.getTelefono());
-        }
-        if (updateRequest.getFechaNacimiento() != null) {
-            alumno.setFechaNacimiento(updateRequest.getFechaNacimiento());
-        }
-        if (updateRequest.getFechaIngreso() != null) {
-            alumno.setFechaIngreso(updateRequest.getFechaIngreso());
-        }
+        // 2. Actualizar campos simples si no son nulos
+        if (updateRequest.getNombre() != null) alumno.setNombre(updateRequest.getNombre());
+        if (updateRequest.getApellido() != null) alumno.setApellido(updateRequest.getApellido());
+        if (updateRequest.getGenero() != null) alumno.setGenero(updateRequest.getGenero());
+        if (updateRequest.getTipoDoc() != null) alumno.setTipoDoc(updateRequest.getTipoDoc());
+        if (updateRequest.getDni() != null) alumno.setDni(updateRequest.getDni());
+        if (updateRequest.getEmail() != null) alumno.setEmail(updateRequest.getEmail());
+        if (updateRequest.getDireccion() != null) alumno.setDireccion(updateRequest.getDireccion());
+        if (updateRequest.getTelefono() != null) alumno.setTelefono(updateRequest.getTelefono());
+        if (updateRequest.getFechaNacimiento() != null) alumno.setFechaNacimiento(updateRequest.getFechaNacimiento());
+        if (updateRequest.getFechaIngreso() != null) alumno.setFechaIngreso(updateRequest.getFechaIngreso());
 
-        // 3. Actualizar las relaciones (Curso y Tutor) si se proporcionan los IDs ???
+        // NO SE ACTUALIZA CURSO NI TUTO
 
-
-        // 4. Guardar los cambios en el alumno
+        // 3. Guardar cambios en BD
         alumno = alumnoRepository.save(alumno);
 
         logger.info("Alumno actualizado correctamente con ID: {}", alumno.getId());
 
-        // 5. Construir y devolver la respuesta
+        AlumnoDto alumnoDto = AlumnoMapper.toDto(alumno);
+
         return AlumnoResponse.builder()
-                .alumno(AlumnoDto.builder()
-                        .id(alumno.getId())
-                        .nombre(alumno.getNombre())
-                        .apellido(alumno.getApellido())
-                        .genero(alumno.getGenero())
-                        .tipoDoc(alumno.getTipoDoc())
-                        .dni(alumno.getDni())
-                        .email(alumno.getEmail())
-                        .direccion(alumno.getDireccion())
-                        .telefono(alumno.getTelefono())
-                        .fechaNacimiento(alumno.getFechaNacimiento())
-                        .fechaIngreso(alumno.getFechaIngreso())
-                       // .estado(EstadoAlumno.REGULAR) // Asignar estado por defecto
-                       // .cursoActual(alumno.getCursoActual())
-                        //.tutor(alumno.getTutor())
-                        .build())
+                .alumno(alumnoDto)
                 .code(0)
-                .mensaje("Alumno creado correctamente")
+                .mensaje("Alumno actualizado correctamente")
                 .build();
     }
 
@@ -185,31 +132,16 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     @Override
     public AlumnoResponseList listAlumnos() {
-        List<AlumnoDto> alumnos = new ArrayList<>();
-        alumnoRepository.findAll().forEach( alumno->{
-            alumnos.add(AlumnoDto.builder()
-                    .id(alumno.getId())
-                    .nombre(alumno.getNombre())
-                    .apellido(alumno.getApellido())
-                    .genero(alumno.getGenero())
-                    .tipoDoc(alumno.getTipoDoc())
-                    .dni(alumno.getDni())
-                    .email(alumno.getEmail())
-                    .direccion(alumno.getDireccion())
-                    .telefono(alumno.getTelefono())
-                    .fechaNacimiento(alumno.getFechaNacimiento())
-                    .fechaIngreso(alumno.getFechaIngreso())
-                   // .estado(EstadoAlumno.REGULAR) // Asignar estado por defecto
-                   // .cursoActual(alumno1.getCursoActual())
-                    //.tutor(alumno1.getTutor())
-                    .build());
-        });
+        List<AlumnoDto> alumnos = alumnoRepository.findAll()
+                .stream()
+                .map(AlumnoMapper::toDto)
+                .collect(Collectors.toList());
+
         return AlumnoResponseList.builder()
                 .alumnoDtos(alumnos)
                 .code(0)
                 .mensaje("Lista de alumnos obtenida correctamente")
                 .build();
-
     }
 
     @Override

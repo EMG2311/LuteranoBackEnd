@@ -6,6 +6,7 @@ import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
+import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.DocenteRepository;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.repository.UserRepository;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -70,7 +72,9 @@ public class DocenteServiceImpl implements DocenteService {
                 .telefono(docenteRequest.getTelefono())
                 .fechaNacimiento(docenteRequest.getFechaNacimiento())
                 .fechaIngreso(docenteRequest.getFechaIngreso())
-                .materias(docenteRequest.getMaterias())
+                .materias(docenteRequest.getMaterias().stream().map(
+                        MateriaMapper::toEntity
+                ).collect(Collectors.toSet()))
                 .user(existeUser.get())
                 .build();
 

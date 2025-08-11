@@ -4,6 +4,10 @@ import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.User;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class DocenteMapper {
     public static DocenteDto toDto(Docente entity) {
         if (entity == null) {
@@ -25,7 +29,12 @@ public class DocenteMapper {
                 // Campo de PersonaConUsuario
                 .user(UserMapper.toDto(entity.getUser()))
                 // Campo de Docente
-                .materias(entity.getMaterias())
+                .materias(     entity.getMaterias() == null ?
+                        null :
+                        entity.getMaterias()
+                                .stream()
+                                .map(MateriaMapper::toDto)
+                                .collect(Collectors.toSet()))
                 .build();
     }
 
@@ -33,7 +42,6 @@ public class DocenteMapper {
         if (dto == null) {
             return null;
         }
-
         return Docente.builder()
                 // Campos de Persona
                 .id(dto.getId())
@@ -50,7 +58,12 @@ public class DocenteMapper {
                 // Campo de PersonaConUsuario
                 .user(user)
                 // Campo de Docente
-                .materias(dto.getMaterias())
+                .materias(     dto.getMaterias() == null ?
+                        null :
+                        dto.getMaterias()
+                                .stream()
+                                .map(MateriaMapper::toEntity)
+                                .collect(Collectors.toSet()))
                 .build();
     }
 }

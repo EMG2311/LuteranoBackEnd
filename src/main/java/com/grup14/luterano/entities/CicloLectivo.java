@@ -14,5 +14,5 @@ public class CicloLectivo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int nombre;
+    private String nombre;
 }

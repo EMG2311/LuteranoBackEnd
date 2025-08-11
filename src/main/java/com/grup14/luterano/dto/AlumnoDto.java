@@ -17,14 +17,9 @@ import java.util.List;
 @SuperBuilder@Data@NoArgsConstructor@AllArgsConstructor
 
 public class AlumnoDto extends PersonaDto {
-    // Campos de Persona ya esta en extendida PersonaDto
-
-    // Campos específicos de Alumno
-    private Curso cursoActual;  /// no deberia ser CursoDto?   traigo ID y lo defino en el servicio pero ojo porque desde el front
-    /// lo puedo enviar como objeto completo para seleccione el curso correcto .
+    private CursoDto cursoActual;
     private EstadoAlumno estado;
-   private Tutor tutor; ///
-    private List<HistorialCurso> historialCursos = new ArrayList<>();
+   private TutorDto tutor;
+    private List<HistorialCursoDto> historialCursos;
 
-    // incluir entity de inasistenciaAlumno?
 }

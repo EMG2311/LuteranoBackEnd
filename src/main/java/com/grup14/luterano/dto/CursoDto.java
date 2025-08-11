@@ -20,12 +20,8 @@ public class CursoDto {
     private int numero;
     private Division division;
     private Nivel nivel;
-    private Aula aula;
-    private List<Materia> materias;
-
-
-   /// private AulaDto aula;
-  ////  private List<MateriaDto> materias;
+    private AulaDto aula;
+    private List<MateriaDto> materias;
 
 
 }

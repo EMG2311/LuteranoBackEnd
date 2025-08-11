@@ -24,20 +24,7 @@ public class DocenteRequest extends DocenteDto {
 
     public DocenteResponse toResponse(String mensaje,Integer code) {
         return DocenteResponse.builder()
-                .docente(DocenteDto.builder()
-                        .nombre(this.getNombre())
-                        .apellido(this.getApellido())
-                        .genero(this.getGenero())
-                        .tipoDoc(this.getTipoDoc())
-                        .dni(this.getDni())
-                        .user(this.getUser())
-                        .email(this.getEmail())
-                        .direccion(this.getDireccion())
-                        .telefono(this.getTelefono())
-                        .fechaNacimiento(this.getFechaNacimiento())
-                        .fechaIngreso(this.getFechaIngreso())
-                        .materias(this.getMaterias())
-                        .build())
+                .docente(this)
                 .code(code)
                 .mensaje(mensaje)
                 .build();
