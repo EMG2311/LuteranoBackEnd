@@ -50,13 +50,16 @@ public class DocenteServiceImpl implements DocenteService {
         Optional<Docente> existentePorEmail = docenteRepository.findByEmail(docenteRequest.getEmail());
         Optional<Docente> existentePorDni = docenteRepository.findByDni(docenteRequest.getDni());
         Optional<User> existeUser = userRepository.findByEmail(docenteRequest.getEmail());
-        if (existentePorEmail.isPresent() || existentePorDni.isPresent()) {
-            throw new DocenteException("Ya existe un docente registrado con ese email o DNI");
+        if (existentePorEmail.isPresent() ) {
+            throw new DocenteException("Ya existe un docente registrado con ese email");
+        }
+        if (existentePorDni.isPresent() ) {
+            throw new DocenteException("Ya existe un docente registrado con ese DNI");
         }
         if(existeUser.isEmpty()){
             throw new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
         }
-        if(!existeUser.get().getRol().equals(Rol.ROLE_DOCENTE)){
+        if(!Rol.ROLE_DOCENTE.name().equals(existeUser.get().getRol().getName())){
             throw new DocenteException("El usuario no tiene rol docente");
         }
         if(!existeUser.get().getName().equals(docenteRequest.getNombre())
