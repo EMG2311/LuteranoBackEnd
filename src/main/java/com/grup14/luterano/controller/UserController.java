@@ -109,7 +109,7 @@ public class UserController {
         }catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(UserResponse.builder()
                     .code(-3)
-                    .mensaje("No se puede eliminar el usuario porque tiene un docente asignado.")
+                    .mensaje("No se puede eliminar el usuario que esta asignado.")
                     .build());
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserResponse.builder()
