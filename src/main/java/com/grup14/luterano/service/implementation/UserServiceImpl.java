@@ -1,12 +1,17 @@
 package com.grup14.luterano.service.implementation;
 
+import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.User;
+import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
+import com.grup14.luterano.mappers.UserMapper;
+import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.EmailRequest;
 import com.grup14.luterano.request.user.UserUpdateRequest;
 import com.grup14.luterano.response.user.UserCreadoResponse;
+import com.grup14.luterano.response.user.UserListResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.UserService;
@@ -19,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
@@ -26,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
     @Override
     public List<UserResponse> listUserFiltro(UserStatus userStatus) {
         List<UserResponse> userResponses = new ArrayList<>();
@@ -146,6 +155,42 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .role(user.getRol())
                 .userStatus(UserStatus.BORRADO)
+                .build();
+    }
+
+    @Override
+    public UserListResponse listUserRol(Rol rol) {
+        Role role = roleRepository.findByName(rol.name())
+                .orElseThrow(() -> new UserException("Rol no encontrado"));
+        List<User> users = userRepository.findByRol(role).get();
+        return UserListResponse.builder()
+                .usuarios(users.stream().map(UserMapper::toDto).collect(Collectors.toList()))
+                .code(0)
+                .mensaje("Se listaron correctamente")
+                .build();
+    }
+
+    @Override
+    public UserListResponse listUserSinAsignar() {
+        List<User> users= userRepository.findUsuariosSinAsignar().get();
+        return UserListResponse.builder()
+                .usuarios(users.stream().map(UserMapper::toDto).collect(Collectors.toList()))
+                .code(0)
+                .mensaje("Se listaron correctamente")
+                .build();
+    }
+
+    @Override
+    public UserListResponse listUserSinAsignarPorRol(Rol rol) {
+        Role role = roleRepository.findByName(rol.name())
+                .orElseThrow(() -> new UserException("Rol no encontrado"));
+
+        List<User> users = userRepository.findUsuariosSinAsignarPorRol(role).get();
+
+        return UserListResponse.builder()
+                .usuarios(users.stream().map(UserMapper::toDto).collect(Collectors.toList()))
+                .code(0)
+                .mensaje("Se listaron correctamente los usuarios sin asignar con rol " + rol.name())
                 .build();
     }
 }

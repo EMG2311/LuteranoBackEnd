@@ -1,10 +1,12 @@
 package com.grup14.luterano.controller;
 
+import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
 import com.grup14.luterano.request.EmailRequest;
 import com.grup14.luterano.request.user.UserUpdateRequest;
 import com.grup14.luterano.response.user.UserCreadoResponse;
+import com.grup14.luterano.response.user.UserListResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.UserService;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +54,11 @@ public class UserController {
                             .role(null)
                             .userStatus(null)
                     .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserCreadoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no contorlado: "+e.getMessage())
+                    .build());
         }
     }
 
@@ -65,6 +73,11 @@ public class UserController {
                     .rol(userUpdateRequest.getRol())
                     .mensaje(u.getMessage())
                     .code(-1)
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserUpdateResponse.builder()
+                    .code(-2)
+                    .mensaje("Error no contorlado: "+e.getMessage())
                     .build());
         }
     }
@@ -92,13 +105,70 @@ public class UserController {
                     .mensaje("No existe ese mail")
                     .code(-1)
                     .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserResponse.builder()
+                    .code(-2)
+                    .mensaje("Error no contorlado: "+e.getMessage())
+                    .build());
         }
     }
 
 
+    @GetMapping("/sin-asignar")
+    @Operation(summary = "Listar usuarios sin asignar", description = "Devuelve todos los usuarios que no están asignados a Docente, Preceptor u otro rol específico")
+    public ResponseEntity<UserListResponse> listUsuariosSinAsignar() {
+        try {
+            return ResponseEntity.ok(userService.listUserSinAsignar());
+        } catch (UserException e) {
+            return ResponseEntity.status(422).body(UserListResponse.builder()
+                    .usuarios(null)
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserListResponse.builder()
+                    .code(-2)
+                    .mensaje("Error no contorlado: "+e.getMessage())
+                    .build());
+        }
+    }
 
+    @GetMapping("/rol/{rol}")
+    @Operation(summary = "Listar usuarios por rol", description = "Devuelve usuarios filtrados por el rol indicado")
+    public ResponseEntity<UserListResponse> listUserPorRol(@PathVariable Rol rol) {
+        try {
+            UserListResponse response = userService.listUserRol(rol);
+            return ResponseEntity.ok(response);
+        } catch (UserException e) {
+            return ResponseEntity.status(422).body(UserListResponse.builder()
+                    .usuarios(null)
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .build());
+        }
+    }
 
+    @GetMapping("/sin-asignar/rol/{rol}")
+    @Operation(summary = "Listar usuarios sin asignar por rol", description = "Devuelve usuarios con el rol indicado que no están asignados a Docente, Preceptor u otro")
+    public ResponseEntity<UserListResponse> listUserSinAsignarPorRol(@PathVariable Rol rol) {
+        try {
+            UserListResponse response = userService.listUserSinAsignarPorRol(rol);
+            return ResponseEntity.ok(response);
+        } catch (UserException e) {
+            return ResponseEntity.status(422).body(UserListResponse.builder()
+                    .usuarios(null)
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(UserListResponse.builder()
+                    .usuarios(null)
+                    .code(-2)
+                    .mensaje("Error no controlado: " + e.getMessage())
+                    .build());
+        }
 
+    }
 
 
 }
