@@ -4,6 +4,7 @@ import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
+import com.grup14.luterano.event.UserEvent;
 import com.grup14.luterano.exeptions.UserException;
 import com.grup14.luterano.mappers.UserMapper;
 import com.grup14.luterano.repository.RoleRepository;
@@ -19,6 +20,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,8 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     @Override
     public List<UserResponse> listUserFiltro(UserStatus userStatus) {
         List<UserResponse> userResponses = new ArrayList<>();
@@ -116,6 +120,8 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+        
+        eventPublisher.publishEvent(new UserEvent(this,UserEvent.Tipo.ACTUALIZAR,user));
 
         return UserUpdateResponse.builder()
                 .email(user.getEmail())

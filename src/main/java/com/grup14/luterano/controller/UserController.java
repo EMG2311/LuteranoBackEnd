@@ -9,10 +9,12 @@ import com.grup14.luterano.response.user.UserCreadoResponse;
 import com.grup14.luterano.response.user.UserListResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;
+import com.grup14.luterano.service.EmailServiceImpl;
 import com.grup14.luterano.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
 
     @GetMapping
     @Operation(summary = "Lista todos los usuarios", description = "Lista todos los usuarios, solo ADMIN y DIRECTOR pueden usar")
@@ -118,6 +121,7 @@ public class UserController {
                     .build());
         }
     }
+
 
 
     @GetMapping("/sin-asignar")

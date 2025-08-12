@@ -3,6 +3,7 @@ package com.grup14.luterano.auth.infrastructure;
 import com.grup14.luterano.auth.application.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
-
 
     @PostMapping("/login")
     @Operation(summary = "Loggea al usuario", description = "Devuelve el token con el que se acceden a los demas endpoint")

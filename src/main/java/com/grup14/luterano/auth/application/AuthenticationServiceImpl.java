@@ -8,6 +8,7 @@ import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
+import com.grup14.luterano.event.UserEvent;
 import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.service.implementation.UserServiceImpl;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,7 +34,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
-
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -56,6 +59,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRol().getName());
         String jwtToken = jwtService.generateToken(extraClaims,user);
+
+        applicationEventPublisher.publishEvent(
+                new UserEvent(this, UserEvent.Tipo.CREAR, user, registerRequest.getPassword())
+        );
 
         return AuthenticationResponse.builder()
                 .token(null)
