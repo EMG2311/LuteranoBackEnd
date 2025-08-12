@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -105,7 +106,12 @@ public class UserController {
                     .mensaje("No existe ese mail")
                     .code(-1)
                     .build());
-        }catch (Exception e){
+        }catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(UserResponse.builder()
+                    .code(-3)
+                    .mensaje("No se puede eliminar el usuario porque tiene un docente asignado.")
+                    .build());
+        } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserResponse.builder()
                     .code(-2)
                     .mensaje("Error no contorlado: "+e.getMessage())
