@@ -90,7 +90,7 @@ public class DocenteServiceImpl implements DocenteService {
         return DocenteResponse.builder()
                 .docente(DocenteMapper.toDto(docente))
                 .code(0)
-                .mensaje("Se creo correcatmente el docente")
+                .mensaje("Se creo correctamente el docente")
                 .build();
     }
 
