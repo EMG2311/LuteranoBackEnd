@@ -116,7 +116,9 @@ public class UserServiceImpl implements UserService {
             user.setUserStatus(userUpdate.getUserStatus());
         }
         if (userUpdate.getRol() != null) {
-            user.setRol(userUpdate.getRol());
+            Role rol = roleRepository.findByName(userUpdate.getRol().name())
+                    .orElseThrow(() -> new UserException("El rol no existe"));
+            user.setRol(rol);
         }
 
         userRepository.save(user);

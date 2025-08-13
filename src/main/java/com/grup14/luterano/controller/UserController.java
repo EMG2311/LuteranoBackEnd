@@ -74,7 +74,7 @@ public class UserController {
         }catch (UserException u){
             return ResponseEntity.status(422).body(UserUpdateResponse.builder()
                     .email(userUpdateRequest.getEmail())
-                    .rol(userUpdateRequest.getRol())
+                    .rol(null)
                     .mensaje(u.getMessage())
                     .code(-1)
                     .build());

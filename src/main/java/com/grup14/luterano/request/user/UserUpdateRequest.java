@@ -1,6 +1,7 @@
 package com.grup14.luterano.request.user;
 
 import com.grup14.luterano.entities.Role;
+import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -13,6 +14,6 @@ public class UserUpdateRequest {
     private Long id;
     private String email;
     private String password;
-    private Role rol;
+    private Rol rol;
     private UserStatus userStatus;
 }
