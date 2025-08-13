@@ -1,5 +1,6 @@
 package com.grup14.luterano.service.implementation;
 
+import com.grup14.luterano.dto.UserDto;
 import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
@@ -121,9 +122,21 @@ public class UserServiceImpl implements UserService {
         if (userUpdate.getUserStatus() != null) {
             user.setUserStatus(userUpdate.getUserStatus());
         }
-        if (userUpdate.getRol() != null) {
+        if (userUpdate.getRol() != null && !user.getRol().getName().equals(userUpdate.getRol().name())) {
+
             Role rol = roleRepository.findByName(userUpdate.getRol().name())
                     .orElseThrow(() -> new UserException("El rol no existe"));
+            if (!rol.equals(user.getRol())) {
+
+            }
+
+            UserListResponse userListResponse = this.listUserSinAsignar();
+            List<UserDto> usuariosPermitidos = userListResponse.getUsuarios();
+            boolean permitido = usuariosPermitidos.stream()
+                    .anyMatch(u -> u.getId().equals(userUpdate.getId()));
+            if (!permitido) {
+                throw new UserException("El usuario ya está asignado a otra entidad que no acepta este rol");
+            }
             user.setRol(rol);
         }
 
