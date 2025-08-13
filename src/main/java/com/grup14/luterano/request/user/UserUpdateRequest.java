@@ -1,5 +1,6 @@
 package com.grup14.luterano.request.user;
 
+import com.grup14.luterano.dto.UserDto;
 import com.grup14.luterano.entities.Role;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
@@ -13,6 +14,8 @@ public class UserUpdateRequest {
     @NotNull(message = "El Id es un campo obligatorio")
     private Long id;
     private String email;
+    private String name;
+    private String lastName;
     private String password;
     private Rol rol;
     private UserStatus userStatus;
