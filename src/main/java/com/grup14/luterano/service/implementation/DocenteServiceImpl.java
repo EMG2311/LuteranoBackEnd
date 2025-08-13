@@ -68,7 +68,7 @@ public class DocenteServiceImpl implements DocenteService {
             existeUser.get().setLastName(docenteRequest.getApellido());
         }
 
-        if(docenteRequest.getFechaIngreso().getTime() > docenteRequest.getFechaNacimiento().getTime()){
+        if(docenteRequest.getFechaIngreso().getTime() >= docenteRequest.getFechaNacimiento().getTime()){
             throw new DocenteException("La fecha de ingreso no puede ser menor a la de nacimiento");
         }
 
