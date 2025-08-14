@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -107,6 +109,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userUpdate.getId())
                 .orElseThrow(() -> new UserException("No existe el id "+userUpdate.getId()));
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String usernameLogueado = authentication.getName();
+
+        if (user.getEmail().equalsIgnoreCase(usernameLogueado)) {
+            throw new UserException("No se puede actualizar el usuario logueado a si mismo");
+        }
+
         if (userUpdate.getEmail() != null) {
             user.setEmail(userUpdate.getEmail());
         }
@@ -171,6 +180,14 @@ public class UserServiceImpl implements UserService {
         if(user.getUserStatus()==UserStatus.BORRADO){
             throw new UserException("El usuario "+email+" ya esta borrado");
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String usernameLogueado = authentication.getName();
+        if (user.getEmail().equalsIgnoreCase(usernameLogueado)) {
+            throw new UserException("No se puede borrar el usuario logueado a si mismo");
+        }
+
+
         user.setUserStatus(UserStatus.BORRADO);
         userRepository.delete(user); //No hago borrado virtual
         return UserResponse.builder()
