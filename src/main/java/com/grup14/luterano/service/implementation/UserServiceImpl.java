@@ -126,9 +126,6 @@ public class UserServiceImpl implements UserService {
 
             Role rol = roleRepository.findByName(userUpdate.getRol().name())
                     .orElseThrow(() -> new UserException("El rol no existe"));
-            if (!rol.equals(user.getRol())) {
-
-            }
 
             UserListResponse userListResponse = this.listUserSinAsignar();
             List<UserDto> usuariosPermitidos = userListResponse.getUsuarios();

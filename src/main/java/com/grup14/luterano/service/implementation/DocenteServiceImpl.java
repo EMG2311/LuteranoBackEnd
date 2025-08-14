@@ -68,9 +68,12 @@ public class DocenteServiceImpl implements DocenteService {
             existeUser.get().setLastName(docenteRequest.getApellido());
         }
 
-        if(docenteRequest.getFechaIngreso().getTime() >= docenteRequest.getFechaNacimiento().getTime()){
-            throw new DocenteException("La fecha de ingreso no puede ser menor a la de nacimiento");
-        }
+        validarFechaAnteriorAActual(docenteRequest.getFechaNacimiento()
+                ,"La fecha de nacimiento debe ser anterior a la fecha actual");
+        validarFechaAnteriorAActual(docenteRequest.getFechaIngreso(),
+                "La fecha de ingreso debe ser anterior a la fecha actual");
+        validarFechaPosterior(docenteRequest.getFechaIngreso(), docenteRequest.getFechaNacimiento(),
+                "La fecha de ingreso debe ser posterior a la fecha de nacimiento");
 
         Docente docente =  Docente.builder()
                 .nombre(docenteRequest.getNombre())
@@ -139,11 +142,25 @@ public class DocenteServiceImpl implements DocenteService {
             docente.setTelefono(updateRequest.getTelefono());
         }
         if (updateRequest.getFechaNacimiento() != null) {
+            validarFechaAnteriorAActual(updateRequest.getFechaNacimiento(),
+                    "La fecha de nacimiento debe ser anterior a la fecha actual");
+
+            validarFechaPosterior(docente.getFechaIngreso(), updateRequest.getFechaNacimiento(),
+                    "La fecha de nacimiento debe ser anterior a la fecha de ingreso");
+
             docente.setFechaNacimiento(updateRequest.getFechaNacimiento());
         }
+
         if (updateRequest.getFechaIngreso() != null) {
+            validarFechaAnteriorAActual(updateRequest.getFechaIngreso(),
+                    "La fecha de ingreso debe ser anterior a la fecha actual");
+
+            validarFechaPosterior(updateRequest.getFechaIngreso(), docente.getFechaNacimiento(),
+                    "La fecha de ingreso debe ser posterior a la fecha de nacimiento");
+
             docente.setFechaIngreso(updateRequest.getFechaIngreso());
         }
+
 
         if(necesitaActualizarUsuario){
             docente.setUser(user); //Por si se hicieron cambios en el usuario
@@ -157,6 +174,20 @@ public class DocenteServiceImpl implements DocenteService {
                 .mensaje("Docente actualizado correctamente")
                 .build();
     }
+
+    private void validarFechaAnteriorAActual(Date fecha, String mensajeError) throws DocenteException {
+        Date fechaActual = new Date();
+        if (fecha.after(fechaActual)) {
+            throw new DocenteException(mensajeError);
+        }
+    }
+
+    private void validarFechaPosterior(Date fechaPosterior, Date fechaAnterior, String mensajeError) throws DocenteException {
+        if (!fechaPosterior.after(fechaAnterior)) {
+            throw new DocenteException(mensajeError);
+        }
+    }
+
 
     @Override
     @Transactional
