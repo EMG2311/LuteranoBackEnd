@@ -26,7 +26,7 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/alumno")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') o or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
 @CrossOrigin(origins = "*")
 
 
