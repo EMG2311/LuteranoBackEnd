@@ -17,6 +17,7 @@ import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.curso.CursoResponse;
+import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -127,6 +129,33 @@ public class CursoSeriviceImpl implements CursoService {
 
     }
 
+    @Override
+    public CursoResponse getCursoById(Long id) {
+        Curso curso = cursoRepository.findById(id).orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + id));
+
+        // Retornar respuesta usando el mapper
+        return CursoResponse.builder()
+                .curso(CursoMapper.toDto(curso))
+                .code(0)
+                .mensaje("Curso encontrado correctamente")
+                .build();
+    }
+
+    @Override
+    public CursoResponseList listCursos() {
+        List<CursoDto> cursos = cursoRepository.findAll()
+                .stream()
+                .map(CursoMapper::toDto)
+                .collect(Collectors.toList());
+
+
+        // Retornar la respuesta con la lista de cursos
+        return CursoResponseList.builder()
+                .cursoDtos(cursos)
+                .code(0)
+                .mensaje("Lista de cursos obtenida correctamente")
+                .build();
+    }
 
 }
 

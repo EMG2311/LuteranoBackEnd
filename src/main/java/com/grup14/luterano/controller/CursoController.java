@@ -4,7 +4,9 @@ package com.grup14.luterano.controller;
 import com.grup14.luterano.exeptions.CursoException;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
+import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.response.curso.CursoResponse;
+import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.groups.Default;
@@ -14,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/curso")
@@ -77,6 +81,39 @@ public class CursoController {
                             .build());
         }
     }
+
+    @GetMapping("/list")
+    @Operation(summary = "Lista todos los cursos", description = "Devuelve una lista de todos los cursos.")
+    public ResponseEntity<CursoResponseList> listCursos() {
+        try {
+            return ResponseEntity.ok(cursoService.listCursos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CursoResponseList.builder()
+                            .cursoDtos(Collections.emptyList())
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtiene un curso por ID", description = "Devuelve un curso específico por su ID.")
+    public ResponseEntity<CursoResponse> getCursoById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(cursoService.getCursoById(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CursoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+
+    }
+
+
+
 
 
 }
