@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailServiceImpl {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
+
+    public EmailServiceImpl(JavaMailSender javaMailSender){
+        this.mailSender=javaMailSender;
+    }
 
     @Value("${email.enabled:true}")
     private boolean emailEnabled;

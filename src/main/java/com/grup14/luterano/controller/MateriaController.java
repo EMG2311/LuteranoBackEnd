@@ -19,8 +19,12 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
 public class MateriaController {
-    @Autowired
-    private MateriaService materiaService;
+
+    private final MateriaService materiaService;
+
+    public MateriaController(MateriaService materiaService){
+        this.materiaService=materiaService;
+    }
 
     @PostMapping("/create")
     @Operation(summary = "Crea una materia", description = "En este metodo se crea la materia, pero no se debe pasar el curso" +

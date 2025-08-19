@@ -30,18 +30,21 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class DocenteServiceImpl implements DocenteService {
-    @Autowired
-    private DocenteRepository docenteRepository;
-    @Autowired
-    private MateriaRepository materiaRepository;
-    @Autowired
-    private UserService userService;
 
+    private final DocenteRepository docenteRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final MateriaRepository materiaRepository;
+
+    private final UserRepository userRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
-
+    public DocenteServiceImpl(DocenteRepository docenteRepository,
+                              MateriaRepository materiaRepository,
+                              UserRepository userRepository) {
+        this.docenteRepository = docenteRepository;
+        this.materiaRepository = materiaRepository;
+        this.userRepository = userRepository;
+    }
 
 
     @Override

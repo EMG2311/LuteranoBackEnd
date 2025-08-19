@@ -25,8 +25,13 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
 public class DocenteController {
-    @Autowired
-    private DocenteService docenteService;
+
+    private final DocenteService docenteService;
+
+    public DocenteController(DocenteService docenteService){
+        this.docenteService=docenteService;
+    }
+
 
     @PostMapping("/create")
     @Operation(summary = "Crea un docente", description = "Crea un docente, debe existir un usuario con ese mail previamente")

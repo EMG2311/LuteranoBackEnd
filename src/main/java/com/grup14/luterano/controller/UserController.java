@@ -1,5 +1,6 @@
 package com.grup14.luterano.controller;
 
+import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
@@ -29,9 +30,12 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
 public class UserController {
-    @Autowired
-    private UserService userService;
-    @Autowired
+
+    private final UserService userService;
+
+    public UserController(UserService userService){
+        this.userService=userService;
+    }
 
     @GetMapping
     @Operation(summary = "Lista todos los usuarios", description = "Lista todos los usuarios, solo ADMIN y DIRECTOR pueden usar")

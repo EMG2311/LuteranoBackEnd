@@ -20,9 +20,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class MateriaServiceImpl implements MateriaService {
-    @Autowired
-    private MateriaRepository materiaRepository;
+
+    private final MateriaRepository materiaRepository;
     private final Logger logger = LoggerFactory.getLogger(MateriaServiceImpl.class);
+
+    public MateriaServiceImpl(MateriaRepository materiaRepository){
+        this.materiaRepository=materiaRepository;
+    }
 
     @Override
     public MateriaResponse crearMateria(MateriaRequest materiaRequest) {
@@ -30,7 +34,6 @@ public class MateriaServiceImpl implements MateriaService {
         materia.setNombreMateria(materiaRequest.getNombreMateria());
         materia.setDescipcion(materiaRequest.getDescripcion());
         materia.setNivel(materiaRequest.getNivel());
-        materia.setCursos(null); // no se asigna en este paso
         Optional<Materia> existente = materiaRepository.findByNombreMateria(materia.getNombreMateria());
         if(existente.isPresent()){
             throw new MateriaException("Ya existe una materia con ese nombre");

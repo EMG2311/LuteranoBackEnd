@@ -33,15 +33,24 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final ApplicationEventPublisher eventPublisher;
+
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+
+    // 👉 Constructor con todas las dependencias
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           RoleRepository roleRepository,
+                           ApplicationEventPublisher eventPublisher) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.eventPublisher = eventPublisher;
+    }
+
     @Override
     public List<UserResponse> listUserFiltro(UserStatus userStatus) {
         List<UserResponse> userResponses = new ArrayList<>();

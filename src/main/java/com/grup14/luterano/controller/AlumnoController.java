@@ -31,8 +31,12 @@ import java.util.Collections;
 
 
 public class AlumnoController {
-    @Autowired
-    private AlumnoService alumnoService;
+
+    private final AlumnoService alumnoService;
+
+    public AlumnoController(AlumnoService alumnoService){
+        this.alumnoService=alumnoService;
+    }
 
     @PostMapping("/create")
     @Operation(summary = "Crea un nuevo alumno",
