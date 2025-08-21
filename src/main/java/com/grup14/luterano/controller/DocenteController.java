@@ -8,6 +8,7 @@ import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,11 @@ import java.util.List;
 @RequestMapping("/docente")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
+@Tag(
+        name = "Docente Controller",
+        description = "Controlador encargado de la gestión a los usuarios. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR"
+)
 public class DocenteController {
 
     private final DocenteService docenteService;

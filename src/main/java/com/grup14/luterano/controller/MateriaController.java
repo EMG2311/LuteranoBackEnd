@@ -7,6 +7,7 @@ import com.grup14.luterano.response.Materia.MateriaResponse;
 import com.grup14.luterano.response.Materia.MateriaResponseList;
 import com.grup14.luterano.service.MateriaService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/materias")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
+@Tag(
+        name = "Materia Controller",
+        description = "Controlador encargado de la gestión de las materias. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR."
+)
 public class MateriaController {
 
     private final MateriaService materiaService;

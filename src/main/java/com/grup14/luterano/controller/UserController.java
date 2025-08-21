@@ -13,6 +13,7 @@ import com.grup14.luterano.response.user.UserUpdateResponse;
 import com.grup14.luterano.service.EmailServiceImpl;
 import com.grup14.luterano.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -29,6 +30,11 @@ import java.util.List;
 @RequestMapping("/user")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
+@Tag(
+        name = "User Controller",
+        description = "Controlador encargado de la gestión los usuarios. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR"
+)
 public class UserController {
 
     private final UserService userService;

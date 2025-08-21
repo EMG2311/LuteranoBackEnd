@@ -2,6 +2,7 @@ package com.grup14.luterano.auth.infrastructure;
 
 import com.grup14.luterano.auth.application.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -14,6 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@Tag(
+        name = "Authentication Controller",
+        description = "Controlador encargado del loggeo y el registro de usuarios. " +
+                "Acceso restringido unicamente para el registro a ADMIN y DIRECTOR"
+)
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
