@@ -13,8 +13,9 @@ import java.util.List;
 @Builder
 public class HistorialCalificacionesDto {
     private Long id;
-    private MateriaDto materia;
-    private CicloLectivoDto cicloLectivo;
+    private HistorialCursoDto historialCurso;
+    private MateriaCursoDto materiaCurso;
+
     private float promedio;
     private List<CalificacionDto> calificaciones;
 }

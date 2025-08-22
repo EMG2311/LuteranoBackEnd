@@ -8,41 +8,43 @@ import java.util.stream.Collectors;
 public class HistorialCalificacionesMapper {
 
 
-    public static HistorialCalificacionesDto toDto(HistorialCalificaciones entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        return HistorialCalificacionesDto.builder()
-                .id(entity.getId())
-                .materia(MateriaMapper.toDto(entity.getMateria()))
-                .cicloLectivo(CicloLectivoMapper.toDto(entity.getCicloLectivo()))
-                .promedio(entity.getPromedio())
-                .calificaciones(entity.getCalificaciones() == null ? null :
-                        entity.getCalificaciones()
-                                .stream()
-                                .map(CalificacionMapper::toDto)
-                                .collect(Collectors.toList())
-                )
-                .build();
+public static HistorialCalificacionesDto toDto(HistorialCalificaciones entity) {
+    if (entity == null) {
+        return null;
     }
 
-    public static HistorialCalificaciones toEntity(HistorialCalificacionesDto dto) {
-        if (dto == null) {
-            return null;
-        }
+    return HistorialCalificacionesDto.builder()
+            .id(entity.getId())
+            // Se mapea la relación con HistorialCurso (que contiene el alumno y el curso)
+            .historialCurso(HistorialCursoMapper.toDto(entity.getHistorialCurso()))
+            // Se mapea la relación con MateriaCurso (que contiene la materia y el docente)
+            .materiaCurso(MateriaCursoMapper.toDto(entity.getMateriaCurso()))
+            .promedio(entity.getPromedio())
+            .calificaciones(entity.getCalificaciones() == null ? null :
+                    entity.getCalificaciones()
+                            .stream()
+                            .map(CalificacionMapper::toDto)
+                            .collect(Collectors.toList())
+            )
+            .build();
+}
 
-        return HistorialCalificaciones.builder()
-                .id(dto.getId())
-                .materia(MateriaMapper.toEntity(dto.getMateria()))
-                .cicloLectivo(CicloLectivoMapper.toEntity(dto.getCicloLectivo()))
-                .promedio(dto.getPromedio())
-                .calificaciones(dto.getCalificaciones() == null ? null :
-                        dto.getCalificaciones()
-                                .stream()
-                                .map(CalificacionMapper::toEntity)
-                                .collect(Collectors.toList())
-                )
-                .build();
+public static HistorialCalificaciones toEntity(HistorialCalificacionesDto dto) {
+    if (dto == null) {
+        return null;
     }
+
+
+    return HistorialCalificaciones.builder()
+            .id(dto.getId())
+            .promedio(dto.getPromedio())
+            .calificaciones(dto.getCalificaciones() == null ? null :
+                    dto.getCalificaciones()
+                            .stream()
+                            .map(CalificacionMapper::toEntity)
+                            .collect(Collectors.toList())
+            )
+            .build();
+}
+
 }

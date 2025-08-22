@@ -16,19 +16,19 @@ public class HistorialCurso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Alumno alumno;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Curso curso;
+
+    @ManyToOne(optional = false)
+    private CicloLectivo cicloLectivo;
 
     private LocalDate fechaDesde;
     private LocalDate fechaHasta;
     private float promedio;
 
-    @ManyToOne
-    private CicloLectivo cicloLectivo;
-
-    @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL)
-    private List<HistorialCalificaciones> historialesCalificaciones;
+    @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistorialCalificaciones> historialesCalificaciones = new ArrayList<>();
 }

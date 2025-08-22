@@ -6,29 +6,30 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@Entity@Data@Builder@AllArgsConstructor@NoArgsConstructor
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class HistorialCalificaciones {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Alumno alumno;
-
-    @ManyToOne
-    private Materia materia;
-
-    @ManyToOne
-    private CicloLectivo cicloLectivo;
-
-    private float promedio;
-
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "historial_curso_id")
     private HistorialCurso historialCurso;
 
 
-    @OneToMany(mappedBy = "historialCalificaciones", cascade = CascadeType.ALL)
-    private List<Calificacion> calificaciones;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "materia_curso_id")
+    private MateriaCurso materiaCurso;
+
+    private Float promedio;
+
+     @OneToMany(mappedBy = "historialCalificaciones", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Calificacion> calificaciones = new ArrayList<>();
 }

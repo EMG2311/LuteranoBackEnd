@@ -17,11 +17,11 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 public class MateriaDto {
     private Long id;
-    @NotNull(message = "El nombre de la materia es obligatoria")
-    private String nombreMateria;
+    @NotNull(message = "El nombre de la materia es obligatorio")
+    private String nombre;
     @NotBlank(message = "La descripcion es obligatoria")
     private String descripcion;
     @NotNull(message ="El nivel es obligatorio")
     private Nivel nivel;
-    private List<CursoDto> cursos;
+    private List<MateriaCursoDto> dictados;
 }

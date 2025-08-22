@@ -14,5 +14,5 @@ import java.util.Set;
 
 @SuperBuilder@Data@NoArgsConstructor@AllArgsConstructor
 public class DocenteDto extends PersonaConUsuarioDto {
-    private Set<MateriaDto> materias;
+    private List<MateriaCursoDto> dictados;
 }
