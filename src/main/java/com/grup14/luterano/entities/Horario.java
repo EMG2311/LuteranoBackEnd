@@ -1,9 +1,7 @@
 package com.grup14.luterano.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.grup14.luterano.entities.enums.DiaSemana;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +15,7 @@ public class Horario {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @Enumerated(EnumType.STRING)
     private DiaSemana diaSemana;
 
     @ManyToOne
