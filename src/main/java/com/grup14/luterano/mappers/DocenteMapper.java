@@ -9,10 +9,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DocenteMapper {
+
     public static DocenteDto toDto(Docente entity) {
         if (entity == null) {
             return null;
         }
+
         return DocenteDto.builder()
                 // Campos de Persona
                 .id(entity.getId())
@@ -28,13 +30,12 @@ public class DocenteMapper {
                 .fechaIngreso(entity.getFechaIngreso())
                 // Campo de PersonaConUsuario
                 .user(UserMapper.toDto(entity.getUser()))
-                // Campo de Docente
-                .materias(     entity.getMaterias() == null ?
-                        null :
-                        entity.getMaterias()
+                // Campo de Docente: materias que dicta
+                .dictados(entity.getDictados() == null ? null :
+                        entity.getDictados()
                                 .stream()
-                                .map(MateriaMapper::toDto)
-                                .collect(Collectors.toSet()))
+                                .map(MateriaCursoMapper::toDto)
+                                .collect(Collectors.toList()))
                 .build();
     }
 
@@ -42,6 +43,7 @@ public class DocenteMapper {
         if (dto == null) {
             return null;
         }
+
         return Docente.builder()
                 // Campos de Persona
                 .id(dto.getId())
@@ -57,13 +59,9 @@ public class DocenteMapper {
                 .fechaIngreso(dto.getFechaIngreso())
                 // Campo de PersonaConUsuario
                 .user(user)
-                // Campo de Docente
-                .materias(     dto.getMaterias() == null ?
-                        null :
-                        dto.getMaterias()
-                                .stream()
-                                .map(MateriaMapper::toEntity)
-                                .collect(Collectors.toSet()))
+                // Se omite la conversión de la lista 'dictados' en el mapper.
+                // Esta lógica debe ser manejada en la capa de servicio
+                // para garantizar que las relaciones de la base de datos se manejen correctamente.
                 .build();
     }
 }

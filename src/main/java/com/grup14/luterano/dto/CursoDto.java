@@ -21,7 +21,5 @@ public class CursoDto {
     private Division division;
     private Nivel nivel;
     private AulaDto aula;
-    private List<MateriaDto> materias;
-
-
+    private List<MateriaCursoDto> dictados;
 }

@@ -1,14 +1,14 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.DocenteDto;
-import com.grup14.luterano.entities.Docente;
-import com.grup14.luterano.entities.Materia;
-import com.grup14.luterano.entities.User;
+import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
 import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.DocenteRepository;
+import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.docente.DocenteRequest;
@@ -37,13 +37,16 @@ public class DocenteServiceImpl implements DocenteService {
 
     private final UserRepository userRepository;
 
+    private final MateriaCursoRepository materiaCursoRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
     public DocenteServiceImpl(DocenteRepository docenteRepository,
                               MateriaRepository materiaRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository, MateriaCursoRepository materiaCursoRepository) {
         this.docenteRepository = docenteRepository;
         this.materiaRepository = materiaRepository;
         this.userRepository = userRepository;
+        this.materiaCursoRepository = materiaCursoRepository;
     }
 
 
@@ -89,9 +92,6 @@ public class DocenteServiceImpl implements DocenteService {
                 .telefono(docenteRequest.getTelefono())
                 .fechaNacimiento(docenteRequest.getFechaNacimiento())
                 .fechaIngreso(docenteRequest.getFechaIngreso())
-                .materias(docenteRequest.getMaterias().stream().map(
-                        MateriaMapper::toEntity
-                ).collect(Collectors.toSet()))
                 .user(existeUser.get())
                 .build();
 
@@ -202,84 +202,6 @@ public class DocenteServiceImpl implements DocenteService {
                 .docente(new DocenteDto())
                 .code(0)
                 .mensaje("Se elimino correctamente el docente")
-                .build();
-    }
-
-
-
-    @Override
-    public DocenteResponse asignarMaterias(Long docenteId, List<Long> materiasIds) {
-        Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
-
-        if (docente.getMaterias() == null) {
-            docente.setMaterias(new HashSet<>());
-        }
-
-        Set<Materia> nuevasMaterias = new HashSet<>();
-
-        for (Long materiaId : materiasIds) {
-            Materia materia = materiaRepository.findById(materiaId)
-                    .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
-
-            if (!docente.getMaterias().contains(materia)) {
-                nuevasMaterias.add(materia);
-            } else {
-                logger.warn("El docente {} ya tiene asignada la materia {}", docenteId, materiaId);
-            }
-        }
-
-        if (nuevasMaterias.isEmpty()) {
-            throw new DocenteException("Todas las materias ya estaban asignadas al docente");
-        }
-
-        docente.getMaterias().addAll(nuevasMaterias);
-        docente = docenteRepository.save(docente);
-
-
-        logger.info("Se asignaron {} nuevas materias al docente {}", nuevasMaterias.size(), docenteId);
-
-        return DocenteResponse.builder()
-                .docente(DocenteMapper.toDto(docente))
-                .code(0)
-                .mensaje("Materias asignadas correctamente")
-                .build();
-    }
-
-    public DocenteResponse desasignarMaterias(Long docenteId, List<Long> materiasId) {
-        Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
-
-        if (docente.getMaterias() == null || docente.getMaterias().isEmpty()) {
-            return DocenteResponse.builder()
-                    .docente(null)
-                    .code(-1)
-                    .mensaje("El docente no tiene materias asignadas")
-                    .build();
-        }
-
-        List<Long> noEncontradas = new ArrayList<>();
-        for (Long materiaId : materiasId) {
-            Materia materia = materiaRepository.findById(materiaId)
-                    .orElse(null);
-
-            if (materia != null && docente.getMaterias().contains(materia)) {
-                docente.getMaterias().remove(materia);
-            } else {
-                noEncontradas.add(materiaId);
-            }
-        }
-
-        docenteRepository.save(docente);
-        logger.info("Se desasignaron las materias del docente " + docenteId + ": " + materiasId);
-
-
-        return DocenteResponse.builder()
-                .docente(DocenteMapper.toDto(docente))
-                .code(noEncontradas.isEmpty() ? 0 : 1)
-                .mensaje(noEncontradas.isEmpty()
-                        ? "Materias desasignadas correctamente"
-                        : "Algunas materias no fueron encontradas o no estaban asignadas: " + noEncontradas)
                 .build();
     }
 

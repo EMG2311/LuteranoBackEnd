@@ -9,15 +9,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Entity@SuperBuilder@AllArgsConstructor@NoArgsConstructor@Data
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
 public class Docente extends PersonaConUsuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToMany
-    private Set<Materia> materias;
 
+    @OneToMany(mappedBy = "docente")
+    private List<MateriaCurso> dictados = new ArrayList<>();
 }
