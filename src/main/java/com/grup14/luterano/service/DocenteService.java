@@ -11,7 +11,5 @@ public interface DocenteService {
     DocenteResponse crearDocente(DocenteRequest docenteRequest);
     DocenteResponse updateDocente(DocenteUpdateRequest docenteRequest);
     DocenteResponse deleteDocente(Long id);
-    DocenteResponse asignarMaterias(Long docenteId,List<Long> materiasId);
-    DocenteResponse desasignarMaterias(Long docenteId,List<Long> materiasId);
     DocenteResponseList listDocentes();
 }

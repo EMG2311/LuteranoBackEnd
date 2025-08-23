@@ -2,6 +2,7 @@ package com.grup14.luterano.mappers;
 
 import com.grup14.luterano.dto.CursoDto;
 import com.grup14.luterano.entities.Curso;
+import com.grup14.luterano.entities.MateriaCurso;
 
 import java.util.stream.Collectors;
 
@@ -18,9 +19,10 @@ public class CursoMapper {
                 .division(entity.getDivision())
                 .nivel(entity.getNivel())
                 .aula(AulaMapper.toDto(entity.getAula()))
-                .materias(entity.getMaterias() == null ? null :
-                        entity.getMaterias().stream()
-                                .map(MateriaMapper::toDto)
+                // Se mapea la lista de MateriaCurso a una lista de MateriaCursoDto
+                .dictados(entity.getDictados() == null ? null :
+                        entity.getDictados().stream()
+                                .map(MateriaCursoMapper::toDto)
                                 .collect(Collectors.toList()))
                 .build();
     }
@@ -36,10 +38,8 @@ public class CursoMapper {
                 .division(dto.getDivision())
                 .nivel(dto.getNivel())
                 .aula(AulaMapper.toEntity(dto.getAula()))
-                .materias(dto.getMaterias() == null ? null :
-                        dto.getMaterias().stream()
-                                .map(MateriaMapper::toEntity)
-                                .collect(Collectors.toList()))
+                // La conversión de 'dictados' (lista de DTOs) a entidades
+                // es una operación de servicio. No se hace en el mapper.
                 .build();
     }
 }

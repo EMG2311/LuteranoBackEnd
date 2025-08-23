@@ -8,6 +8,7 @@ import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,19 @@ import java.util.List;
 @RequestMapping("/docente")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @CrossOrigin(origins = "*")
+@Tag(
+        name = "Docente Controller",
+        description = "Controlador encargado de la gestión a los usuarios. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR"
+)
 public class DocenteController {
-    @Autowired
-    private DocenteService docenteService;
+
+    private final DocenteService docenteService;
+
+    public DocenteController(DocenteService docenteService){
+        this.docenteService=docenteService;
+    }
+
 
     @PostMapping("/create")
     @Operation(summary = "Crea un docente", description = "Crea un docente, debe existir un usuario con ese mail previamente")
@@ -92,63 +103,6 @@ public class DocenteController {
                             .docenteDtos(Collections.emptyList())
                             .code(-2)
                             .mensaje("Error no controlado " + e.getMessage())
-                            .build());
-        }
-    }
-
-    @PostMapping("/{docenteId}/materias")
-    @Operation(summary = "Asigna una lista de materias a un docente")
-    public ResponseEntity<DocenteResponse> asignarMaterias(
-            @PathVariable Long docenteId,
-            @RequestBody List<Long> materiaIds) {
-        try {
-            DocenteResponse response = docenteService.asignarMaterias(docenteId, materiaIds);
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(DocenteResponse.builder()
-                            .docente(null)
-                            .code(-1)
-                            .mensaje(e.getMessage())
-                            .build());
-        } catch (DocenteException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(DocenteResponse.builder()
-                            .docente(null)
-                            .code(-3)
-                            .mensaje(e.getMessage())
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(DocenteResponse.builder()
-                            .docente(null)
-                            .code(-2)
-                            .mensaje("Error no controlado: " + e.getMessage())
-                            .build());
-        }
-    }
-
-    @DeleteMapping("/{docenteId}/materias")
-    @Operation(summary = "Desasigna múltiples materias de un docente")
-    public ResponseEntity<DocenteResponse> desasignarMaterias(
-            @PathVariable Long docenteId,
-            @RequestBody List<Long> materiasIds) {
-        try {
-            DocenteResponse response = docenteService.desasignarMaterias(docenteId, materiasIds);
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(DocenteResponse.builder()
-                            .docente(null)
-                            .code(-1)
-                            .mensaje(e.getMessage())
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(DocenteResponse.builder()
-                            .docente(null)
-                            .code(-2)
-                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }

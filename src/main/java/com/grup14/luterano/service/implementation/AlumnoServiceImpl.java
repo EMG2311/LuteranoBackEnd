@@ -38,12 +38,18 @@ import java.util.stream.Collectors;
 @Transactional
 public class AlumnoServiceImpl implements AlumnoService {
 
-    @Autowired
-    private AlumnoRepository alumnoRepository;
-    @Autowired
-    private CursoRepository cursoRepository;
-    @Autowired
-    private TutorRepository tutorRepository;
+
+    private final AlumnoRepository alumnoRepository;
+
+    private final CursoRepository cursoRepository;
+
+    private final TutorRepository tutorRepository;
+
+    public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,TutorRepository tutorRepository){
+        this.alumnoRepository=alumnoRepository;
+        this.cursoRepository=cursoRepository;
+        this.tutorRepository=tutorRepository;
+    }
 
     @Autowired
     private UserRepository userRepository;

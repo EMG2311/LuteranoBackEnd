@@ -1,14 +1,14 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.DocenteDto;
-import com.grup14.luterano.entities.Docente;
-import com.grup14.luterano.entities.Materia;
-import com.grup14.luterano.entities.User;
+import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
 import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.DocenteRepository;
+import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.docente.DocenteRequest;
@@ -30,18 +30,24 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class DocenteServiceImpl implements DocenteService {
-    @Autowired
-    private DocenteRepository docenteRepository;
-    @Autowired
-    private MateriaRepository materiaRepository;
-    @Autowired
-    private UserService userService;
 
+    private final DocenteRepository docenteRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final MateriaRepository materiaRepository;
+
+    private final UserRepository userRepository;
+
+    private final MateriaCursoRepository materiaCursoRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
-
+    public DocenteServiceImpl(DocenteRepository docenteRepository,
+                              MateriaRepository materiaRepository,
+                              UserRepository userRepository, MateriaCursoRepository materiaCursoRepository) {
+        this.docenteRepository = docenteRepository;
+        this.materiaRepository = materiaRepository;
+        this.userRepository = userRepository;
+        this.materiaCursoRepository = materiaCursoRepository;
+    }
 
 
     @Override
@@ -68,9 +74,12 @@ public class DocenteServiceImpl implements DocenteService {
             existeUser.get().setLastName(docenteRequest.getApellido());
         }
 
-        if(docenteRequest.getFechaIngreso().getTime() >= docenteRequest.getFechaNacimiento().getTime()){
-            throw new DocenteException("La fecha de ingreso no puede ser menor a la de nacimiento");
-        }
+        validarFechaAnteriorAActual(docenteRequest.getFechaNacimiento()
+                ,"La fecha de nacimiento debe ser anterior a la fecha actual");
+        validarFechaAnteriorAActual(docenteRequest.getFechaIngreso(),
+                "La fecha de ingreso debe ser anterior a la fecha actual");
+        validarFechaPosterior(docenteRequest.getFechaIngreso(), docenteRequest.getFechaNacimiento(),
+                "La fecha de ingreso debe ser posterior a la fecha de nacimiento");
 
         Docente docente =  Docente.builder()
                 .nombre(docenteRequest.getNombre())
@@ -83,9 +92,6 @@ public class DocenteServiceImpl implements DocenteService {
                 .telefono(docenteRequest.getTelefono())
                 .fechaNacimiento(docenteRequest.getFechaNacimiento())
                 .fechaIngreso(docenteRequest.getFechaIngreso())
-                .materias(docenteRequest.getMaterias().stream().map(
-                        MateriaMapper::toEntity
-                ).collect(Collectors.toSet()))
                 .user(existeUser.get())
                 .build();
 
@@ -139,11 +145,25 @@ public class DocenteServiceImpl implements DocenteService {
             docente.setTelefono(updateRequest.getTelefono());
         }
         if (updateRequest.getFechaNacimiento() != null) {
+            validarFechaAnteriorAActual(updateRequest.getFechaNacimiento(),
+                    "La fecha de nacimiento debe ser anterior a la fecha actual");
+
+            validarFechaPosterior(docente.getFechaIngreso(), updateRequest.getFechaNacimiento(),
+                    "La fecha de nacimiento debe ser anterior a la fecha de ingreso");
+
             docente.setFechaNacimiento(updateRequest.getFechaNacimiento());
         }
+
         if (updateRequest.getFechaIngreso() != null) {
+            validarFechaAnteriorAActual(updateRequest.getFechaIngreso(),
+                    "La fecha de ingreso debe ser anterior a la fecha actual");
+
+            validarFechaPosterior(updateRequest.getFechaIngreso(), docente.getFechaNacimiento(),
+                    "La fecha de ingreso debe ser posterior a la fecha de nacimiento");
+
             docente.setFechaIngreso(updateRequest.getFechaIngreso());
         }
+
 
         if(necesitaActualizarUsuario){
             docente.setUser(user); //Por si se hicieron cambios en el usuario
@@ -158,6 +178,20 @@ public class DocenteServiceImpl implements DocenteService {
                 .build();
     }
 
+    private void validarFechaAnteriorAActual(Date fecha, String mensajeError) throws DocenteException {
+        Date fechaActual = new Date();
+        if (fecha.after(fechaActual)) {
+            throw new DocenteException(mensajeError);
+        }
+    }
+
+    private void validarFechaPosterior(Date fechaPosterior, Date fechaAnterior, String mensajeError) throws DocenteException {
+        if (!fechaPosterior.after(fechaAnterior)) {
+            throw new DocenteException(mensajeError);
+        }
+    }
+
+
     @Override
     @Transactional
     public DocenteResponse deleteDocente(Long id) {
@@ -168,84 +202,6 @@ public class DocenteServiceImpl implements DocenteService {
                 .docente(new DocenteDto())
                 .code(0)
                 .mensaje("Se elimino correctamente el docente")
-                .build();
-    }
-
-
-
-    @Override
-    public DocenteResponse asignarMaterias(Long docenteId, List<Long> materiasIds) {
-        Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
-
-        if (docente.getMaterias() == null) {
-            docente.setMaterias(new HashSet<>());
-        }
-
-        Set<Materia> nuevasMaterias = new HashSet<>();
-
-        for (Long materiaId : materiasIds) {
-            Materia materia = materiaRepository.findById(materiaId)
-                    .orElseThrow(() -> new EntityNotFoundException("Materia no encontrada con ID: " + materiaId));
-
-            if (!docente.getMaterias().contains(materia)) {
-                nuevasMaterias.add(materia);
-            } else {
-                logger.warn("El docente {} ya tiene asignada la materia {}", docenteId, materiaId);
-            }
-        }
-
-        if (nuevasMaterias.isEmpty()) {
-            throw new DocenteException("Todas las materias ya estaban asignadas al docente");
-        }
-
-        docente.getMaterias().addAll(nuevasMaterias);
-        docente = docenteRepository.save(docente);
-
-
-        logger.info("Se asignaron {} nuevas materias al docente {}", nuevasMaterias.size(), docenteId);
-
-        return DocenteResponse.builder()
-                .docente(DocenteMapper.toDto(docente))
-                .code(0)
-                .mensaje("Materias asignadas correctamente")
-                .build();
-    }
-
-    public DocenteResponse desasignarMaterias(Long docenteId, List<Long> materiasId) {
-        Docente docente = docenteRepository.findById(docenteId)
-                .orElseThrow(() -> new EntityNotFoundException("Docente no encontrado con ID: " + docenteId));
-
-        if (docente.getMaterias() == null || docente.getMaterias().isEmpty()) {
-            return DocenteResponse.builder()
-                    .docente(null)
-                    .code(-1)
-                    .mensaje("El docente no tiene materias asignadas")
-                    .build();
-        }
-
-        List<Long> noEncontradas = new ArrayList<>();
-        for (Long materiaId : materiasId) {
-            Materia materia = materiaRepository.findById(materiaId)
-                    .orElse(null);
-
-            if (materia != null && docente.getMaterias().contains(materia)) {
-                docente.getMaterias().remove(materia);
-            } else {
-                noEncontradas.add(materiaId);
-            }
-        }
-
-        docenteRepository.save(docente);
-        logger.info("Se desasignaron las materias del docente " + docenteId + ": " + materiasId);
-
-
-        return DocenteResponse.builder()
-                .docente(DocenteMapper.toDto(docente))
-                .code(noEncontradas.isEmpty() ? 0 : 1)
-                .mensaje(noEncontradas.isEmpty()
-                        ? "Materias desasignadas correctamente"
-                        : "Algunas materias no fueron encontradas o no estaban asignadas: " + noEncontradas)
                 .build();
     }
 

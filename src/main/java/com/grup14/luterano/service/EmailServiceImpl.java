@@ -7,33 +7,38 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class EmailServiceImpl {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
+
+    public EmailServiceImpl(JavaMailSender javaMailSender){
+        this.mailSender=javaMailSender;
+    }
 
     @Value("${email.enabled:true}")
     private boolean emailEnabled;
 
+    @Async("emailExecutor")
     public void sendSimpleEmail(String to, String subject, String text) {
-        if(!emailEnabled){
-            return;
-        }
+        if(!emailEnabled) return;
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
         mailSender.send(message);
     }
-    public void sendHtmlEmail(String to, String subject, String htmlBody) throws MessagingException {
-        if(!emailEnabled){
-            return;
-        }
-        MimeMessage message = mailSender.createMimeMessage();
 
+    @Async("emailExecutor")
+    public void sendHtmlEmail(String to, String subject, String htmlBody) throws MessagingException {
+        if(!emailEnabled) return;
+
+        MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setTo(to);
         helper.setSubject(subject);
@@ -41,6 +46,8 @@ public class EmailServiceImpl {
 
         mailSender.send(message);
     }
+
+    @Async("emailExecutor")
     public void sendWelcomeEmail(String to, String password) throws MessagingException {
         String html = String.format("""
         <html><body>
@@ -54,6 +61,7 @@ public class EmailServiceImpl {
         sendHtmlEmail(to, "Bienvenido a Luterano Concordia", html);
     }
 
+    @Async("emailExecutor")
     public void sendUserModifiedEmail(String to) throws MessagingException {
         String html = String.format("""
         <html><body>
@@ -67,6 +75,7 @@ public class EmailServiceImpl {
         sendHtmlEmail(to, "Usuario modificado correctamente", html);
     }
 
+    @Async("emailExecutor")
     public void sendUserDeletedEmail(String to, String userName) throws MessagingException {
         String html = String.format("""
         <html><body>

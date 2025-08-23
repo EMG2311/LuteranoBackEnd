@@ -12,13 +12,19 @@ public class MateriaMapper {
             return null;
         }
 
-        MateriaDto dto = new MateriaDto();
-        dto.setId(entity.getId());
-        dto.setNombreMateria(entity.getNombreMateria());
-        dto.setDescripcion(entity.getDescipcion());  // corregí nombre
-        dto.setNivel(entity.getNivel());
-        dto.setCursos(entity.getCursos().stream().map(CursoMapper::toDto).collect(Collectors.toList()));
-        return dto;
+        // Se crea el DTO usando el Builder para un código más limpio y legible.
+        return MateriaDto.builder()
+                .id(entity.getId())
+                .nombre(entity.getNombre())
+                .descripcion(entity.getDescripcion())
+                .nivel(entity.getNivel())
+                // Se mapea la lista de entidades MateriaCurso a una lista de DTOs.
+                // Es crucial usar MateriaCursoMapper aquí, no CursoMapper.
+                .dictados(entity.getDictados() == null ? null :
+                        entity.getDictados().stream()
+                                .map(MateriaCursoMapper::toDto)
+                                .collect(Collectors.toList()))
+                .build();
     }
 
     public static Materia toEntity(MateriaDto dto) {
@@ -26,16 +32,15 @@ public class MateriaMapper {
             return null;
         }
 
+        // Se crea la entidad Materia usando el Builder.
+        // Importante: No se mapea la lista 'dictados' de vuelta a la entidad aquí.
+        // La lógica para crear o actualizar la entidad de unión MateriaCurso
+        // debe residir en la capa de servicio para asegurar la integridad de la base de datos.
         return Materia.builder()
                 .id(dto.getId())
-                .nombreMateria(dto.getNombreMateria())
-                .descipcion(dto.getDescripcion())
+                .nombre(dto.getNombre())
+                .descripcion(dto.getDescripcion())
                 .nivel(dto.getNivel())
-                .cursos(dto.getCursos() == null ? null :
-                        dto.getCursos()
-                                .stream()
-                                .map(CursoMapper::toEntity)
-                                .collect(Collectors.toList()))
                 .build();
     }
 }

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,21 +17,17 @@ public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+
     private int numero;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Division division;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Nivel nivel;
 
     @OneToOne
     @JoinColumn(name = "aula_id", unique = true)
     private Aula aula;
 
-    @ManyToMany(mappedBy = "cursos")
-    private List<Materia> materias;
+    @OneToMany(mappedBy = "curso")
+    private List<MateriaCurso> dictados = new ArrayList<>();
 }

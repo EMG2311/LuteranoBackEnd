@@ -13,6 +13,7 @@ import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.AlumnoService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +29,22 @@ import java.util.Collections;
 @RequestMapping("/alumno")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
 @CrossOrigin(origins = "*")
-
-
+@Tag(
+        name = "Alumno Controller",
+        description = "Controlador encargado de la gestión de alumnos. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 public class AlumnoController {
-    @Autowired
-    private AlumnoService alumnoService;
+
+    private final AlumnoService alumnoService;
+
+    public AlumnoController(AlumnoService alumnoService){
+        this.alumnoService=alumnoService;
+    }
 
     @PostMapping("/create")
     @Operation(summary = "Crea un nuevo alumno",
-            description = "Requiere que el usuario tenga un rol de ADMIN O DIRECTOR ")
+            description = "Requiere que el usuario tenga un rol de ADMIN O DIRECTOR o PRECEPTOR")
     public ResponseEntity<AlumnoResponse> createAlumno(@RequestBody @Validated AlumnoRequest alumnoRequest) {
         try {
             return ResponseEntity.ok(alumnoService.crearAlumno(alumnoRequest));
