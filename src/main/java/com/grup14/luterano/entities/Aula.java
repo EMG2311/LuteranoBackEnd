@@ -18,5 +18,9 @@ public class Aula {
     @Column(nullable = false)
     private int capacidad;
     @OneToOne(mappedBy = "aula")
-    private Curso curso;
+    private Curso curso;   // no tiene que ser 1 a muchos?? private List<Curso> cursos;
+
+    // @OneToMany(mappedBy = "aula")
+    //    private List<Aula> aulas;  ??
+
 }

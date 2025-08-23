@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface AulaRepository extends JpaRepository<Aula,Long> {
 
     Optional<Aula> findById(Long id);
-
+    Optional<Aula> findByNombre(String nombre);
 
 
 }

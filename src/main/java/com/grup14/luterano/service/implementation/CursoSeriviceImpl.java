@@ -39,7 +39,7 @@ public class CursoSeriviceImpl implements CursoService {
 
     @Autowired
     private UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(AlumnoServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(CursoSeriviceImpl.class);
 
 
     @Override
