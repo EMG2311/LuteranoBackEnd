@@ -100,7 +100,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         Alumno alumno = alumnoRepository.findById(updateRequest.getId())
                 .orElseThrow(() -> new AlumnoException("No existe alumno con id: " + updateRequest.getId()));
 
-        // 2. Actualizar campos simples si no son nulos
+
         if (updateRequest.getNombre() != null) alumno.setNombre(updateRequest.getNombre());
         if (updateRequest.getApellido() != null) alumno.setApellido(updateRequest.getApellido());
         if (updateRequest.getGenero() != null) alumno.setGenero(updateRequest.getGenero());
@@ -112,9 +112,9 @@ public class AlumnoServiceImpl implements AlumnoService {
         if (updateRequest.getFechaNacimiento() != null) alumno.setFechaNacimiento(updateRequest.getFechaNacimiento());
         if (updateRequest.getFechaIngreso() != null) alumno.setFechaIngreso(updateRequest.getFechaIngreso());
 
-        // NO SE ACTUALIZA CURSO NI TUTO
 
-        // 3. Guardar cambios en BD
+
+
         alumno = alumnoRepository.save(alumno);
 
         logger.info("Alumno actualizado correctamente con ID: {}", alumno.getId());
