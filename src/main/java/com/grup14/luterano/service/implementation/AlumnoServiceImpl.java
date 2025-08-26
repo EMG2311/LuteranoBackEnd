@@ -58,30 +58,34 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     @Transactional
     public AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest) {  // 1. Validar si ya existe un alumno con el mismo DNI.
-        Optional<Alumno> existentePorDni = alumnoRepository.findByDni(alumnoRequest.getDni());
-        if (existentePorDni.isPresent()) {
-            throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
+
+        alumnoRepository.findByDni(alumnoRequest.getDni())
+                .ifPresent(a -> {
+                    throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
+                });
+
+
+        Curso curso = null;
+        if (alumnoRequest.getCursoActual() != null && alumnoRequest.getCursoActual().getId() != null) {
+            curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
+                    .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
         }
 
-        // 2. Validar que el curso exista
-        Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
-                .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
+        Tutor tutor = null;
+        if (alumnoRequest.getTutor() != null && alumnoRequest.getTutor().getId() != null) {
+            tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
+                    .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
+        }
 
-        // 3. Validar que el tutor exista
-        Tutor tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
-                .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
-
-        // 4. Mapear el request a entidad usando el mapper
         Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
         alumno.setCursoActual(curso);
         alumno.setTutor(tutor);
 
-        // 5. Guardar el alumno
         alumnoRepository.save(alumno);
 
-        logger.info("Alumno creado correctamente con: {} {} {}", alumno.getDni(), alumno.getNombre(), alumno.getApellido());
+        logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
+                alumno.getDni(), alumno.getNombre(), alumno.getApellido());
 
-        // 6. Retornar respuesta usando el mapper
         return AlumnoResponse.builder()
                 .alumno(AlumnoMapper.toDto(alumno))
                 .code(0)

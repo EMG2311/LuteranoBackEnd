@@ -51,7 +51,7 @@ public class AlumnoMapper {
 
             return Alumno.builder()
                     // Campos Persona (heredados)
-                    .id(dto.getId())
+                    .id(dto.getId()!=null?dto.getId():null)
                     .nombre(dto.getNombre())
                     .apellido(dto.getApellido())
                     .genero(dto.getGenero())
@@ -64,15 +64,7 @@ public class AlumnoMapper {
                     .fechaIngreso(dto.getFechaIngreso())
 
                     // Campos específicos de Alumno
-                    .cursoActual(CursoMapper.toEntity(dto.getCursoActual()))
                     .estado(dto.getEstado())
-                    .tutor(TutorMapper.toEntity(dto.getTutor()))
-                    .historialCursos(dto.getHistorialCursos() == null ? null :
-                            dto.getHistorialCursos()
-                                    .stream()
-                                    .map(HistorialCursoMapper::toEntity)
-                                    .collect(Collectors.toList())
-                    )
                     .build();
         }
 }
