@@ -16,6 +16,7 @@ import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.TutorRepository;
 import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
 import com.grup14.luterano.request.alumno.AsignarCursoRequest;
@@ -23,10 +24,12 @@ import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.service.AlumnoService;
+import com.grup14.luterano.specification.AlumnoSpecification;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -152,6 +155,26 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .code(0)
                 .mensaje("Lista de alumnos obtenida correctamente")
                 .build();
+    }
+
+    @Override
+    public AlumnoResponseList listAlumnos(AlumnoFiltrosRequest alumnoFiltrosRequest) {
+        Specification<Alumno> spec = Specification.where(AlumnoSpecification.nombreContains(alumnoFiltrosRequest.getNombre()))
+                .and(AlumnoSpecification.apellidoContains(alumnoFiltrosRequest.getApellido()))
+                .and(AlumnoSpecification.dniContains(alumnoFiltrosRequest.getDni()))
+                .and(AlumnoSpecification.cursoAñoEquals(alumnoFiltrosRequest.getAño()))
+                .and(AlumnoSpecification.divisionEquals(alumnoFiltrosRequest.getDivision()));
+
+        List<AlumnoDto> alumnos = alumnoRepository.findAll(spec).stream()
+                .map(AlumnoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return AlumnoResponseList.builder()
+                .alumnoDtos(alumnos)
+                .code(0)
+                .mensaje("OK")
+                .build();
+
     }
 
     @Override

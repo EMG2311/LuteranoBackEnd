@@ -15,7 +15,7 @@ public class CursoMapper {
 
         return CursoDto.builder()
                 .id(entity.getId())
-                .numero(entity.getNumero())
+                .anio(entity.getAnio())
                 .division(entity.getDivision())
                 .nivel(entity.getNivel())
                 .aula(AulaMapper.toDto(entity.getAula()))
@@ -34,7 +34,7 @@ public class CursoMapper {
 
         return Curso.builder()
                 .id(dto.getId())
-                .numero(dto.getNumero())
+                .anio(dto.getAnio())
                 .division(dto.getDivision())
                 .nivel(dto.getNivel())
                 .aula(AulaMapper.toEntity(dto.getAula()))

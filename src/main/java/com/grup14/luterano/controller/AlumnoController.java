@@ -3,6 +3,7 @@ package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.exeptions.DocenteException;
+import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
 import com.grup14.luterano.request.docente.DocenteUpdateRequest;
@@ -24,6 +25,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/alumno")
@@ -56,6 +58,9 @@ public class AlumnoController {
                     .body(alumnoRequest.toResponse(e.getMessage(),-2));
         }
     }
+
+
+
 
     @PutMapping("/update")
     @Operation(summary = "Actualiza un alumno",
@@ -114,6 +119,32 @@ public class AlumnoController {
                             .code(-2)
                             .mensaje("Error no controlado " + e.getMessage())
                             .build());
+        }
+    }
+    @PostMapping("/filtros")
+    @Operation(summary = "Lista alumnos con filtros dinámicos",
+            description = "Permite filtrar por nombre, apellido, dni, año y división")
+    public ResponseEntity<AlumnoResponseList> listarAlumnos(@RequestBody @Validated AlumnoFiltrosRequest filtros) {
+        try {
+            return ResponseEntity.ok(alumnoService.listAlumnos(filtros));
+        } catch (AlumnoException e) {
+            // error controlado (-1)
+            return ResponseEntity.status(422).body(
+                    AlumnoResponseList.builder()
+                            .alumnoDtos(List.of())
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            // error no controlado (-2)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponseList.builder()
+                            .alumnoDtos(List.of())
+                            .code(-2)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
         }
     }
 

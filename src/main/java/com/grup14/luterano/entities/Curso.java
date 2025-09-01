@@ -18,7 +18,7 @@ public class Curso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int numero;
+    private int anio;
     @Enumerated(EnumType.STRING)
     private Division division;
     @Enumerated(EnumType.STRING)
