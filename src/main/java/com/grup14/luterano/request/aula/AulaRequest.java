@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Data
+@NoArgsConstructor
 public class AulaRequest extends AulaDto {
 
     public AulaResponse toResponse(String mensaje, Integer code) {

@@ -20,10 +20,10 @@ public class MateriaMapper {
                 .nivel(entity.getNivel())
                 // Se mapea la lista de entidades MateriaCurso a una lista de DTOs.
                 // Es crucial usar MateriaCursoMapper aquí, no CursoMapper.
-                .dictados(entity.getDictados() == null ? null :
-                        entity.getDictados().stream()
-                                .map(MateriaCursoMapper::toDto)
-                                .collect(Collectors.toList()))
+                //.dictados(entity.getDictados() == null ? null :
+               //         entity.getDictados().stream()
+              //                  .map(MateriaCursoMapper::toDto)
+               //                 .collect(Collectors.toList()))
                 .build();
     }
 

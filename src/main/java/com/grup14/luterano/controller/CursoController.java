@@ -40,7 +40,7 @@ public class CursoController {
             return ResponseEntity.status(422).body(CursoResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(cursoRequest.toResponse(e.getMessage(),-2));
+                    .body(CursoResponse.builder().code(-2).mensaje("Error no controlado: " + e.getMessage()).build());
         }
     }
 

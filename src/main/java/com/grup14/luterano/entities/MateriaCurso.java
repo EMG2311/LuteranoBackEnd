@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MateriaCurso {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -17,5 +17,5 @@ public class AulaUpdateRequest {
     private String nombre;
     private String ubicacion;
     private Integer capacidad; // cambio de int a Integer para permitir nulls en la actualización.
-
+    // El curso no se actualiza aquí.
 }

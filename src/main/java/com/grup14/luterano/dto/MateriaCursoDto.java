@@ -10,6 +10,7 @@ public class MateriaCursoDto {
     private Long id;
 
     private MateriaDto materia;
-    private CursoDto curso;
+  //  private CursoDto curso;
+    private Long cursoId;  // quiero solo el id del curso
     private DocenteDto docente;
 }

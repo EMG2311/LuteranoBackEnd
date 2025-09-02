@@ -1,21 +1,16 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.CursoDto;
-import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.Aula;
 import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.Tutor;
-import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.exeptions.CursoException;
-import com.grup14.luterano.mappers.AlumnoMapper;
 import com.grup14.luterano.mappers.CursoMapper;
-import com.grup14.luterano.mappers.MateriaMapper;
+import com.grup14.luterano.mappers.MateriaCursoMapper;
 import com.grup14.luterano.repository.AulaRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
-import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.curso.CursoResponse;
 import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
@@ -35,6 +30,7 @@ public class CursoSeriviceImpl implements CursoService {
 
     @Autowired
     private CursoRepository cursoRepository;
+    @Autowired
     private AulaRepository aulaRepository;
 
     @Autowired
@@ -53,27 +49,31 @@ public class CursoSeriviceImpl implements CursoService {
             throw new CursoException("Ya existe un curso con el mismo número, división y nivel.");
         }
 
+        //  Mapear el request a entidad usando el mapper.Crea una nueva entidad 'Curso' con los datos del request
+        Curso curso = CursoMapper.toEntity(cursoRequest);
 
         //  Validar y buscar el aula si se proporciona un ID
         Aula aula = null;
-        if (cursoRequest.getId() != null) {
-            aula = aulaRepository.findById(cursoRequest.getId())
-                    .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoRequest.getId()));
-        }
+        if (cursoRequest.getAula() != null) {
+            aula = aulaRepository.findById(cursoRequest.getAula().getId())
+                    .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoRequest.getAula().getId()));
 
-        //  Mapear el request a entidad usando el mapper
-        Curso curso = CursoMapper.toEntity(cursoRequest);
-        curso.setAula(aula);
-        // Lista de materias que asigna al objeto 'curso'
-        curso.setMaterias(cursoRequest.getMaterias() != null ?
-                cursoRequest.getMaterias().stream().map(MateriaMapper::toEntity).collect(Collectors.toList()) : null);
+        //  Validar que el aula no esté asignada a otro curso
+            if (aula.getCurso() != null) {
+                throw new CursoException("El aula con ID: " + aula.getId() + " ya está asignada a otro curso.");
+            }
+
+            //Asignar el aula al curso y establecer la relación bidireccional
+          //  curso.setAula(aula);
+            aula.setCurso(curso);
+        }
 
         //  Guardar el curso
         cursoRepository.save(curso);
 
         logger.info("Curso creado con ID: {}", curso.getId());
 
-        //  Retornar respuesta usando el mapper
+        //  Retornar respuesta  usando el mapper
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
                 .code(0)
@@ -113,12 +113,6 @@ public class CursoSeriviceImpl implements CursoService {
     public CursoResponse deleteCurso(Long id) {
         Curso curso = cursoRepository.findById(id).orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + id));
 
-        // Verificar si el curso tiene alumnos asignados
-//if (!curso.getAlumnos().isEmpty()) {
-            //throw new CursoException("No se puede eliminar el curso porque tiene alumnos asignados.");
-       // }
-
-        // Eliminar el curso
         cursoRepository.deleteById(id);
         logger.info("Curso eliminado con ID: {}", id);
         return CursoResponse.builder()

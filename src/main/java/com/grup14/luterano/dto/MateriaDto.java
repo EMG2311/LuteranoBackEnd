@@ -23,5 +23,6 @@ public class MateriaDto {
     private String descripcion;
     @NotNull(message ="El nivel es obligatorio")
     private Nivel nivel;
-    private List<MateriaCursoDto> dictados;
+    // Elimino la lista de dictados para romper el bucle
+   // private List<MateriaCursoDto> dictados;
 }

@@ -20,10 +20,9 @@ public class CursoMapper {
                 .nivel(entity.getNivel())
                 .aula(AulaMapper.toDto(entity.getAula()))
                 // Se mapea la lista de MateriaCurso a una lista de MateriaCursoDto
-                .dictados(entity.getDictados() == null ? null :
-                        entity.getDictados().stream()
-                                .map(MateriaCursoMapper::toDto)
-                                .collect(Collectors.toList()))
+                .dictados(entity.getDictados().stream()
+                        .map(MateriaCursoMapper::toDto)
+                        .collect(Collectors.toList()))
                 .build();
     }
 

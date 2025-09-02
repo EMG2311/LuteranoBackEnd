@@ -1,5 +1,6 @@
 package com.grup14.luterano.service.implementation;
 
+import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.entities.Aula;
 import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.exeptions.AlumnoException;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,7 +31,9 @@ public class AulaServiceImpl implements AulaService {
 
     @Autowired
     private CursoRepository cursoRepository;
+    @Autowired
     private AulaRepository aulaRepository;
+    @Autowired
     private MesaExamenRepository mesaExamenRepository;
 
     @Autowired
@@ -47,16 +51,9 @@ public class AulaServiceImpl implements AulaService {
             throw new AulaException("Ya existe un aula con el nombre: " + aulaRequest.getNombre());
         }
 
-    //Validar exista curso
-        Curso curso = cursoRepository.findById(aulaRequest.getCurso().getId())
-                .orElseThrow(() -> new AulaException("El curso no existe"));
-
-
-        //  Mapear el request a entidad usando el mapper
-        Aula aula = AulaMapper.toEntity(aulaRequest);
-        aula.setCurso(curso); // Asignar el curso a la nueva aula
-
         // Guardar la nueva entidad en la base de datos
+        Aula aula = AulaMapper.toEntity(aulaRequest);
+
         aulaRepository.save(aula);
 
         logger.info("Aula creada correctamente  con nombre: {}", aula.getNombre());
@@ -65,7 +62,7 @@ public class AulaServiceImpl implements AulaService {
         return AulaResponse.builder()
                 .aula(AulaMapper.toDto(aula))
                 .code(0)
-                .mensaje("Alumno creado correctamente")
+                .mensaje("Aula creada correctamente")
                 .build();
 
     }
@@ -80,6 +77,8 @@ public class AulaServiceImpl implements AulaService {
         if (!aulaUpdateRequest.getNombre().isEmpty()) aula.setNombre(aulaUpdateRequest.getNombre());
         if (!aulaUpdateRequest.getUbicacion().isEmpty()) aula.setUbicacion(aulaUpdateRequest.getUbicacion());
         if (aulaUpdateRequest.getCapacidad() != null) aula.setCapacidad(aulaUpdateRequest.getCapacidad());
+
+
 
         //  Guardar los cambios
         aula = aulaRepository.save(aula);
@@ -105,19 +104,36 @@ public class AulaServiceImpl implements AulaService {
 
 
         aulaRepository.delete(aula);  // o deleteById(id);
-
-
-        return null;
+        logger.info("Aula eliminada: {} ", aula.getNombre());
+        return AulaResponse.builder()
+                .aula(AulaMapper.toDto(aula))
+                .code(0)
+                .mensaje("Aula eliminada correctamente")
+                .build();
     }
 
     @Override
     public AulaResponse getAulaById(Long id) {
-        return null;
+        Aula aula = aulaRepository.findById(id).orElseThrow(() -> new AulaException("No se encontró el aula con ID: " + id));
+
+        return AulaResponse.builder()
+                .aula(AulaMapper.toDto(aula))
+                .code(0)
+                .mensaje("Aula encontrada correctamente")
+                .build();
     }
 
     @Override
     public AulaResponseList listAulas() {
-        return null;
+        List<AulaDto> aulas = aulaRepository.findAll().stream()
+                .map(AulaMapper::toDto)
+                .toList();
+
+        return AulaResponseList.builder()
+                .aulaDtos(aulas)
+                .code(0)
+                .mensaje("Aulas listadas correctamente")
+                .build();
     }
 
 

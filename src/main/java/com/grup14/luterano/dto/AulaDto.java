@@ -1,6 +1,7 @@
 package com.grup14.luterano.dto;
 
 
+import com.grup14.luterano.entities.Curso;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +23,6 @@ public class AulaDto {
     private String nombre;
     @NotBlank(message = "La ubicacion del aula es obligatoria")
     private String ubicacion;
-    @Min(value = 1, message = "La capacidad debe ser al menos 1")
     private Integer capacidad;
-    private CursoDto curso;
+    private Long cursoId;  // quiero solo el id del curso
 }
