@@ -1,21 +1,26 @@
 package com.grup14.luterano.request.curso;
 
+import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.dto.CursoDto;
+import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.entities.enums.Division;
+import com.grup14.luterano.entities.enums.Nivel;
 import com.grup14.luterano.response.curso.CursoResponse;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@SuperBuilder
-@Data
-@NoArgsConstructor
-public class CursoRequest  extends CursoDto {
+import java.util.List;
 
-    public CursoResponse toResponse(String mensaje, Integer code) {
-        return CursoResponse.builder()
-                .curso(this)
-                .code(code)
-                .mensaje(mensaje)
-                .build();
-    }
+//@SuperBuilder @Data
+//@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+public class CursoRequest  {
+
+    private int numero;
+    private Division division;
+    private Nivel nivel;
+    private Long aulaId; // quiero solo el id del aula
+
 }

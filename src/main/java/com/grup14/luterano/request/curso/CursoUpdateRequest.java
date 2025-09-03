@@ -26,8 +26,8 @@ public class CursoUpdateRequest {
     private Integer numero;
     private Division division;
     private Nivel nivel;
+    private Long aulaId; // quiero solo el id del aula
 
-    // aula y dictados deben actualizarse por separado?
    // private AulaDto aula;
     // private List<MateriaCursoDto> dictados;
 

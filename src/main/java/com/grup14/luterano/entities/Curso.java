@@ -29,5 +29,6 @@ public class Curso {
     private Aula aula;
 
     @OneToMany(mappedBy = "curso")
+    @Builder.Default // <-- inicializa la lista para evitar NullPointerException
     private List<MateriaCurso> dictados = new ArrayList<>();
 }

@@ -54,28 +54,28 @@ public class CursoSeriviceImpl implements CursoService {
 
         //  Validar y buscar el aula si se proporciona un ID
         Aula aula = null;
-        if (cursoRequest.getAula() != null) {
-            aula = aulaRepository.findById(cursoRequest.getAula().getId())
-                    .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoRequest.getAula().getId()));
+        if (cursoRequest.getAulaId() != null) {
+            aula = aulaRepository.findById(cursoRequest.getAulaId())
+                    .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoRequest.getAulaId()));
 
         //  Validar que el aula no esté asignada a otro curso
             if (aula.getCurso() != null) {
-                throw new CursoException("El aula con ID: " + aula.getId() + " ya está asignada a otro curso.");
+                throw new CursoException("El aula ya está asignada a otro curso.");
             }
 
             //Asignar el aula al curso y establecer la relación bidireccional
-          //  curso.setAula(aula);
+            curso.setAula(aula);
             aula.setCurso(curso);
         }
 
         //  Guardar el curso
-        cursoRepository.save(curso);
+        Curso nuevoCurso = cursoRepository.save(curso);
 
-        logger.info("Curso creado con ID: {}", curso.getId());
+        logger.info("Curso creado con ID: {}", nuevoCurso.getId());
 
         //  Retornar respuesta  usando el mapper
         return CursoResponse.builder()
-                .curso(CursoMapper.toDto(curso))
+                .curso(CursoMapper.toDto(nuevoCurso))
                 .code(0)
                 .mensaje("Curso creado correctamente")
                 .build();
@@ -93,9 +93,25 @@ public class CursoSeriviceImpl implements CursoService {
         if (cursoUpdateRequest.getDivision() != null) curso.setDivision(cursoUpdateRequest.getDivision());
         if (cursoUpdateRequest.getNivel() != null) curso.setNivel(cursoUpdateRequest.getNivel());
 
+        // Manejar la asignación de aula
+        if (cursoUpdateRequest.getAulaId() != null) {
+            Aula aula = aulaRepository.findById(cursoUpdateRequest.getAulaId())
+                    .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoUpdateRequest.getAulaId()));
+
+            if (aula.getCurso() != null && !aula.getCurso().equals(curso)) {
+                throw new CursoException("El aula ya está asignada a otro curso.");
+            }
+
+            curso.setAula(aula);
+            aula.setCurso(curso);
+        } else if (cursoUpdateRequest.getAulaId() == null && curso.getAula() != null) {
+            // Si el aulaId es null y el curso tenía un aula, la desasignamos
+            Aula aulaActual = curso.getAula();
+            aulaActual.setCurso(null);
+            curso.setAula(null);
+        }
 
         //  Guardar los cambios
-
         curso = cursoRepository.save(curso);
         logger.info("Curso actualizado con ID: {}", curso.getId());
 
