@@ -11,6 +11,6 @@ public class AlumnoFiltrosRequest {
     private String nombre;
     private String apellido;
     private String dni;
-    private Integer año;
+    private Integer anio;
     private Division division;
 }

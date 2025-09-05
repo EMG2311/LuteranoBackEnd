@@ -162,7 +162,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         Specification<Alumno> spec = Specification.where(AlumnoSpecification.nombreContains(alumnoFiltrosRequest.getNombre()))
                 .and(AlumnoSpecification.apellidoContains(alumnoFiltrosRequest.getApellido()))
                 .and(AlumnoSpecification.dniContains(alumnoFiltrosRequest.getDni()))
-                .and(AlumnoSpecification.cursoAñoEquals(alumnoFiltrosRequest.getAño()))
+                .and(AlumnoSpecification.cursoAnioEquals(alumnoFiltrosRequest.getAnio()))
                 .and(AlumnoSpecification.divisionEquals(alumnoFiltrosRequest.getDivision()));
 
         List<AlumnoDto> alumnos = alumnoRepository.findAll(spec).stream()

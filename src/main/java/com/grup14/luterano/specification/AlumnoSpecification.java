@@ -27,9 +27,9 @@ public class AlumnoSpecification {
                         : cb.like(root.get("dni"), "%" + dni + "%"); // no hace falta lower porque es numérico, pero si es String se puede
     }
 
-    public static Specification<Alumno> cursoAñoEquals(Integer año) {
+    public static Specification<Alumno> cursoAnioEquals(Integer anio) {
         return (root, query, cb) ->
-                año == null ? null : cb.equal(root.get("cursoActual").get("año"), año);
+                anio == null ? null : cb.equal(root.get("cursoActual").get("anio"), anio);
     }
 
     public static Specification<Alumno> divisionEquals(Division division) {
