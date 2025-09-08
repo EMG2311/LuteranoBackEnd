@@ -6,6 +6,8 @@ import com.grup14.luterano.dto.MateriaCursoDto;
 import com.grup14.luterano.dto.MateriaDto;
 import com.grup14.luterano.entities.enums.Division;
 import com.grup14.luterano.entities.enums.Nivel;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,8 +24,9 @@ public class CursoUpdateRequest {
 
     @NotNull(message = "El ID del curso no puede ser nulo")
     private Long id;
-
-    private Integer numero;
+    @Min(value = 1,message = "El año tiene que ser mayor/igual a 1")
+    @Max(value = 6,message = "El año tiene qeu ser menor/igual a 6")
+    private Integer anio;
     private Division division;
     private Nivel nivel;
     private Long aulaId; // quiero solo el id del aula

@@ -43,8 +43,8 @@ public class CursoSeriviceImpl implements CursoService {
     public CursoResponse crearCurso(CursoRequest cursoRequest) {
 
         //  Validar si ya existe un curso con la misma combinación de atributos
-        Optional<Curso> cursoExistente = cursoRepository.findByNumeroAndDivisionAndNivel(
-                cursoRequest.getNumero(), cursoRequest.getDivision(), cursoRequest.getNivel());
+        Optional<Curso> cursoExistente = cursoRepository.findByAnioAndDivisionAndNivel(
+                cursoRequest.getAnio(), cursoRequest.getDivision(), cursoRequest.getNivel());
         if (cursoExistente.isPresent()) {
             throw new CursoException("Ya existe un curso con el mismo número, división y nivel.");
         }
@@ -89,7 +89,7 @@ public class CursoSeriviceImpl implements CursoService {
                 .orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + cursoUpdateRequest.getId()));
 
         //  Actualizar campos
-        if (cursoUpdateRequest.getNumero() != null) curso.setNumero(cursoUpdateRequest.getNumero());
+        if (cursoUpdateRequest.getAnio() != null) curso.setAnio(cursoUpdateRequest.getAnio());
         if (cursoUpdateRequest.getDivision() != null) curso.setDivision(cursoUpdateRequest.getDivision());
         if (cursoUpdateRequest.getNivel() != null) curso.setNivel(cursoUpdateRequest.getNivel());
 

@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface CursoRepository extends JpaRepository<Curso,Long> {
     Optional<Curso> findById(Long id);
-    Optional<Curso> findByNumero (Integer numero);
+    Optional<Curso> findByAnio (Integer anio);
     Optional<Curso> findByDivision (Division division);
     Optional<Curso> findByNivel (Nivel nivel);
-    Optional<Curso> findByNumeroAndDivisionAndNivel(Integer numero, Division division, Nivel nivel);
+    Optional<Curso> findByAnioAndDivisionAndNivel(Integer anio, Division division, Nivel nivel);
 
 }

@@ -16,7 +16,7 @@ public class CursoMapper {
 
         return CursoDto.builder()
                 .id(entity.getId())
-                .numero(entity.getNumero())
+                .anio(entity.getAnio())
                 .division(entity.getDivision())
                 .nivel(entity.getNivel())
                 // Mapea el aula si existe
@@ -37,7 +37,7 @@ public class CursoMapper {
         }
 
         return Curso.builder()
-                .numero(request.getNumero())
+                .anio(request.getAnio())
                 .division(request.getDivision())
                 .nivel(request.getNivel())
                 // El aula y los dictados se manejan en el servicio
@@ -51,7 +51,7 @@ public class CursoMapper {
         }
         return Curso.builder()
                 .id(dto.getId())
-                .numero(dto.getNumero())
+                .anio(dto.getAnio())
                 .division(dto.getDivision())
                 .nivel(dto.getNivel())
                 // El aula y los dictados se manejan en el servicio

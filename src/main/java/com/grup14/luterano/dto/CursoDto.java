@@ -17,7 +17,7 @@ import java.util.List;
 public class CursoDto {
 
     private Long id;
-    private int numero;
+    private int anio;
     private Division division;
     private Nivel nivel;
     private AulaDto aula;
