@@ -13,7 +13,7 @@ public class AulaMapper {
                     .nombre(entity.getNombre())
                     .ubicacion(entity.getUbicacion())
                     .capacidad(entity.getCapacidad())
-                    .curso(CursoMapper.toDto(entity.getCurso()))
+                    .cursoId(entity.getCurso() != null ? entity.getCurso().getId() : null)
                     .build();
         }
 
@@ -26,7 +26,7 @@ public class AulaMapper {
                     .nombre(dto.getNombre())
                     .ubicacion(dto.getUbicacion())
                     .capacidad(dto.getCapacidad())
-                    .curso(CursoMapper.toEntity(dto.getCurso()))
+                    // La búsqueda del curso por ID debe hacerse en el servicio, no en el mapper.
                     .build();
         }
 }
