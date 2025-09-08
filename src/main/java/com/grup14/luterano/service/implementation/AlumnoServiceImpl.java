@@ -16,6 +16,7 @@ import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.TutorRepository;
 import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
 import com.grup14.luterano.request.alumno.AsignarCursoRequest;
@@ -23,10 +24,12 @@ import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.service.AlumnoService;
+import com.grup14.luterano.specification.AlumnoSpecification;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,30 +61,34 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     @Transactional
     public AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest) {  // 1. Validar si ya existe un alumno con el mismo DNI.
-        Optional<Alumno> existentePorDni = alumnoRepository.findByDni(alumnoRequest.getDni());
-        if (existentePorDni.isPresent()) {
-            throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
+
+        alumnoRepository.findByDni(alumnoRequest.getDni())
+                .ifPresent(a -> {
+                    throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
+                });
+
+
+        Curso curso = null;
+        if (alumnoRequest.getCursoActual() != null && alumnoRequest.getCursoActual().getId() != null) {
+            curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
+                    .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
         }
 
-        // 2. Validar que el curso exista
-        Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
-                .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
+        Tutor tutor = null;
+        if (alumnoRequest.getTutor() != null && alumnoRequest.getTutor().getId() != null) {
+            tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
+                    .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
+        }
 
-        // 3. Validar que el tutor exista
-        Tutor tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
-                .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
-
-        // 4. Mapear el request a entidad usando el mapper
         Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
         alumno.setCursoActual(curso);
         alumno.setTutor(tutor);
 
-        // 5. Guardar el alumno
         alumnoRepository.save(alumno);
 
-        logger.info("Alumno creado correctamente con: {} {} {}", alumno.getDni(), alumno.getNombre(), alumno.getApellido());
+        logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
+                alumno.getDni(), alumno.getNombre(), alumno.getApellido());
 
-        // 6. Retornar respuesta usando el mapper
         return AlumnoResponse.builder()
                 .alumno(AlumnoMapper.toDto(alumno))
                 .code(0)
@@ -96,7 +103,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         Alumno alumno = alumnoRepository.findById(updateRequest.getId())
                 .orElseThrow(() -> new AlumnoException("No existe alumno con id: " + updateRequest.getId()));
 
-        // 2. Actualizar campos simples si no son nulos
+
         if (updateRequest.getNombre() != null) alumno.setNombre(updateRequest.getNombre());
         if (updateRequest.getApellido() != null) alumno.setApellido(updateRequest.getApellido());
         if (updateRequest.getGenero() != null) alumno.setGenero(updateRequest.getGenero());
@@ -108,9 +115,9 @@ public class AlumnoServiceImpl implements AlumnoService {
         if (updateRequest.getFechaNacimiento() != null) alumno.setFechaNacimiento(updateRequest.getFechaNacimiento());
         if (updateRequest.getFechaIngreso() != null) alumno.setFechaIngreso(updateRequest.getFechaIngreso());
 
-        // NO SE ACTUALIZA CURSO NI TUTO
 
-        // 3. Guardar cambios en BD
+
+
         alumno = alumnoRepository.save(alumno);
 
         logger.info("Alumno actualizado correctamente con ID: {}", alumno.getId());
@@ -148,6 +155,26 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .code(0)
                 .mensaje("Lista de alumnos obtenida correctamente")
                 .build();
+    }
+
+    @Override
+    public AlumnoResponseList listAlumnos(AlumnoFiltrosRequest alumnoFiltrosRequest) {
+        Specification<Alumno> spec = Specification.where(AlumnoSpecification.nombreContains(alumnoFiltrosRequest.getNombre()))
+                .and(AlumnoSpecification.apellidoContains(alumnoFiltrosRequest.getApellido()))
+                .and(AlumnoSpecification.dniContains(alumnoFiltrosRequest.getDni()))
+                .and(AlumnoSpecification.cursoAnioEquals(alumnoFiltrosRequest.getAnio()))
+                .and(AlumnoSpecification.divisionEquals(alumnoFiltrosRequest.getDivision()));
+
+        List<AlumnoDto> alumnos = alumnoRepository.findAll(spec).stream()
+                .map(AlumnoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return AlumnoResponseList.builder()
+                .alumnoDtos(alumnos)
+                .code(0)
+                .mensaje("OK")
+                .build();
+
     }
 
     @Override
