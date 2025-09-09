@@ -81,7 +81,7 @@ public class TutorServiceImpl implements TutorService {
 
         if (request.getFechaNacimiento() != null) tutor.setFechaNacimiento(request.getFechaNacimiento());
         if (request.getFechaIngreso() != null) tutor.setFechaIngreso(request.getFechaIngreso());
-
+        validarFechas(request.getFechaNacimiento(),request.getFechaIngreso());
         tutorRepository.save(tutor);
         logger.info("Tutor actualizado: {}", tutor.getId());
         return TutorResponse.builder()
