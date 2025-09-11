@@ -18,7 +18,7 @@ import java.util.List;
 public class MateriaDto {
     private Long id;
     @NotNull(message = "El nombre de la materia es obligatorio")
-    private String nombre;
+    private String nombreMateria;
     @NotBlank(message = "La descripcion es obligatoria")
     private String descripcion;
     @NotNull(message ="El nivel es obligatorio")

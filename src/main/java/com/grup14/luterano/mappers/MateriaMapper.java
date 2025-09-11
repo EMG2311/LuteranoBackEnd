@@ -15,7 +15,7 @@ public class MateriaMapper {
         // Se crea el DTO usando el Builder para un código más limpio y legible.
         return MateriaDto.builder()
                 .id(entity.getId())
-                .nombre(entity.getNombre())
+                .nombreMateria(entity.getNombre())
                 .descripcion(entity.getDescripcion())
                 .nivel(entity.getNivel())
                 // Se mapea la lista de entidades MateriaCurso a una lista de DTOs.
@@ -38,7 +38,7 @@ public class MateriaMapper {
         // debe residir en la capa de servicio para asegurar la integridad de la base de datos.
         return Materia.builder()
                 .id(dto.getId())
-                .nombre(dto.getNombre())
+                .nombre(dto.getNombreMateria())
                 .descripcion(dto.getDescripcion())
                 .nivel(dto.getNivel())
                 .build();

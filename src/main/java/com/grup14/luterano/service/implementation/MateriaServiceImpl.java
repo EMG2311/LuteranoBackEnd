@@ -33,13 +33,13 @@ public class MateriaServiceImpl implements MateriaService {
     @Transactional
     public MateriaResponse crearMateria(MateriaRequest materiaRequest) {
         // Validar que no exista otra materia con mismo nombre
-        boolean exists = materiaRepository.existsByNombre(materiaRequest.getNombre());
+        boolean exists = materiaRepository.existsByNombre(materiaRequest.getNombreMateria());
         if (exists) {
             throw new RuntimeException("Ya existe una materia con ese nombre");
         }
 
         Materia materia = Materia.builder()
-                .nombre(materiaRequest.getNombre())
+                .nombre(materiaRequest.getNombreMateria())
                 .descripcion(materiaRequest.getDescripcion())
                 .nivel(materiaRequest.getNivel())
                 .build();
