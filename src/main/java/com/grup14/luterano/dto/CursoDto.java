@@ -22,4 +22,5 @@ public class CursoDto {
     private Nivel nivel;
     private AulaDto aula;
     private List<MateriaCursoDto> dictados;
+    private Integer preceptorId;
 }

@@ -22,7 +22,7 @@ public class Curso {
   
     @JoinColumn(nullable = false)
     @Min(value = 1,message = "El año tiene que ser mayor/igual a 1")
-    @Max(value = 6,message = "El año tiene qeu ser menor/igual a 6")
+    @Max(value = 6,message = "El año tiene que ser menor/igual a 6")
     private int anio;
     @Enumerated(EnumType.STRING)
     private Division division;
@@ -34,6 +34,9 @@ public class Curso {
     private Aula aula;
 
     @OneToMany(mappedBy = "curso")
-    @Builder.Default // <-- inicializa la lista para evitar NullPointerException
+    @Builder.Default
     private List<MateriaCurso> dictados = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "preceptor_id")
+    private Preceptor preceptor;
 }

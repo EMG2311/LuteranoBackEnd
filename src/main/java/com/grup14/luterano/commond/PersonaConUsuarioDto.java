@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.UserDto;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.TipoDoc;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Data
 public class PersonaConUsuarioDto extends PersonaDto {
+
     private UserDto user;
 
 }
