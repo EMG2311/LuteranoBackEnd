@@ -21,7 +21,6 @@ import java.util.Collections;
 @RestController
 @RequestMapping("/tutor")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
-@CrossOrigin(origins = "*")
 @Tag(
         name = "Tutor Controller",
         description = "Controlador encargado de la gestión de tutores. " +

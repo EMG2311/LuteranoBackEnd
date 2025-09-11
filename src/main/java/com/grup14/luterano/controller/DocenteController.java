@@ -24,7 +24,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/docente")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
-@CrossOrigin(origins = "*")
 @Tag(
         name = "Docente Controller",
         description = "Controlador encargado de la gestión a los usuarios. " +

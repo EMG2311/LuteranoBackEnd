@@ -20,7 +20,6 @@ import java.util.Collections;
 @RestController
 @RequestMapping("/aula")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
-@CrossOrigin(origins = "*")
 
 public class AulaController {
 

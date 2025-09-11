@@ -22,9 +22,6 @@ import java.util.Collections;
 @RestController
 @RequestMapping("/curso")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
-@CrossOrigin(origins = "*")
-
-
 public class CursoController {
 
      @Autowired

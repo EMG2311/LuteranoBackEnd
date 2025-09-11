@@ -20,7 +20,6 @@ import java.util.Collections;
 @RestController
 @RequestMapping("/preceptor")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
-@CrossOrigin(origins = "*")
 @Tag(
         name = "Preceptor Controller",
         description = "Controlador encargado de la gestión de preceptores. " +
