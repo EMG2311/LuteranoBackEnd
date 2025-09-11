@@ -28,13 +28,13 @@ public class MateriaCursoController {
         this.materiaCursoService = materiaCursoService;
     }
 
-    @PostMapping("/asignarMateria/{materiaId}/{cursoId}")
+    @PostMapping("/asignarMaterias/{cursoId}")
     @Operation(summary = "Asigna una materia a un curso")
-    public ResponseEntity<MateriaCursoResponse> asignarMateria(
-            @PathVariable Long materiaId,
-            @PathVariable Long cursoId) {
+    public ResponseEntity<MateriaCursoResponse> asignarMaterias(
+            @PathVariable Long cursoId,
+            @RequestBody List<Long> materiaIds) {
         try {
-            return ResponseEntity.ok(materiaCursoService.asignarMateriaACurso(materiaId, cursoId));
+            return ResponseEntity.ok(materiaCursoService.asignarMateriasACurso(materiaIds, cursoId));
         } catch (MateriaCursoException e) {
             return ResponseEntity.status(422).body(
                     MateriaCursoResponse.builder()
@@ -50,27 +50,28 @@ public class MateriaCursoController {
         }
     }
 
-    @DeleteMapping("/quitarMateria/{materiaId}/{cursoId}")
-    @Operation(summary = "Quita una materia de un curso")
-    public ResponseEntity<MateriaCursoResponse> quitarMateria(
-            @PathVariable Long materiaId,
-            @PathVariable Long cursoId) {
+    @DeleteMapping("/quitarMaterias/{cursoId}")
+    @Operation(summary = "Quita varias materias de un curso")
+    public ResponseEntity<MateriaCursoListResponse> quitarMaterias(
+            @PathVariable Long cursoId,
+            @RequestBody List<Long> materiaIds) {
         try {
-            return ResponseEntity.ok(materiaCursoService.quitarMateriaDeCurso(materiaId, cursoId));
+            return ResponseEntity.ok(materiaCursoService.quitarMateriasDeCurso(materiaIds, cursoId));
         } catch (MateriaCursoException e) {
             return ResponseEntity.status(422).body(
-                    MateriaCursoResponse.builder()
+                    MateriaCursoListResponse.builder()
                             .code(-1)
-                            .manesaje(e.getMessage())
+                            .mensaje(e.getMessage())
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
-                    MateriaCursoResponse.builder()
+                    MateriaCursoListResponse.builder()
                             .code(-2)
-                            .manesaje("Error no controlado: " + e.getMessage())
+                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }
+
 
     @GetMapping("/listarMateriasDeCurso/{cursoId}")
     @Operation(summary = "Lista todas las materias de un curso")

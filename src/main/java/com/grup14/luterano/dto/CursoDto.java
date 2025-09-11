@@ -1,6 +1,5 @@
 package com.grup14.luterano.dto;
-import com.grup14.luterano.entities.Aula;
-import com.grup14.luterano.entities.Materia;
+import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
 import com.grup14.luterano.entities.enums.Nivel;
 import com.grup14.luterano.entities.enums.Division;
 import lombok.AllArgsConstructor;

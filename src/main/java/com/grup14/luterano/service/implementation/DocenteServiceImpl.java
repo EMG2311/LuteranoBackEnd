@@ -1,12 +1,12 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.DocenteDto;
-import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.dto.docente.DocenteDto;
+import com.grup14.luterano.dto.materiaCurso.MateriaCursoLigeroDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
-import com.grup14.luterano.mappers.MateriaMapper;
+import com.grup14.luterano.mappers.MateriaCursoMapper;
 import com.grup14.luterano.repository.DocenteRepository;
 import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.repository.MateriaRepository;
@@ -16,12 +16,9 @@ import com.grup14.luterano.request.docente.DocenteUpdateRequest;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
-import com.grup14.luterano.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -207,14 +204,28 @@ public class DocenteServiceImpl implements DocenteService {
 
     @Override
     public DocenteResponseList listDocentes() {
-        List<DocenteDto> docentes = new ArrayList<>();
-        docenteRepository.findAll().forEach(docente->{
-            docentes.add(DocenteMapper.toDto(docente));
-        });
+        List<DocenteDto> docentes = docenteRepository.findAll().stream()
+                .map(docente -> {
+                    // Convertimos el docente a DTO básico
+                    DocenteDto dto = DocenteMapper.toDto(docente);
+
+                    // Convertimos la lista de dictados a LigeroDto
+                    if (docente.getDictados() != null) {
+                        List<MateriaCursoLigeroDto> dictadosLigero = docente.getDictados().stream()
+                                .map(MateriaCursoMapper::toLigeroDto)
+                                .collect(Collectors.toList());
+
+                        dto.setDictados(dictadosLigero);
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         return DocenteResponseList.builder()
                 .docenteDtos(docentes)
                 .code(0)
-                .mensaje("Se listo correctamente los docentes")
+                .mensaje("Se listaron correctamente los docentes")
                 .build();
     }
 

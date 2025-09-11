@@ -24,7 +24,7 @@ import java.util.Collections;
 @Tag(
         name = "Tutor Controller",
         description = "Controlador encargado de la gestión de tutores. " +
-                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR"
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR, PRECEPTOR"
 )
 public class TutorController {
 

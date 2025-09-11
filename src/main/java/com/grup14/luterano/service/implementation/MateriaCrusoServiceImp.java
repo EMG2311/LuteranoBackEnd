@@ -1,6 +1,6 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
 import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.Materia;
@@ -17,8 +17,8 @@ import com.grup14.luterano.service.MateriaCursoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,50 +30,81 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
     private final DocenteRepository docenteRepository;
 
     @Override
-    public MateriaCursoResponse asignarMateriaACurso(Long materiaId, Long cursoId) {
-        Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new MateriaCursoException("La materia con id " + materiaId + " no existe"));
-
+    public MateriaCursoResponse asignarMateriasACurso(List<Long> materiaIds, Long cursoId) {
         Curso curso = cursoRepository.findById(cursoId)
-                .orElseThrow(() -> new MateriaCursoException("El curso con id " + cursoId + " no existe"));
+                .orElseThrow(() -> new MateriaCursoException("Curso no encontrado"));
 
-        if (materiaCursoRepository.existsByMateriaIdAndCursoId(materia.getId(), curso.getId())) {
-            throw new MateriaCursoException("La materia ya está asignada al curso");
+        List<Long> yaAsignadas = new ArrayList<>();
+
+        for (Long materiaId : materiaIds) {
+            Materia materia = materiaRepository.findById(materiaId)
+                    .orElseThrow(() -> new MateriaCursoException("Materia con id " + materiaId + " no encontrada"));
+
+            boolean existe = curso.getDictados().stream()
+                    .anyMatch(mc -> mc.getMateria().getId().equals(materiaId));
+
+            if (existe) {
+                yaAsignadas.add(materiaId);
+                continue;
+            }
+
+            MateriaCurso mc = MateriaCurso.builder()
+                    .curso(curso)
+                    .materia(materia)
+                    .build();
+            materiaCursoRepository.save(mc);
+            curso.getDictados().add(mc);
         }
 
-        MateriaCurso materiaCurso = MateriaCurso.builder()
-                .materia(materia)
-                .curso(curso)
-                .build();
+        cursoRepository.save(curso);
 
-        materiaCursoRepository.save(materiaCurso);
+        String mensaje = yaAsignadas.isEmpty()
+                ? "Materias asignadas correctamente"
+                : "Algunas materias ya estaban asignadas: " + yaAsignadas;
 
         return MateriaCursoResponse.builder()
-                .materiaCursoDto(MateriaCursoMapper.toDto(materiaCurso))
                 .code(0)
-                .manesaje("Materia asignada correctamente al curso")
+                .manesaje(mensaje)
                 .build();
     }
 
-    @Override
-    public MateriaCursoResponse quitarMateriaDeCurso(Long materiaId, Long cursoId) {
-        Materia materia = materiaRepository.findById(materiaId)
-                .orElseThrow(() -> new MateriaCursoException("La materia con id " + materiaId + " no existe"));
 
+
+    @Override
+    public MateriaCursoListResponse quitarMateriasDeCurso(List<Long> materiaIds, Long cursoId) {
         Curso curso = cursoRepository.findById(cursoId)
                 .orElseThrow(() -> new MateriaCursoException("El curso con id " + cursoId + " no existe"));
 
-        MateriaCurso materiaCurso = materiaCursoRepository.findByMateriaIdAndCursoId(materia.getId(), curso.getId())
-                .orElseThrow(() -> new MateriaCursoException("La materia no está asignada al curso"));
+        List<Long> noAsignadas = new ArrayList<>();
+        List<MateriaCursoDto> eliminadas = new ArrayList<>();
 
-        materiaCursoRepository.delete(materiaCurso);
+        for (Long materiaId : materiaIds) {
+            MateriaCurso materiaCurso = materiaCursoRepository.findByMateriaIdAndCursoId(materiaId, curso.getId())
+                    .orElse(null);
 
-        return MateriaCursoResponse.builder()
-                .materiaCursoDto(MateriaCursoMapper.toDto(materiaCurso))
+            if (materiaCurso == null) {
+                noAsignadas.add(materiaId);
+                continue;
+            }
+
+            materiaCursoRepository.delete(materiaCurso);
+            eliminadas.add(MateriaCursoMapper.toDto(materiaCurso));
+        }
+
+        String mensaje;
+        if (noAsignadas.isEmpty()) {
+            mensaje = "Materias eliminadas correctamente del curso";
+        } else {
+            mensaje = "Algunas materias no estaban asignadas al curso: " + noAsignadas;
+        }
+
+        return MateriaCursoListResponse.builder()
+                .materiaCursoDtoLis(eliminadas)
                 .code(0)
-                .manesaje("Materia eliminada correctamente del curso")
+                .mensaje(mensaje)
                 .build();
     }
+
 
     @Override
     public MateriaCursoListResponse listarMateriasDeCurso(Long cursoId) {
@@ -124,7 +155,10 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
 
         Docente docente = docenteRepository.findById(docenteId)
                 .orElseThrow(() -> new MateriaCursoException("Docente no encontrado"));
-
+        if (materiaCurso.getDocente() != null) {
+            throw new MateriaCursoException("La materia ya tiene un docente asignado: "
+                    + materiaCurso.getDocente().getNombre());
+        }
         materiaCurso.setDocente(docente);
         materiaCursoRepository.save(materiaCurso);
 

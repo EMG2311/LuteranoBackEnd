@@ -1,17 +1,11 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
-import com.grup14.luterano.dto.DocenteDto;
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.Tutor;
 import com.grup14.luterano.exeptions.AlumnoException;
-import com.grup14.luterano.entities.enums.EstadoAlumno;
-import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.AlumnoMapper;
-import com.grup14.luterano.mappers.CursoMapper;
-import com.grup14.luterano.mappers.TutorMapper;
 import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.TutorRepository;
@@ -19,10 +13,8 @@ import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
-import com.grup14.luterano.request.alumno.AsignarCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
-import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.service.AlumnoService;
 import com.grup14.luterano.specification.AlumnoSpecification;
 import jakarta.transaction.Transactional;
@@ -32,9 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

@@ -1,6 +1,6 @@
 package com.grup14.luterano.response.MateriaCurso;
 
-import com.grup14.luterano.dto.MateriaCursoDto;
+import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

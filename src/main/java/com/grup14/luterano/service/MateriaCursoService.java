@@ -6,8 +6,8 @@ import com.grup14.luterano.response.MateriaCurso.MateriaCursoResponse;
 import java.util.List;
 
 public interface MateriaCursoService {
-    MateriaCursoResponse asignarMateriaACurso(Long materiaId, Long cursoId);
-    MateriaCursoResponse quitarMateriaDeCurso(Long materiaId, Long cursoId);
+    MateriaCursoResponse asignarMateriasACurso(List<Long> materiasId, Long cursoId);
+    MateriaCursoListResponse quitarMateriasDeCurso(List<Long> materiaId, Long cursoId);
     MateriaCursoListResponse listarMateriasDeCurso(Long cursoId);
     MateriaCursoListResponse listarCursosDeMateria(Long materiaId);
     MateriaCursoResponse desasignarDocente(Long materiaId, Long cursoId);
