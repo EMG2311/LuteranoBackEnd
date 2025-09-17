@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -17,7 +18,7 @@ public class Calificacion {
 
     @Max(value = 10, message = "La nota no puede ser mayor a 10")
     @Min(value = 1, message = "La nota no puede ser menor a 1")
-    private float nota;
+    private Integer nota;
 
     private int numeroNota; // ejemplo: 1er parcial, 2do parcial, etc.
 

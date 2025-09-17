@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class HistorialCursoDto {
     private CursoDto curso;
     private LocalDate fechaDesde;
     private LocalDate fechaHasta;
-    private float promedio;
+    private BigDecimal promedio;
     private CicloLectivoDto cicloLectivo;
     private List<HistorialMateriaDto> historialMateriaDtos;
 }

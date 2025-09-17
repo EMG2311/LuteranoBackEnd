@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Builder
 public class CalificacionDto {
     private Long id;
-    private float nota;
+    private Integer nota;
     private int numeroNota;
     private LocalDate fecha;
     private HistorialMateriaDto historialMateria;

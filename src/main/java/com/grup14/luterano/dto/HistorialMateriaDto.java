@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -17,6 +18,6 @@ public class HistorialMateriaDto {
     private HistorialCursoDto historialCurso;
     private MateriaCursoDto materiaCurso;
 
-    private float promedio;
+    private BigDecimal promedio;
     private List<CalificacionDto> calificaciones;
 }

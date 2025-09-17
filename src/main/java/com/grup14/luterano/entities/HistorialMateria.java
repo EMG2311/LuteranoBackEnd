@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class HistorialMateria {
     @JoinColumn(name = "materia_curso_id")
     private MateriaCurso materiaCurso;
 
-    private Float promedio; // promedio de esa materia en particular
+    private BigDecimal promedio; // promedio de esa materia en particular
 
     @OneToMany(mappedBy = "historialMateria", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Calificacion> calificaciones = new ArrayList<>();

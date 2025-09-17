@@ -30,4 +30,7 @@ public class MateriaCurso {
 
     @OneToMany(mappedBy = "materiaCurso")
     private List<HistorialMateria> historiales = new ArrayList<>();
+
+    @OneToMany(mappedBy = "materiaCurso")
+    private List<MesaExamen> mesasExamen = new ArrayList<>();
 }

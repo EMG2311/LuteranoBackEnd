@@ -16,9 +16,15 @@ public class MesaExamenAlumno {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Alumno alumno;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private MesaExamen mesaExamen;
+
+    private Integer nota;
+
+    public boolean estaAprobado() {
+        return nota != null && nota >= 6.0f;
+    }
 }
