@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class MateriaCursoResponse{
     private MateriaCursoDto materiaCursoDto;
     private Integer code;
-    private String manesaje;
+    private String mensaje;
 }
