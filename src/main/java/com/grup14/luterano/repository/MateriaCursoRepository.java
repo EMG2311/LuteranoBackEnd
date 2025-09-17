@@ -7,7 +7,7 @@ import java.util.Optional;
 
 
 public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long> {
-    Optional<MateriaCurso> findByMateriaId(Long idMateria);
+    List<MateriaCurso>findByMateriaId(Long idMateria);
     boolean existsByMateriaIdAndCursoId(Long materiaId, Long cursoId);
     Optional<MateriaCurso> findByMateriaIdAndCursoId(Long materiaId, Long cursoId);
     List<MateriaCurso> findByCursoId(Long cursoId);
