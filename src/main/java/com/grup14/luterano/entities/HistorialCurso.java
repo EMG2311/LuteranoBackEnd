@@ -27,8 +27,9 @@ public class HistorialCurso {
 
     private LocalDate fechaDesde;
     private LocalDate fechaHasta;
-    private float promedio;
+
+    private float promedio; // promedio global del curso
 
     @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HistorialCalificaciones> historialesCalificaciones = new ArrayList<>();
+    private List<HistorialMateria> historialMaterias = new ArrayList<>();
 }

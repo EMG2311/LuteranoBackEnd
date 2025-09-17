@@ -21,5 +21,5 @@ public class CalificacionDto {
     private AlumnoDto alumno;
     private MateriaDto materia;
     private CicloLectivoDto cicloLectivo;
-    private HistorialCalificacionesDto historialCalificaciones;
+    private HistorialMateriaDto historialMaterias;
 }

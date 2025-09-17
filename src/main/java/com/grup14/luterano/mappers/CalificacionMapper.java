@@ -19,7 +19,7 @@ public class CalificacionMapper {
                 .alumno(AlumnoMapper.toDto(entity.getAlumno()))
                 .materia(MateriaMapper.toDto(entity.getMateria()))
                 .cicloLectivo(CicloLectivoMapper.toDto(entity.getCicloLectivo()))
-                .historialCalificaciones(HistorialCalificacionesMapper.toDto(entity.getHistorialCalificaciones()))
+                .historialMaterias(HistorialMateriaMapper.toDto(entity.getHistorialCalificaciones()))
                 .build();
     }
 
@@ -36,7 +36,7 @@ public class CalificacionMapper {
                 .alumno(AlumnoMapper.toEntity(dto.getAlumno()))
                 .materia(MateriaMapper.toEntity(dto.getMateria()))
                 .cicloLectivo(CicloLectivoMapper.toEntity(dto.getCicloLectivo()))
-                .historialCalificaciones(HistorialCalificacionesMapper.toEntity(dto.getHistorialCalificaciones()))
+                .historialCalificaciones(HistorialMateriaMapper.toEntity(dto.getHistorialMaterias()))
                 .build();
     }
 }

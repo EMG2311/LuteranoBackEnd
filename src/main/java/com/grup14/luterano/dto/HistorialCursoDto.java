@@ -19,5 +19,5 @@ public class HistorialCursoDto {
     private LocalDate fechaHasta;
     private float promedio;
     private CicloLectivoDto cicloLectivo;
-    private List<HistorialCalificacionesDto> historialesCalificaciones;
+    private List<HistorialMateriaDto> historialMateriaDtos;
 }

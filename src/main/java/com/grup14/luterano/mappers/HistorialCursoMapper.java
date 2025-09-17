@@ -19,10 +19,10 @@ public class HistorialCursoMapper {
                 .fechaHasta(entity.getFechaHasta())
                 .promedio(entity.getPromedio())
                 .cicloLectivo(CicloLectivoMapper.toDto(entity.getCicloLectivo()))
-                .historialesCalificaciones(entity.getHistorialesCalificaciones() == null ? null :
-                        entity.getHistorialesCalificaciones()
+                .historialMateriaDtos(entity.getHistorialMaterias() == null ? null :
+                        entity.getHistorialMaterias()
                                 .stream()
-                                .map(HistorialCalificacionesMapper::toDto)
+                                .map(HistorialMateriaMapper::toDto)
                                 .collect(Collectors.toList())
                 )
                 .build();
@@ -40,10 +40,10 @@ public class HistorialCursoMapper {
                 .fechaHasta(dto.getFechaHasta())
                 .promedio(dto.getPromedio())
                 .cicloLectivo(CicloLectivoMapper.toEntity(dto.getCicloLectivo()))
-                .historialesCalificaciones(dto.getHistorialesCalificaciones() == null ? null :
-                        dto.getHistorialesCalificaciones()
+                .historialMaterias(dto.getHistorialMateriaDtos() == null ? null :
+                        dto.getHistorialMateriaDtos()
                                 .stream()
-                                .map(HistorialCalificacionesMapper::toEntity)
+                                .map(HistorialMateriaMapper::toEntity)
                                 .collect(Collectors.toList())
                 )
                 .build();

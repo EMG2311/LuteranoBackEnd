@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HistorialCalificacionesDto {
+public class HistorialMateriaDto {
     private Long id;
     private HistorialCursoDto historialCurso;
     private MateriaCursoDto materiaCurso;

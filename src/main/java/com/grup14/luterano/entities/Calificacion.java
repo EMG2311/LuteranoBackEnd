@@ -1,9 +1,6 @@
 package com.grup14.luterano.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
@@ -15,30 +12,18 @@ import java.time.LocalDate;
 @Builder@Data
 public class Calificacion {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Max(value = 10,message = "La nota no puede ser mayor a 10")
-    @Min(value = 1,message = "La nota no puede ser menor a 1")
+    @Max(value = 10, message = "La nota no puede ser mayor a 10")
+    @Min(value = 1, message = "La nota no puede ser menor a 1")
     private float nota;
 
-    private int numeroNota;
-
-    @Max(value = 10,message = "La nota no puede ser mayor a 10")
-    @Min(value = 1,message = "La nota no puede ser menor a 1")
-    private float PG;
+    private int numeroNota; // ejemplo: 1er parcial, 2do parcial, etc.
 
     private LocalDate fecha;
 
-    @ManyToOne
-    private Alumno alumno;
-
-    @ManyToOne
-    private Materia materia;
-
-    @ManyToOne
-    private CicloLectivo cicloLectivo;
-    @ManyToOne
-    private HistorialCalificaciones historialCalificaciones;
-
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "historial_materia_id")
+    private HistorialMateria historialMateria;
 }
