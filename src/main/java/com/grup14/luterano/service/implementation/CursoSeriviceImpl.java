@@ -158,8 +158,34 @@ public class CursoSeriviceImpl implements CursoService {
                 .map(CursoMapper::toDto)
                 .collect(Collectors.toList());
 
+        return CursoResponseList.builder()
+                .cursoDtos(cursos)
+                .code(0)
+                .mensaje("Lista de cursos obtenida correctamente")
+                .build();
+    }
 
-        // Retornar la respuesta con la lista de cursos
+    @Override
+    public CursoResponseList listCursosPorPreceptor(Long id) {
+        List<CursoDto> cursos = cursoRepository.findByPreceptorId(id)
+                .stream()
+                .map(CursoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return CursoResponseList.builder()
+                .cursoDtos(cursos)
+                .code(0)
+                .mensaje("Lista de cursos obtenida correctamente")
+                .build();
+    }
+
+    @Override
+    public CursoResponseList listCursosPorDocente(Long id) {
+        List<CursoDto> cursos = cursoRepository.findCursosByDocenteId(id)
+                .stream()
+                .map(CursoMapper::toDto)
+                .collect(Collectors.toList());
+
         return CursoResponseList.builder()
                 .cursoDtos(cursos)
                 .code(0)

@@ -110,6 +110,38 @@ public class CursoController {
     }
 
 
+    @GetMapping("/list/docente/{id}")
+    @Operation(summary = "Lista todos los cursos de un docente", description = "Devuelve una lista de todos los cursos de un docente.")
+    public ResponseEntity<CursoResponseList> listCursosPorDocente(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(cursoService.listCursosPorDocente(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CursoResponseList.builder()
+                            .cursoDtos(Collections.emptyList())
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
+
+
+    @GetMapping("/list/preceptor/{id}")
+    @Operation(summary = "Lista todos los cursos por preceptor", description = "Devuelve una lista de todos los cursos de un preceptor.")
+    public ResponseEntity<CursoResponseList> listCursosPorPreceptor(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(cursoService.listCursosPorPreceptor(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CursoResponseList.builder()
+                            .cursoDtos(Collections.emptyList())
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
+
+
 
 
 
