@@ -136,5 +136,18 @@ public class AulaServiceImpl implements AulaService {
                 .build();
     }
 
+    @Override
+    public AulaResponseList listAulasSinCurso() {
+        List<AulaDto> aulas = aulaRepository.findAulaSinCurso().stream()
+                .map(AulaMapper::toDto)
+                .toList();
+
+        return AulaResponseList.builder()
+                .aulaDtos(aulas)
+                .code(0)
+                .mensaje("Aulas listadas correctamente")
+                .build();
+    }
+
 
 }
