@@ -3,6 +3,7 @@ package com.grup14.luterano.controller;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.request.docente.DocenteRequest;
 import com.grup14.luterano.request.docente.DocenteUpdateRequest;
+import com.grup14.luterano.response.Preceptor.PreceptorResponse;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.service.DocenteService;
@@ -105,6 +106,25 @@ public class DocenteController {
                             .build());
         }
     }
-
+    @GetMapping("/usuario/{userId}")
+    @Operation(summary = "Busca un docente por un userId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE')")
+    public ResponseEntity<DocenteResponse> findByUserId(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(docenteService.findDocenteByUserId(userId));
+        } catch (DocenteException d) {
+            return ResponseEntity.status(422).body(DocenteResponse.builder()
+                    .code(-1)
+                    .mensaje(d.getMessage())
+                    .build());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(DocenteResponse.builder()
+                            .docente(null)
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
 
 }

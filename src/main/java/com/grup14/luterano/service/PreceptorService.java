@@ -10,4 +10,5 @@ public interface PreceptorService {
     PreceptorResponse updatePreceptor(PreceptorUpdateRequest PreceptorRequest);
     PreceptorResponse deletePreceptor(Long id);
     PreceptorResponseList listPreceptores();
+    PreceptorResponse findPreceptorByUserId(Long userId);
 }

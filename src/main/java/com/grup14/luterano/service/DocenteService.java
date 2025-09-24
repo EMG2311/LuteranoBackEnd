@@ -2,6 +2,7 @@ package com.grup14.luterano.service;
 
 import com.grup14.luterano.request.docente.DocenteRequest;
 import com.grup14.luterano.request.docente.DocenteUpdateRequest;
+import com.grup14.luterano.response.Preceptor.PreceptorResponse;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 
@@ -12,4 +13,6 @@ public interface DocenteService {
     DocenteResponse updateDocente(DocenteUpdateRequest docenteRequest);
     DocenteResponse deleteDocente(Long id);
     DocenteResponseList listDocentes();
+    DocenteResponse findDocenteByUserId(Long userId);
+
 }
