@@ -91,6 +91,7 @@ public class UserController {
         }
     }
     @PostMapping("/email")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR')")
     @Operation(summary = "Busca un usuario con mail")
     public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid@RequestBody EmailRequest emailRequest){
         try{
