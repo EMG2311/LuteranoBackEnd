@@ -16,40 +16,14 @@ public class InasistenciaDocenteMapper {
         return InasistenciaDocenteDto.builder()
                 .id(entity.getId())
                 .docenteId(entity.getDocente() != null ? entity.getDocente().getId() : null)
-                .preceptorId(entity.getPreceptor() != null ? entity.getPreceptor().getId() : null)
+                .usuarioId(entity.getUsuario() != null ? entity.getUsuario().getId() : null)
                 .fecha(entity.getFecha())
                 .estado(entity.getEstado())
                 .build();
     }
 
-    // Convierte un objeto InasistenciaDocenteRequest a una entidad InasistenciaDocente
-    public static InasistenciaDocente toEntity(InasistenciaDocenteRequest request) {
-            if (request == null) {
-                return null;
-            }
-
-            return InasistenciaDocente.builder()
-                    .fecha(request.getFecha())
-                    .estado(request.getEstado())
-                    // La búsqueda del docente y preceptor por ID debe hacerse en el servicio, no en el mapper.
-                    .build();
-        }
-
-
-   // convertir de dto a entity (para actualización)
-
-    public static InasistenciaDocente toEntity(InasistenciaDocenteDto dto) {
-         if (dto == null) {
-              return null;
-         }
-         return InasistenciaDocente.builder()
-                .id(dto.getId())
-                .fecha(dto.getFecha())
-                .estado(dto.getEstado())
-                // La búsqueda del docente y preceptor por ID debe hacerse en el servicio, no en el mapper.
-                .build();
-    }
 }
+
 
 
 

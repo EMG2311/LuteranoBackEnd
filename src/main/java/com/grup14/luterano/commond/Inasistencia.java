@@ -4,7 +4,6 @@ import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -18,9 +17,6 @@ import java.time.LocalDate;
 @SuperBuilder
 public class Inasistencia {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     private LocalDate fecha;
     @Enumerated(EnumType.STRING)

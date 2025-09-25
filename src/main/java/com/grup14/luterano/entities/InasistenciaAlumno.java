@@ -1,19 +1,31 @@
 package com.grup14.luterano.entities;
 
 import com.grup14.luterano.commond.Inasistencia;
+import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-@Entity@Data
+import java.time.LocalDate;
+
+@Entity
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InasistenciaAlumno extends Inasistencia {
+
+public class InasistenciaAlumno {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private LocalDate fecha;
+
+    @Enumerated(EnumType.STRING)
+    private EstadoAsistencia estado;
+
+    @ManyToOne
+    private Preceptor preceptor;
+
     @ManyToOne
     private Alumno alumno;
 }

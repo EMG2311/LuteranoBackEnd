@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class InasistenciaDocenteResponseList {
 
-    private List<InasistenciaDocenteDto> inasistenciaDocenteDto;
+    private List<InasistenciaDocenteDto> inasistenciaDocenteDtos;
     private Integer code;
     private String mensaje;
 }
