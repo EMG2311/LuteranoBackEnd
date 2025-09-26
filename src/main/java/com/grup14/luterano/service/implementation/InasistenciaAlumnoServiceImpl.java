@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.InasistenciaAlumnoDto;
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.InasistenciaAlumno;
 import com.grup14.luterano.entities.User;
+import com.grup14.luterano.exeptions.InasistenciaAlumnoException;
 import com.grup14.luterano.mappers.InasistenciaAlumnoMapper;
 import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.InasistenciaAlumnoRepository;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -86,22 +88,78 @@ public class InasistenciaAlumnoServiceImpl implements InasistenciaAlumnoService 
     @Override
     @Transactional
     public InasistenciaAlumnoResponse updateInasistenciaAlumno(Long id, InasistenciaAlumnoUpdateRequest request) {
-        return null;
+
+        //  Validar el ID
+        if (id == null) {
+            throw new IllegalArgumentException("El ID de la inasistencia no puede ser nulo.");
+        }
+        //  Buscar la inasistencia en la base de datos
+        Optional<InasistenciaAlumno> inasistenciaOptional = inasistenciaAlumnoRepository.findById(id);
+
+
+        //  Lanzar una excepción si la inasistencia no existe
+        if (inasistenciaOptional.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró la inasistencia con el ID proporcionado: " + id);
+        }
+
+        //  Actualizar el estado de la entidad
+        InasistenciaAlumno inasistencia = inasistenciaOptional.get();
+        inasistencia.setFecha(request.getFecha());
+        inasistencia.setEstado(request.getEstado());
+
+        //  Guardar la entidad actualizada en la base de datos
+        InasistenciaAlumno updatedInasistencia = inasistenciaAlumnoRepository.save(inasistencia);
+
+        //  Construir y devolver la respuesta
+        return InasistenciaAlumnoResponse.builder()
+                .InasistenciaAlumno(InasistenciaAlumnoMapper.toDto(updatedInasistencia))
+                .code(200)
+                .mensaje("Inasistencia actualizada exitosamente.")
+                .build();
     }
 
     @Override
-    @Transactional
     public InasistenciaAlumnoResponse deleteInasistenciaAlumno(Long id) {
-        return null;
+
+        InasistenciaAlumno inasistencia = inasistenciaAlumnoRepository.findById(id)
+                .orElseThrow(() -> new InasistenciaAlumnoException("No se encontró la inasistencia con ID: " + id));
+
+        inasistenciaAlumnoRepository.deleteById(id);
+        logger.info ("Inasistencia alumno eliminada con ID: {}", id);
+        return InasistenciaAlumnoResponse.builder()
+                .InasistenciaAlumno(InasistenciaAlumnoMapper.toDto(inasistencia))
+                .code(200)
+                .mensaje("Inasistencia eliminada exitosamente.")
+                .build();
+
     }
 
     @Override
     public InasistenciaAlumnoResponse getInasistenciaAlumnoById(Long id) {
-        return null;
+
+        InasistenciaAlumno inasistencia = inasistenciaAlumnoRepository.findById(id)
+                .orElseThrow(() -> new InasistenciaAlumnoException("No se encontró la inasistencia con ID: " + id));
+
+        return InasistenciaAlumnoResponse.builder()
+                .InasistenciaAlumno(InasistenciaAlumnoMapper.toDto(inasistencia))
+                .code(200)
+                .mensaje("Inasistencia encontrada exitosamente.")
+                .build();
     }
 
     @Override
     public InasistenciaAlumnoResponseList listInasistenciaAlumno() {
-        return null;
+
+        List<InasistenciaAlumnoDto> inasistencias = inasistenciaAlumnoRepository.findAll().stream()
+                .map(InasistenciaAlumnoMapper::toDto)
+                .toList();
+        return InasistenciaAlumnoResponseList.builder()
+                .inasistenciaAlumnoDtos(inasistencias)
+                .code(200)
+                .mensaje("Lista de inasistencias obtenida exitosamente.")
+                .build();
+
+
+
     }
 }

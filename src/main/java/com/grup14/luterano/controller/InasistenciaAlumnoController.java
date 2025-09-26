@@ -1,6 +1,7 @@
 package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.AlumnoException;
+import com.grup14.luterano.exeptions.InasistenciaAlumnoException;
 import com.grup14.luterano.request.alumno.InasistenciaAlumnoRequest;
 import com.grup14.luterano.request.alumno.InasistenciaAlumnoUpdateRequest;
 import com.grup14.luterano.response.alumno.InasistenciaAlumnoResponse;
@@ -32,7 +33,7 @@ public class InasistenciaAlumnoController {
     public ResponseEntity<InasistenciaAlumnoResponse> createInasistenciaAlumno (@RequestBody @Validated InasistenciaAlumnoRequest inasistenciaAlumnoRequest) {
         try {
             return ResponseEntity.ok(inasistenciaAlumnoService.crearInasistenciaAlumno(inasistenciaAlumnoRequest));
-        } catch (AlumnoException e) {
+        } catch (InasistenciaAlumnoException e) {
             return ResponseEntity.status(422).body(InasistenciaAlumnoResponse.builder()
                     .code(-1)
                     .mensaje(e.getMessage())
