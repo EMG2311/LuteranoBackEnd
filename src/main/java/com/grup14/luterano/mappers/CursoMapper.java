@@ -25,6 +25,7 @@ public class CursoMapper {
                 .dictados(entity.getDictados().stream()
                         .map(MateriaCursoMapper::toDto)
                         .collect(Collectors.toList()))
+                .preceptorId(entity.getPreceptor() != null ? entity.getPreceptor().getId():null)
                 .build();
     }
 

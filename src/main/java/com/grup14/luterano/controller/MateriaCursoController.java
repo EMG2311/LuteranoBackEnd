@@ -39,13 +39,13 @@ public class MateriaCursoController {
             return ResponseEntity.status(422).body(
                     MateriaCursoResponse.builder()
                             .code(-1)
-                            .manesaje(e.getMessage())
+                            .mensaje(e.getMessage())
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
                     MateriaCursoResponse.builder()
                             .code(-2)
-                            .manesaje("Error no controlado: " + e.getMessage())
+                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }
@@ -131,13 +131,13 @@ public class MateriaCursoController {
             return ResponseEntity.status(422).body(
                     MateriaCursoResponse.builder()
                             .code(-1)
-                            .manesaje(e.getMessage())
+                            .mensaje(e.getMessage())
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
                     MateriaCursoResponse.builder()
                             .code(-2)
-                            .manesaje("Error no controlado: " + e.getMessage())
+                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }
@@ -153,13 +153,13 @@ public class MateriaCursoController {
             return ResponseEntity.status(422).body(
                     MateriaCursoResponse.builder()
                             .code(-1)
-                            .manesaje(e.getMessage())
+                            .mensaje(e.getMessage())
                             .build());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
                     MateriaCursoResponse.builder()
                             .code(-2)
-                            .manesaje("Error no controlado: " + e.getMessage())
+                            .mensaje("Error no controlado: " + e.getMessage())
                             .build());
         }
     }

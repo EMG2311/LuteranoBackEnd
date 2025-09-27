@@ -114,7 +114,6 @@ public class CursoSeriviceImpl implements CursoService {
         //  Guardar los cambios
         curso = cursoRepository.save(curso);
         logger.info("Curso actualizado con ID: {}", curso.getId());
-
         // Retornar respuesta usando el mapper
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
@@ -158,8 +157,33 @@ public class CursoSeriviceImpl implements CursoService {
                 .map(CursoMapper::toDto)
                 .collect(Collectors.toList());
 
+        return CursoResponseList.builder()
+                .cursoDtos(cursos)
+                .code(0)
+                .mensaje("Lista de cursos obtenida correctamente")
+                .build();
+    }
 
-        // Retornar la respuesta con la lista de cursos
+    @Override
+    public CursoResponseList listCursosPorPreceptor(Long id) {
+        List<CursoDto> cursos = cursoRepository.findByPreceptorId(id)
+                .stream()
+                .map(CursoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return CursoResponseList.builder()
+                .cursoDtos(cursos)
+                .code(0)
+                .mensaje("Se listaron correctamente los cursos del preceptor")
+                .build();
+    }
+    @Override
+    public CursoResponseList listCursosPorDocente(Long id) {
+        List<CursoDto> cursos = cursoRepository.findCursosByDocenteId(id)
+                .stream()
+                .map(CursoMapper::toDto)
+                .collect(Collectors.toList());
+
         return CursoResponseList.builder()
                 .cursoDtos(cursos)
                 .code(0)

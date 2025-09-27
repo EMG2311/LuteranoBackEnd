@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.PreceptorDto;
 import com.grup14.luterano.dto.TutorDto;
 import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.entities.Tutor;
+import com.grup14.luterano.entities.User;
 
 public class PreceptorMapper {
     public static PreceptorDto toDto(Preceptor entity) {
@@ -23,6 +24,7 @@ public class PreceptorMapper {
                 .telefono(entity.getTelefono())
                 .fechaNacimiento(entity.getFechaNacimiento())
                 .fechaIngreso(entity.getFechaIngreso())
+                .user(UserMapper.toDto(entity.getUser()))
                 .build();
     }
 

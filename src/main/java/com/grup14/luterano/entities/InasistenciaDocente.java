@@ -16,6 +16,16 @@ import java.time.LocalDate;
 
 public class InasistenciaDocente  {
 
+import java.time.LocalDate;
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+
+public class InasistenciaDocente  {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

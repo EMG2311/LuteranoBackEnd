@@ -173,6 +173,7 @@ public class PreceptorServiceImpl implements PreceptorService {
                 .build();
     }
 
+
     private void validarFechas(Date nacimiento, Date ingreso) {
         Date actual = new Date();
         if (nacimiento != null && nacimiento.after(actual)) {
@@ -184,5 +185,19 @@ public class PreceptorServiceImpl implements PreceptorService {
         if (nacimiento != null && ingreso != null && !ingreso.after(nacimiento)) {
             throw new PreceptorException("La fecha de ingreso debe ser posterior a la fecha de nacimiento");
         }
+    }
+
+    @Override
+    public PreceptorResponse findPreceptorByUserId(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                ()->new PreceptorException("No existe un usuario con el id " + userId));
+        Preceptor preceptor = preceptorRepository.findByUser(user)
+                .orElseThrow(()->new PreceptorException("No hay ningun preceptor asociado al usuario "+ user.getUsername()));
+
+        return PreceptorResponse.builder()
+                .preceptor(PreceptorMapper.toDto(preceptor))
+                .mensaje("")
+                .code(0)
+                .build();
     }
 }

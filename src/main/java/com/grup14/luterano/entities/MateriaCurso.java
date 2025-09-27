@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MateriaCurso {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,5 +29,8 @@ public class MateriaCurso {
     private Docente docente;
 
     @OneToMany(mappedBy = "materiaCurso")
-    private List<HistorialCalificaciones> historiales = new ArrayList<>();
+    private List<HistorialMateria> historiales = new ArrayList<>();
+
+    @OneToMany(mappedBy = "materiaCurso")
+    private List<MesaExamen> mesasExamen = new ArrayList<>();
 }

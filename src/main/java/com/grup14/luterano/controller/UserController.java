@@ -1,6 +1,5 @@
 package com.grup14.luterano.controller;
 
-import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.exeptions.UserException;
@@ -10,14 +9,11 @@ import com.grup14.luterano.response.user.UserCreadoResponse;
 import com.grup14.luterano.response.user.UserListResponse;
 import com.grup14.luterano.response.user.UserResponse;
 import com.grup14.luterano.response.user.UserUpdateResponse;
-import com.grup14.luterano.service.EmailServiceImpl;
 import com.grup14.luterano.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -94,7 +90,8 @@ public class UserController {
                     .build());
         }
     }
-    @GetMapping("/email")
+    @PostMapping("/email")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR')")
     @Operation(summary = "Busca un usuario con mail")
     public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid@RequestBody EmailRequest emailRequest){
         try{

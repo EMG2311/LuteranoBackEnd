@@ -19,7 +19,6 @@ public interface AlumnoService {
     AlumnoResponse asignarCurso(Long alumnoId, Long cursoId);
     AlumnoResponse desasignarCurso(Long alumnoId, Long cursoId);
 
-
     ///luego hacer:registrar asistencia
     /// AlumnoResponse getAlumnoById(Long id);
 

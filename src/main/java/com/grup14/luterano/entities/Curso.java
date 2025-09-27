@@ -29,7 +29,7 @@ public class Curso {
     @Enumerated(EnumType.STRING)
     private Nivel nivel;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "aula_id", unique = true)
     private Aula aula;
 

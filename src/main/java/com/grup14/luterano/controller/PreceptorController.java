@@ -105,4 +105,25 @@ public class PreceptorController {
                             .build());
         }
     }
+
+    @GetMapping("/usuario/{userId}")
+    @Operation(summary = "Busca un preceptor por un userId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+    public ResponseEntity<PreceptorResponse> findByUserId(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(preceptorService.findPreceptorByUserId(userId));
+        } catch (PreceptorException e) {
+            return ResponseEntity.status(422).body(PreceptorResponse.builder()
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(PreceptorResponse.builder()
+                            .preceptor(null)
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
 }

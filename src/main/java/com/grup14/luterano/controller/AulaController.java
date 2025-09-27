@@ -105,4 +105,20 @@ public class AulaController {
                             .build());
         }
     }
+
+    @GetMapping("/listSinCurso")
+    @Operation(summary = "Obtiene un aula sin Curso", description = "")
+    public ResponseEntity<AulaResponseList> getAulaSinCurso() {
+        try {
+            return ResponseEntity.ok(aulaService.listAulasSinCurso());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(AulaResponseList.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado " + e.getMessage())
+                            .build());
+        }
+    }
+
+
 }

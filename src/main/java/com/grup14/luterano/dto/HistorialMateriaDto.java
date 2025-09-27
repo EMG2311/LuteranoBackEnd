@@ -6,17 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HistorialCalificacionesDto {
+public class HistorialMateriaDto {
     private Long id;
     private HistorialCursoDto historialCurso;
     private MateriaCursoDto materiaCurso;
 
-    private float promedio;
+    private BigDecimal promedio;
     private List<CalificacionDto> calificaciones;
 }

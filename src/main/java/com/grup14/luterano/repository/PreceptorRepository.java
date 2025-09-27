@@ -10,6 +10,5 @@ import java.util.Optional;
 public interface PreceptorRepository extends JpaRepository<Preceptor,Long> {
     Optional<Preceptor> findByDni(String dni);
     Optional<Preceptor> findByEmail(String email);
-    Optional<Preceptor> findByUser (User usuario);
-
+    Optional<Preceptor> findByUser(User user);
 }

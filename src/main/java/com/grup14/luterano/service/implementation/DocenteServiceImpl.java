@@ -5,6 +5,7 @@ import com.grup14.luterano.dto.materiaCurso.MateriaCursoLigeroDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
+import com.grup14.luterano.exeptions.PreceptorException;
 import com.grup14.luterano.mappers.DocenteMapper;
 import com.grup14.luterano.mappers.MateriaCursoMapper;
 import com.grup14.luterano.repository.DocenteRepository;
@@ -226,6 +227,20 @@ public class DocenteServiceImpl implements DocenteService {
                 .docenteDtos(docentes)
                 .code(0)
                 .mensaje("Se listaron correctamente los docentes")
+                .build();
+    }
+
+    @Override
+    public DocenteResponse findDocenteByUserId(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                ()->new PreceptorException("No existe un usuario con el id " + userId));
+        Docente docente = docenteRepository.findByUser(user)
+                .orElseThrow(()->new DocenteException("No hay ningun docente asociado al usuario "+ user.getUsername()));
+
+        return DocenteResponse.builder()
+                .docente(DocenteMapper.toDto(docente))
+                .mensaje("")
+                .code(0)
                 .build();
     }
 
