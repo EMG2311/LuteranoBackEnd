@@ -8,24 +8,13 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
-@Entity
-@Data
-@Builder
+@Entity@Data
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-
-public class InasistenciaAlumno {
+public class InasistenciaAlumno extends Inasistencia {
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private LocalDate fecha;
-
-    @Enumerated(EnumType.STRING)
-    private EstadoAsistencia estado;
-
-    @ManyToOne
-    private Preceptor preceptor;
-
     @ManyToOne
     private Alumno alumno;
 }
