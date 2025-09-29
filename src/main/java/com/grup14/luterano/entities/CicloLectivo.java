@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
+
+import java.time.LocalDate;
 
 @Entity@Builder@AllArgsConstructor@NoArgsConstructor@Data
 public class CicloLectivo {
@@ -15,4 +18,6 @@ public class CicloLectivo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
+    private LocalDate fechaDesde;
+    private LocalDate fechaHasta;
 }

@@ -3,14 +3,17 @@ package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.exeptions.DocenteException;
+import com.grup14.luterano.exeptions.HistorialCursoException;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
 import com.grup14.luterano.request.docente.DocenteUpdateRequest;
+import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
+import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.service.AlumnoService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
@@ -147,5 +150,34 @@ public class AlumnoController {
         }
     }
 
+
+
+    @PostMapping("/asignarCursoAlumno")
+    @Operation(
+            summary = "Asigna un alumno a un curso",
+            description = "Crea un nuevo registro de historial de curso para un alumno en un ciclo lectivo. " +
+                    "Si el alumno ya tiene un curso asignado en ese ciclo, se cierra el historial anterior y se abre uno nuevo."
+    )
+    public ResponseEntity<AlumnoResponse> asignarCursoAlumno(
+            @RequestBody @Validated HistorialCursoRequest request) {
+        try {
+            AlumnoResponse response = alumnoService.asignarCurso(request);
+            return ResponseEntity.ok(response);
+        } catch (HistorialCursoException e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error inesperado: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 }

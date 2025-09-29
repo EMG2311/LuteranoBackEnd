@@ -3,9 +3,10 @@ package com.grup14.luterano.repository;
 import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.entities.Tutor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-
+@Repository
 public interface PreceptorRepository extends JpaRepository<Preceptor,Long> {
     Optional<Preceptor> findByDni(String dni);
     Optional<Preceptor> findByEmail(String email);

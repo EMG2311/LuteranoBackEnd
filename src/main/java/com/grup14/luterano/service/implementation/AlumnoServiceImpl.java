@@ -1,18 +1,14 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
-import com.grup14.luterano.entities.Alumno;
-import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.Tutor;
+import com.grup14.luterano.entities.*;
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.mappers.AlumnoMapper;
-import com.grup14.luterano.repository.AlumnoRepository;
-import com.grup14.luterano.repository.CursoRepository;
-import com.grup14.luterano.repository.TutorRepository;
-import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
+import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.service.AlumnoService;
@@ -24,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,10 +35,18 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     private final TutorRepository tutorRepository;
 
-    public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,TutorRepository tutorRepository){
+    private final HistorialCursoRepository historialCursoRepository;
+
+    private final CicloLectivoRepository cicloLectivoRepository;
+
+    public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,
+                             TutorRepository tutorRepository, CicloLectivoRepository cicloLectivoRepository,
+                             HistorialCursoRepository historialCursoRepository){
         this.alumnoRepository=alumnoRepository;
         this.cursoRepository=cursoRepository;
         this.tutorRepository=tutorRepository;
+        this.historialCursoRepository=historialCursoRepository;
+        this.cicloLectivoRepository=cicloLectivoRepository;
     }
 
     @Autowired
@@ -168,13 +173,40 @@ public class AlumnoServiceImpl implements AlumnoService {
     }
 
     @Override
-    public AlumnoResponse asignarCurso(Long alumnoId, Long cursoId) {
-        return null;
+    public AlumnoResponse asignarCurso(HistorialCursoRequest request) {
+        Alumno alumno = alumnoRepository.findById(request.getAlumnoId())
+                .orElseThrow(() -> new AlumnoException("Alumno no encontrado"));
+        Curso curso = cursoRepository.findById(request.getCursoId())
+                .orElseThrow(() -> new AlumnoException("Curso no encontrado"));
+        CicloLectivo cicloLectivo = cicloLectivoRepository.findById(request.getCicloLectivoId())
+                .orElseThrow(() -> new AlumnoException("Ciclo lectivo no encontrado"));
+
+        historialCursoRepository
+                .findByAlumno_IdAndCicloLectivo_IdAndFechaHastaIsNull(alumno.getId(), cicloLectivo.getId())
+                .ifPresent(historial -> {
+                    historial.setFechaHasta(LocalDate.now());
+                    historialCursoRepository.save(historial);
+                });
+
+        HistorialCurso nuevoHistorial = HistorialCurso.builder()
+                .alumno(alumno)
+                .curso(curso)
+                .cicloLectivo(cicloLectivo)
+                .fechaDesde(LocalDate.now())
+                .build();
+
+        historialCursoRepository.save(nuevoHistorial);
+
+        alumno.getHistorialCursos().add(nuevoHistorial);
+        alumno.setCursoActual(curso);
+        alumnoRepository.save(alumno);
+
+        return AlumnoResponse.builder()
+                .alumno(AlumnoMapper.toDto(alumno))
+                .code(0)
+                .mensaje("Alumno asignado correctamente")
+                .build();
     }
 
-    @Override
-    public AlumnoResponse desasignarCurso(Long alumnoId, Long cursoId) {
-        return null;
-    }
 
 }
