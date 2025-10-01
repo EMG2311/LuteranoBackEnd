@@ -90,7 +90,7 @@ public class UserController {
                     .build());
         }
     }
-    @GetMapping("/email")
+    @PostMapping("/email")
     @Operation(summary = "Busca un usuario con mail")
     public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid@RequestBody EmailRequest emailRequest){
         try{
