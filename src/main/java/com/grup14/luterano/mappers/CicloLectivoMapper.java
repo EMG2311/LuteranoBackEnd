@@ -12,6 +12,8 @@ public class CicloLectivoMapper {
         return CicloLectivoDto.builder()
                 .id(entity.getId())
                 .nombre(entity.getNombre())  // adapta según campos reales
+            //    .fechaDesde(entity.getFechaDesde())
+            //    .fechaHasta(entity.getFechaHasta())
                 .build();
     }
 
@@ -22,6 +24,8 @@ public class CicloLectivoMapper {
         return CicloLectivo.builder()
                 .id(dto.getId())
                 .nombre(dto.getNombre())
+         //       .fechaDesde(dto.getFechaDesde())
+           //     .fechaHasta(dto.getFechaHasta())
                 .build();
     }
 }
