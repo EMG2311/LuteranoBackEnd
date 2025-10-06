@@ -3,14 +3,16 @@ package com.grup14.luterano.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Builder@Data
+@Builder@Data@NoArgsConstructor@AllArgsConstructor
 public class Calificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
