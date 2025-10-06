@@ -35,20 +35,18 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     //Lógica compartida para construir un CicloLectivo para un año dado.
 
     private CicloLectivo construirCicloLectivo(int anio) {
-        // 1. Validar duplicados
+
         String nombreCiclo = "Ciclo Lectivo " + anio;
         if (cicloLectivoRepository.existsByNombre(nombreCiclo)) {
             logger.warn("Intento fallido de crear ciclo lectivo: El año {} ya existe.", anio);
             throw new CicloLectivoException("Ya existe un ciclo lectivo para el año: " + anio);
         }
 
-        // 2. Construir fechas: 01/01 a las 00:00:00 y 31/12 a las 23:59:59
-        // Nota: Usamos LocalDate para simplificar, pero la lógica de fechas es correcta.
         LocalDate fechaDesde = LocalDate.of(anio, 1, 1);
         LocalDate fechaHasta = LocalDate.of(anio, 12, 31);
 
         return CicloLectivo.builder()
-                .nombre(nombreCiclo) // Se asigna aquí, aunque @PrePersist también lo hace
+                .nombre(nombreCiclo)
                 .fechaDesde(fechaDesde)
                 .fechaHasta(fechaHasta)
                 .build();
@@ -60,18 +58,14 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     public  CicloLectivoResponse crearSiguienteCicloLectivo() {
         int anioSiguiente;
 
-        // 1. Buscar el último ciclo para determinar el año de inicio
         Optional<CicloLectivo> ultimoCiclo = cicloLectivoRepository.findTopByOrderByFechaHastaDesc();
 
         if (ultimoCiclo.isPresent()) {
-            // El año siguiente es el año del último ciclo + 1
             anioSiguiente = ultimoCiclo.get().getFechaDesde().getYear() + 1;
         } else {
-            // Si no hay ninguno, empezar con el año actual
             anioSiguiente = Year.now().getValue();
         }
 
-        // 2. Construir y guardar
         CicloLectivo nuevoCiclo = construirCicloLectivo(anioSiguiente);
         CicloLectivo savedCiclo = cicloLectivoRepository.save(nuevoCiclo);
 
@@ -89,8 +83,11 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     @Override
     public  CicloLectivoResponse crearCicloLectivoPorAnio(int anio) {
 
-        // 1. Construir y guardar para el año manual
         CicloLectivo nuevoCiclo = construirCicloLectivo(anio);
+
+        if(cicloLectivoRepository.existsByNombre(nuevoCiclo.getNombre())){
+            throw new CicloLectivoException("Ya existe un ciclo lectivo para ese año");
+        }
         CicloLectivo savedCiclo = cicloLectivoRepository.save(nuevoCiclo);
 
         CicloLectivoDto dto = CicloLectivoMapper.toDto(savedCiclo);
