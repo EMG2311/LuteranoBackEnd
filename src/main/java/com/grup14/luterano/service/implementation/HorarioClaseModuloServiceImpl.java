@@ -43,7 +43,6 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
         Curso curso = cursoRepository.findById(cursoId).orElseThrow(()->
                 new HorarioClaseModuloException("No existe el curso con id "+cursoId));
 
-        // La materia debe estar asignada al curso
         MateriaCurso mc = materiaCursoRepository.findByMateriaIdAndCursoId(materiaId, cursoId)
                 .orElseThrow(() -> new HorarioClaseModuloException(
                         "La materia (id=" + materiaId + ") no está asignada al curso (id=" + cursoId + ")."));
@@ -63,11 +62,10 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
                     .orElseThrow(() -> new HorarioClaseModuloException(
                             "Módulo no encontrado (id=" + s.getModuloId() + ")."));
 
-            // Evitar duplicados dentro del mismo request
             String key = s.getDia().name() + "#" + modulo.getId();
             if (!dedupe.add(key)) continue;
 
-            // 1) Choque del CURSO (día + módulo)
+
             boolean ocupadoCurso = horarioRepository
                     .existsByMateriaCurso_Curso_IdAndDiaSemanaAndModulo_Id(cursoId, s.getDia(), modulo.getId());
             if (ocupadoCurso) {
@@ -75,18 +73,27 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
                 continue;
             }
 
-            // 2) Choque del DOCENTE (si la MateriaCurso ya tiene docente asignado)
             Docente docente = mc.getDocente();
             if (docente != null) {
-                boolean ocupadoDocente = horarioRepository
-                        .existsByMateriaCurso_Docente_IdAndDiaSemanaAndModulo_Id(docente.getId(), s.getDia(), modulo.getId());
-                if (ocupadoDocente) {
-                    conflictos.add(describe(s.getDia(), modulo) + " -> el docente ya dicta en ese día/módulo.");
+                List<HorarioClaseModulo> choques = horarioRepository
+                        .findConflictosDocente(docente.getId(), s.getDia(), modulo.getId());
+
+                if (!choques.isEmpty()) {
+                    for (HorarioClaseModulo h : choques) {
+                        MateriaCurso mcChoque = h.getMateriaCurso();
+                        Curso cursoChoque = mcChoque.getCurso();
+                        String materiaNombre = mcChoque.getMateria().getNombre();
+
+                        conflictos.add(
+                                describe(s.getDia(), modulo) + " -> el docente ya dicta " + materiaNombre +
+                                        " en " + prettyCurso(cursoChoque) + "."
+                        );
+                    }
                     continue;
                 }
             }
 
-            // Crear bloque
+
             HorarioClaseModulo h = HorarioClaseModulo.builder()
                     .materiaCurso(mc)
                     .diaSemana(s.getDia())
@@ -115,6 +122,9 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
                 .build();
     }
 
+    private String prettyCurso(Curso c) {
+        return String.format("%s %d %s", c.getNivel(), c.getAnio(), c.getDivision());
+    }
 
     @Override
     @Transactional
