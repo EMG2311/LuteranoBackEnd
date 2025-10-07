@@ -5,16 +5,14 @@ import com.grup14.luterano.entities.enums.Nivel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data@AllArgsConstructor@NoArgsConstructor@Builder
+@Getter@Setter
+@AllArgsConstructor@NoArgsConstructor@Builder
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
