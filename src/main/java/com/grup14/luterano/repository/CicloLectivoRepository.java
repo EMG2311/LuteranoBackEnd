@@ -13,5 +13,7 @@ public interface CicloLectivoRepository extends JpaRepository<CicloLectivo,Long>
         Optional<CicloLectivo> findTopByOrderByFechaHastaDesc();
 
         boolean existsByNombre(String nombre);
+        Optional<CicloLectivo> findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(LocalDate desde, LocalDate hasta);
+
 
 }

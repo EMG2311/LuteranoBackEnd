@@ -19,7 +19,6 @@ public static HistorialMateriaDto toDto(HistorialMateria entity) {
             .historialCurso(HistorialCursoMapper.toDto(entity.getHistorialCurso()))
             // Se mapea la relación con MateriaCurso (que contiene la materia y el docente)
             .materiaCurso(MateriaCursoMapper.toDto(entity.getMateriaCurso()))
-            .promedio(entity.getPromedio())
             .calificaciones(entity.getCalificaciones() == null ? null :
                     entity.getCalificaciones()
                             .stream()
@@ -37,7 +36,6 @@ public static HistorialMateria toEntity(HistorialMateriaDto dto) {
 
     return HistorialMateria.builder()
             .id(dto.getId())
-            .promedio(dto.getPromedio())
             .calificaciones(dto.getCalificaciones() == null ? null :
                     dto.getCalificaciones()
                             .stream()

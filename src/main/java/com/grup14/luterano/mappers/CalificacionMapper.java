@@ -2,18 +2,30 @@ package com.grup14.luterano.mappers;
 
 import com.grup14.luterano.dto.CalificacionDto;
 import com.grup14.luterano.entities.Calificacion;
+import com.grup14.luterano.entities.HistorialMateria;
+import com.grup14.luterano.entities.MateriaCurso;
 
 public class CalificacionMapper {
 
-    public static CalificacionDto toDto(Calificacion entity) {
-        if (entity == null) return null;
+    public static CalificacionDto toDto(Calificacion c) {
+        if (c == null) return null;
+
+        HistorialMateria hm = c.getHistorialMateria();
+        MateriaCurso mc = (hm != null) ? hm.getMateriaCurso() : null;
+
+        Long materiaCursoId = (mc != null) ? mc.getId() : null;
+        Long materiaId = (mc != null && mc.getMateria() != null) ? mc.getMateria().getId() : null;
+        String materiaNombre = (mc != null && mc.getMateria() != null) ? mc.getMateria().getNombre() : null;
 
         return CalificacionDto.builder()
-                .id(entity.getId())
-                .nota(entity.getNota())
-                .numeroNota(entity.getNumeroNota())
-                .fecha(entity.getFecha())
-                .historialMateria(HistorialMateriaMapper.toDto(entity.getHistorialMateria()))
+                .id(c.getId())
+                .nota(c.getNota())
+                .etapa(c.getEtapa())
+                .numeroNota(c.getNumeroNota())
+                .fecha(c.getFecha())
+                .materiaCursoId(materiaCursoId)
+                .materiaId(materiaId)
+                .materiaNombre(materiaNombre)
                 .build();
     }
 
@@ -25,7 +37,6 @@ public class CalificacionMapper {
                 .nota(dto.getNota())
                 .numeroNota(dto.getNumeroNota())
                 .fecha(dto.getFecha())
-                .historialMateria(HistorialMateriaMapper.toEntity(dto.getHistorialMateria()))
                 .build();
     }
 }

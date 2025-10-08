@@ -88,12 +88,12 @@ public class CursoSeriviceImpl implements CursoService {
         Curso curso = cursoRepository.findById(cursoUpdateRequest.getId())
                 .orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + cursoUpdateRequest.getId()));
 
-        //  Actualizar campos
+
         if (cursoUpdateRequest.getAnio() != null) curso.setAnio(cursoUpdateRequest.getAnio());
         if (cursoUpdateRequest.getDivision() != null) curso.setDivision(cursoUpdateRequest.getDivision());
         if (cursoUpdateRequest.getNivel() != null) curso.setNivel(cursoUpdateRequest.getNivel());
 
-        // Manejar la asignación de aula
+
         if (cursoUpdateRequest.getAulaId() != null) {
             Aula aula = aulaRepository.findById(cursoUpdateRequest.getAulaId())
                     .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoUpdateRequest.getAulaId()));
@@ -105,24 +105,21 @@ public class CursoSeriviceImpl implements CursoService {
             curso.setAula(aula);
             aula.setCurso(curso);
         } else if (cursoUpdateRequest.getAulaId() == null && curso.getAula() != null) {
-            // Si el aulaId es null y el curso tenía un aula, la desasignamos
+
             Aula aulaActual = curso.getAula();
             aulaActual.setCurso(null);
             curso.setAula(null);
         }
 
-        //  Guardar los cambios
         curso = cursoRepository.save(curso);
         logger.info("Curso actualizado con ID: {}", curso.getId());
 
-        // Retornar respuesta usando el mapper
+
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
                 .code(0)
                 .mensaje("Curso actualizado correctamente")
                 .build();
-
-
     }
 
     @Override
@@ -143,7 +140,6 @@ public class CursoSeriviceImpl implements CursoService {
     public CursoResponse getCursoById(Long id) {
         Curso curso = cursoRepository.findById(id).orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + id));
 
-        // Retornar respuesta usando el mapper
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
                 .code(0)
