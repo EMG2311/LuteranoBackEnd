@@ -1,13 +1,7 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.entities.Alumno;
-import com.grup14.luterano.entities.CicloLectivo;
-import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.HistorialCurso;
-import com.grup14.luterano.entities.enums.Division;
-import com.grup14.luterano.entities.enums.EstadoAlumno;
-import com.grup14.luterano.entities.enums.Nivel;
-import com.grup14.luterano.entities.enums.TipoDoc;
+import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.enums.*;
 import com.grup14.luterano.mappers.NivelMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.imports.ImportResultResponse;
@@ -42,7 +36,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
-
+    private final HistorialMateriaRepository historialMateriaRepository;
     private final AlumnoRepository alumnoRepository;
     private final CursoRepository cursoRepository;
     private final HistorialCursoRepository historialCursoRepository;
@@ -159,19 +153,17 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
 
         if (abiertoOpt.isPresent()) {
             HistorialCurso abierto = abiertoOpt.get();
-            if (!abierto.getCurso().getId().equals(cursoDestino.getId())) {
-                // cerrar y mover
-                abierto.setFechaHasta(LocalDate.now());
-                historialCursoRepository.save(abierto);
-
-                crearHistorialYActualizarAlumno(alumno, cursoDestino, cicloActual);
-            } else {
-                // ya está en el mismo curso
+            if (abierto.getCurso().getId().equals(cursoDestino.getId())) {
                 alumno.setCursoActual(cursoDestino);
                 alumnoRepository.save(alumno);
+                return existed;
             }
+
+
+            cerrarHistorialCursoYMaterias(abierto, hoy.minusDays(1));
+            crearHistorialYActualizarAlumno(alumno, cursoDestino, cicloActual);
+
         } else {
-            // no tenía historial abierto en este ciclo
             crearHistorialYActualizarAlumno(alumno, cursoDestino, cicloActual);
         }
 
@@ -187,11 +179,24 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
                 .build();
         historialCursoRepository.save(nuevo);
 
-        // opcional mantener colección en memoria
+
         if (alumno.getHistorialCursos() != null) alumno.getHistorialCursos().add(nuevo);
 
         alumno.setCursoActual(curso);
-        alumnoRepository.save(alumno); // ⬅️ repository again
+        alumnoRepository.save(alumno);
+    }
+    private void cerrarHistorialCursoYMaterias(HistorialCurso hc, LocalDate fechaCierre) {
+        // cerrar HM “en curso” del HC origen
+        for (HistorialMateria hm : hc.getHistorialMaterias()) {
+            if (hm.getEstado() == null || hm.getEstado() == EstadoMateriaAlumno.CURSANDO) {
+                hm.setEstado(EstadoMateriaAlumno.TRASLADADA);
+            }
+        }
+        historialMateriaRepository.saveAll(hc.getHistorialMaterias());
+
+        // cerrar HC
+        hc.setFechaHasta(fechaCierre);
+        historialCursoRepository.save(hc);
     }
 
     private static boolean isBlank(String s) { return s == null || s.isBlank(); }

@@ -1,6 +1,7 @@
 package com.grup14.luterano.entities;
 
 import com.grup14.luterano.entities.enums.ConductaValor;
+import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,7 +24,12 @@ public class HistorialMateria {
     @ManyToOne(optional = false) @JoinColumn(name = "materia_curso_id")
     private MateriaCurso materiaCurso;
 
-    // Conducta por etapa (map persistido en tabla secundaria)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_materia", nullable = false)
+    @Builder.Default
+    private EstadoMateriaAlumno estado = EstadoMateriaAlumno.CURSANDO;
+
     @ElementCollection
     @CollectionTable(
             name = "historial_materia_conducta",

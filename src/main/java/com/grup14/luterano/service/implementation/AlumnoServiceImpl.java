@@ -2,6 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
 import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.mappers.AlumnoMapper;
 import com.grup14.luterano.repository.*;
@@ -35,18 +36,20 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     private final TutorRepository tutorRepository;
 
+    private final  HistorialMateriaRepository historialMateriaRepository;
     private final HistorialCursoRepository historialCursoRepository;
 
     private final CicloLectivoRepository cicloLectivoRepository;
 
     public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,
                              TutorRepository tutorRepository, CicloLectivoRepository cicloLectivoRepository,
-                             HistorialCursoRepository historialCursoRepository){
+                             HistorialCursoRepository historialCursoRepository,HistorialMateriaRepository historialMateriaRepository){
         this.alumnoRepository=alumnoRepository;
         this.cursoRepository=cursoRepository;
         this.tutorRepository=tutorRepository;
         this.historialCursoRepository=historialCursoRepository;
         this.cicloLectivoRepository=cicloLectivoRepository;
+        this.historialMateriaRepository=historialMateriaRepository;
     }
 
     @Autowired
@@ -172,33 +175,52 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     }
 
+
     @Override
+    @Transactional
     public AlumnoResponse asignarCurso(HistorialCursoRequest request) {
         Alumno alumno = alumnoRepository.findById(request.getAlumnoId())
                 .orElseThrow(() -> new AlumnoException("Alumno no encontrado"));
-        Curso curso = cursoRepository.findById(request.getCursoId())
+        Curso cursoDestino = cursoRepository.findById(request.getCursoId())
                 .orElseThrow(() -> new AlumnoException("Curso no encontrado"));
-        CicloLectivo cicloLectivo = cicloLectivoRepository.findById(request.getCicloLectivoId())
+        CicloLectivo ciclo = cicloLectivoRepository.findById(request.getCicloLectivoId())
                 .orElseThrow(() -> new AlumnoException("Ciclo lectivo no encontrado"));
 
-        historialCursoRepository
-                .findByAlumno_IdAndCicloLectivo_IdAndFechaHastaIsNull(alumno.getId(), cicloLectivo.getId())
-                .ifPresent(historial -> {
-                    historial.setFechaHasta(LocalDate.now());
-                    historialCursoRepository.save(historial);
-                });
+        LocalDate hoy = LocalDate.now();
 
-        HistorialCurso nuevoHistorial = HistorialCurso.builder()
+        var hcAbiertoOpt = historialCursoRepository
+                .findByAlumno_IdAndCicloLectivo_IdAndFechaHastaIsNull(alumno.getId(), ciclo.getId());
+
+        if (hcAbiertoOpt.isPresent() &&
+                hcAbiertoOpt.get().getCurso().getId().equals(cursoDestino.getId())) {
+            throw new AlumnoException("El alumno ya está asignado a ese curso en el ciclo actual.");
+        }
+
+        if (hcAbiertoOpt.isPresent()) {
+            HistorialCurso hcOrigen = hcAbiertoOpt.get();
+
+            List<HistorialMateria> hms = historialMateriaRepository.findAllByHistorialCursoId(hcOrigen.getId());
+            for (HistorialMateria hm : hms) {
+                if (hm.getEstado() == null || hm.getEstado() == EstadoMateriaAlumno.CURSANDO) {
+                    hm.setEstado(EstadoMateriaAlumno.TRASLADADA);
+                }
+            }
+            historialMateriaRepository.saveAll(hms);
+
+            hcOrigen.setFechaHasta(hoy.minusDays(1));
+            historialCursoRepository.save(hcOrigen);
+        }
+
+        HistorialCurso nuevo = HistorialCurso.builder()
                 .alumno(alumno)
-                .curso(curso)
-                .cicloLectivo(cicloLectivo)
-                .fechaDesde(LocalDate.now())
+                .curso(cursoDestino)
+                .cicloLectivo(ciclo)
+                .fechaDesde(hoy)
                 .build();
+        historialCursoRepository.save(nuevo);
 
-        historialCursoRepository.save(nuevoHistorial);
-
-        alumno.getHistorialCursos().add(nuevoHistorial);
-        alumno.setCursoActual(curso);
+        alumno.setCursoActual(cursoDestino);
+        alumno.getHistorialCursos().add(nuevo);
         alumnoRepository.save(alumno);
 
         return AlumnoResponse.builder()

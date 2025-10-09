@@ -25,6 +25,7 @@ public static HistorialMateriaDto toDto(HistorialMateria entity) {
                             .map(CalificacionMapper::toDto)
                             .collect(Collectors.toList())
             )
+            .estadoMateriaAlumno(entity.getEstado())
             .build();
 }
 

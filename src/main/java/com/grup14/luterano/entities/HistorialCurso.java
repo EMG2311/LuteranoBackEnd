@@ -29,7 +29,7 @@ public class HistorialCurso {
     private LocalDate fechaDesde;
     private LocalDate fechaHasta;
 
-    private BigDecimal promedio; // promedio global del curso
+    private BigDecimal promedio;
 
     @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialMateria> historialMaterias = new ArrayList<>();

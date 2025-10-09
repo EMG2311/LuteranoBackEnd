@@ -2,6 +2,7 @@ package com.grup14.luterano.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
+import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,7 @@ public class HistorialMateriaDto {
     @JsonIgnore
     private HistorialCursoDto historialCurso;
     private MateriaCursoDto materiaCurso;
-
+    private EstadoMateriaAlumno estadoMateriaAlumno;
     private BigDecimal promedio;
     private List<CalificacionDto> calificaciones;
 }
