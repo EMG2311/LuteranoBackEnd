@@ -9,8 +9,6 @@ public interface CalificacionService {
 
     CalificacionResponse crearCalificacion(CalificacionRequest req);
 
-    CalificacionListResponse listar(Long alumnoId, Long materiaId);
-
     CalificacionResponse obtener(Long alumnoId, Long materiaId, Long califId);
 
     CalificacionResponse actualizar(CalificacionUpdateRequest req);
@@ -22,6 +20,6 @@ public interface CalificacionService {
 
     CalificacionListResponse listarPorAnioYEtapa(Long alumnoId, int anio, int etapa);
 
-    // Listar por materia
+
     CalificacionListResponse listarPorMateria(Long alumnoId, Long materiaId);
 }

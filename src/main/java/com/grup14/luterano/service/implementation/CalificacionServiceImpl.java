@@ -70,16 +70,6 @@ public class CalificacionServiceImpl implements CalificacionService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
-    public CalificacionListResponse listar(Long alumnoId, Long materiaId) {
-        var list = calificacionRepo.findByAlumnoAndMateria(alumnoId, materiaId)
-                .stream().map(CalificacionMapper::toDto).toList();
-        return CalificacionListResponse.builder()
-                .calificaciones(list)
-                .code(0)
-                .mensaje("Ok")
-                .build();
-    }
 
     @Transactional(readOnly = true)
     public CalificacionResponse obtener(Long alumnoId, Long materiaId, Long califId) {

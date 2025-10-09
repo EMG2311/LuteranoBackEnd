@@ -130,10 +130,10 @@ public class CalificacionController {
     @GetMapping("/alumno/{alumnoId}/materia/{materiaId}/all")
     @Operation(summary = "Listar todas las calificaciones por materia (sin filtros)",
             description = "Equivalente a listar por materia sin parámetros, expuesto como ruta explícita.")
-    public ResponseEntity<CalificacionListResponse> listBasic(@PathVariable Long alumnoId,
+    public ResponseEntity<CalificacionListResponse> listPorMateria(@PathVariable Long alumnoId,
                                                               @PathVariable Long materiaId) {
         try {
-            return ResponseEntity.ok(calificacionService.listar(alumnoId, materiaId));
+            return ResponseEntity.ok(calificacionService.listarPorMateria(alumnoId, materiaId));
         } catch (CalificacionException e) {
             return ResponseEntity.status(422).body(
                     CalificacionListResponse.builder()

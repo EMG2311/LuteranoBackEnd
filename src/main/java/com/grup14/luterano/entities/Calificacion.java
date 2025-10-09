@@ -35,6 +35,7 @@ public class Calificacion {
     private int numeroNota;
 
     @Min(1)
+    @Max(2)
     @Column(nullable = false)
     private int etapa;
 

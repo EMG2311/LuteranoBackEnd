@@ -17,14 +17,18 @@ public interface CalificacionRepository extends JpaRepository<Calificacion,Long>
     boolean existsByHistorialMateria_IdAndEtapaAndNumeroNota(Long hmId, int etapa, int numeroNota);
 
     @Query("""
-      select c from Calificacion c
+      select c
+      from Calificacion c
         join c.historialMateria hm
         join hm.historialCurso hc
+        join hm.materiaCurso mc
       where hc.alumno.id = :alumnoId
-        and hm.materiaCurso.id = :materiaCursoId
+        and mc.materia.id = :materiaId
       order by c.etapa asc, c.numeroNota asc, c.fecha asc
     """)
-    List<Calificacion> findByAlumnoAndMateria(Long alumnoId, Long materiaCursoId);
+    List<Calificacion> findByAlumnoAndMateria(
+            @org.springframework.data.repository.query.Param("alumnoId") Long alumnoId,
+            @org.springframework.data.repository.query.Param("materiaId") Long materiaId);
 
     @Query("""
   select c
