@@ -32,7 +32,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/alumno")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
 @Tag(
         name = "Alumno Controller",
         description = "Controlador encargado de la gestión de alumnos. " +
@@ -110,7 +110,7 @@ public class AlumnoController {
     }
 
     @GetMapping("/list")
-    @Operation(summary = "Lista todos los docentes")
+    @Operation(summary = "Lista todos los alumnos")
     public ResponseEntity<AlumnoResponseList> listAlumnos() {
         try {
             return ResponseEntity.ok(alumnoService.listAlumnos());

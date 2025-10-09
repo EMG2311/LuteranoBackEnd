@@ -71,4 +71,7 @@ public interface CalificacionRepository extends JpaRepository<Calificacion,Long>
                                                    @Param("etapa") int etapa,
                                                    @Param("desde") LocalDate desde,
                                                    @Param("hasta") LocalDate hasta);
+
+
+    Optional<Calificacion> findByHistorialMateria_IdAndEtapaAndNumeroNota(Long hmId, int etapa, int numeroNota);
 }

@@ -30,12 +30,13 @@ public final class CsvUtils {
         return new CSVParser(reader, format);
     }
 
-    public static String get(CSVRecord rec, String canonicalHeader) {
-        // Busca por cualquier variante conocida del header
-        for (String h : rec.getParser().getHeaderMap().keySet()) {
-            if (HeaderAliases.canon(h).equals(HeaderAliases.canon(canonicalHeader))) {
-                String v = rec.get(h);
-                return v == null ? "" : v.trim();
+    public static String get(CSVRecord rec, String... canonicalHeaders) {
+        for (String want : canonicalHeaders) {
+            for (String h : rec.getParser().getHeaderMap().keySet()) {
+                if (HeaderAliases.canon(h).equals(HeaderAliases.canon(want))) {
+                    String v = rec.get(h);
+                    return v == null ? "" : v.trim();
+                }
             }
         }
         return "";

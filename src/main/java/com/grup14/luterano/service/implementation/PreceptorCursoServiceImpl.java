@@ -35,10 +35,10 @@ public class PreceptorCursoServiceImpl implements PreceptorCursoService {
         if (curso.getPreceptor() != null) {
             throw new PreceptorCursoException("El curso ya tiene un preceptor asignado. Use reasignar si quiere cambiarlo.");
         }
-
+        preceptor.addCurso(curso);
         curso.setPreceptor(preceptor);
         cursoRepository.save(curso);
-
+        System.out.println(preceptor.getCursos());
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
                 .code(0)
@@ -60,9 +60,10 @@ public class PreceptorCursoServiceImpl implements PreceptorCursoService {
             throw new PreceptorCursoException("El curso no tiene preceptor asignado.");
         }
         Preceptor preceptor = curso.getPreceptor();
-
+        preceptor.removeCurso(curso);
         curso.setPreceptor(null);
         cursoRepository.save(curso);
+        preceptorRepository.save(preceptor);
         System.out.println("paso");
 
         return CursoResponse.builder()

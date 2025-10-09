@@ -16,7 +16,7 @@ public static HistorialMateriaDto toDto(HistorialMateria entity) {
     return HistorialMateriaDto.builder()
             .id(entity.getId())
             // Se mapea la relación con HistorialCurso (que contiene el alumno y el curso)
-            .historialCurso(HistorialCursoMapper.toDto(entity.getHistorialCurso()))
+            //.historialCurso(HistorialCursoMapper.toDto(entity.getHistorialCurso()))
             // Se mapea la relación con MateriaCurso (que contiene la materia y el docente)
             .materiaCurso(MateriaCursoMapper.toDto(entity.getMateriaCurso()))
             .calificaciones(entity.getCalificaciones() == null ? null :

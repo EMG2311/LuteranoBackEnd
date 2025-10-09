@@ -1,5 +1,6 @@
 package com.grup14.luterano.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.util.List;
 @Builder
 public class HistorialMateriaDto {
     private Long id;
+    @JsonIgnore
     private HistorialCursoDto historialCurso;
     private MateriaCursoDto materiaCurso;
 
