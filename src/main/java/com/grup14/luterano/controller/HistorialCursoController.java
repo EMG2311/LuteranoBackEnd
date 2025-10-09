@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.HistorialCursoDto;
 import com.grup14.luterano.exeptions.HistorialCursoException;
 import com.grup14.luterano.repository.HistorialCursoRepository;
 import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
+import com.grup14.luterano.response.CursoAlumno.CursoAlumnosResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponseList;
 import com.grup14.luterano.service.HistorialCursoService;
@@ -78,6 +79,40 @@ public class HistorialCursoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     HistorialCursoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error inesperado: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+
+
+
+    @GetMapping("/{cursoId}/alumnos")
+    @Operation(
+            summary = "Lista alumnos del curso (según asignación vigente)",
+            description = "Devuelve los alumnos con HistorialCurso abierto (fechaHasta NULL) en el ciclo lectivo indicado. " +
+                    "Si no se especifica cicloLectivoId, se usa el ciclo activo."
+    )
+    public ResponseEntity<CursoAlumnosResponse> listarAlumnosPorCurso(
+            @PathVariable Long cursoId,
+            @RequestParam(value = "cicloLectivoId", required = false) Long cicloLectivoId
+    ) {
+        try {
+            CursoAlumnosResponse response = historialCursoService.listarAlumnosPorCurso(cursoId, cicloLectivoId);
+            return ResponseEntity.ok(response);
+
+        } catch (HistorialCursoException e) {
+            return ResponseEntity.status(422).body(
+                    CursoAlumnosResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    CursoAlumnosResponse.builder()
                             .code(-2)
                             .mensaje("Error inesperado: " + e.getMessage())
                             .build()
