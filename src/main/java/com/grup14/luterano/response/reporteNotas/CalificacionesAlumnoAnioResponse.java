@@ -1,12 +1,10 @@
-package com.grup14.luterano.response.calificaciones;
+package com.grup14.luterano.response.reporteNotas;
 
-import com.grup14.luterano.dto.calificaciones.CalificacionesAlumnoResumenDto;
+import com.grup14.luterano.dto.reporteNotas.CalificacionesAlumnoResumenDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder

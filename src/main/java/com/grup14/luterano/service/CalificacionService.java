@@ -4,8 +4,6 @@ import com.grup14.luterano.request.calificacion.CalificacionRequest;
 import com.grup14.luterano.request.calificacion.CalificacionUpdateRequest;
 import com.grup14.luterano.response.calificaciones.CalificacionListResponse;
 import com.grup14.luterano.response.calificaciones.CalificacionResponse;
-import com.grup14.luterano.response.calificaciones.CalificacionesAlumnoAnioResponse;
-import com.grup14.luterano.response.calificaciones.CalificacionesCursoAnioResponse;
 
 public interface CalificacionService {
 
@@ -24,7 +22,4 @@ public interface CalificacionService {
 
     CalificacionListResponse listarPorMateria(Long alumnoId, Long materiaId);
 
-    CalificacionesAlumnoAnioResponse listarResumenPorAnio(Long alumnoId, int anio);
-
-    CalificacionesCursoAnioResponse listarResumenCursoPorAnio(Long cursoId, int anio);
-}
+   }

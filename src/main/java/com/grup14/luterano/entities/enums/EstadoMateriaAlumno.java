@@ -4,6 +4,8 @@ public enum EstadoMateriaAlumno {
     CURSANDO,
     APROBADA,
     DESAPROBADA,
+    EXAMEN,
+    COLOQUIO,
     PENDIENTE_EXAMEN,
     TRASLADADA
 }

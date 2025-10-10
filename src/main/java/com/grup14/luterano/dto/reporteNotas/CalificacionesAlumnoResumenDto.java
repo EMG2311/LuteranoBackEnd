@@ -1,4 +1,4 @@
-package com.grup14.luterano.dto.calificaciones;
+package com.grup14.luterano.dto.reporteNotas;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

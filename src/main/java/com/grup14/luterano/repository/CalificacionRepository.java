@@ -86,5 +86,21 @@ public interface CalificacionRepository extends JpaRepository<Calificacion,Long>
                                             @Param("hasta") LocalDate hasta);
 
     Optional<Calificacion> findByHistorialMateria_IdAndEtapaAndNumeroNota(Long hmId, int etapa, int numeroNota);
-
+    @Query("""
+        select c
+        from Calificacion c
+        join c.historialMateria hm
+        join hm.historialCurso hc
+        join hm.materiaCurso mc
+        where hc.alumno.id in :alumnoIds
+          and hc.cicloLectivo.id = :cicloId
+          and mc.curso.id = :cursoId
+          and c.fecha between :desde and :hasta
+        order by hc.alumno.id, mc.materia.id, c.etapa, c.numeroNota, c.fecha
+    """)
+    List<Calificacion> findByAlumnosCursoCicloAndAnio(@Param("alumnoIds") List<Long> alumnoIds,
+                                                      @Param("cursoId") Long cursoId,
+                                                      @Param("cicloId") Long cicloId,
+                                                      @Param("desde") java.time.LocalDate desde,
+                                                      @Param("hasta") java.time.LocalDate hasta);
 }
