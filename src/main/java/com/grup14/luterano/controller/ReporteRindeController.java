@@ -1,5 +1,6 @@
 package com.grup14.luterano.controller;
 
+import com.grup14.luterano.exeptions.ReporteRindeException;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
 import com.grup14.luterano.service.ReporteNotasService;
 import com.grup14.luterano.service.ReporteRindenService;
@@ -39,7 +40,7 @@ public class ReporteRindeController {
             var res = reporteRindenService.listarRindenPorCurso(cursoId, anio);
             return ResponseEntity.ok(res);
 
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (ReporteRindeException e) {
             return ResponseEntity.status(422).body(
                     ReporteRindenResponse.builder()
                             .code(-1)

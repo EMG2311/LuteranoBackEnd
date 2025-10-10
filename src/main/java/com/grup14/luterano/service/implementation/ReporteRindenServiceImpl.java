@@ -3,6 +3,7 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.ReporteRindeDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.CondicionRinde;
+import com.grup14.luterano.exeptions.ReporteRindeException;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
@@ -25,18 +26,16 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
 
     @Transactional(readOnly = true)
     public ReporteRindenResponse listarRindenPorCurso(Long cursoId, int anio) {
-        if (cursoId == null) throw new IllegalArgumentException("cursoId es requerido");
+        if (cursoId == null) throw new ReporteRindeException("cursoId es requerido");
 
         Curso curso = cursoRepository.findById(cursoId)
-                .orElseThrow(() -> new IllegalArgumentException("Curso no encontrado (id=" + cursoId + ")"));
+                .orElseThrow(() -> new ReporteRindeException("Curso no encontrado (id=" + cursoId + ")"));
 
-        // Ciclo que contiene ese año (usamos 1/jul como pivote)
         LocalDate pivote = LocalDate.of(anio, 7, 1);
         CicloLectivo ciclo = cicloLectivoRepository
                 .findByFechaDesdeBeforeAndFechaHastaAfter(pivote, pivote)
-                .orElseThrow(() -> new IllegalStateException("No hay ciclo lectivo para el año " + anio));
+                .orElseThrow(() -> new ReporteRindeException("No hay ciclo lectivo para el año " + anio));
 
-        // Alumnos asignados actualmente a este curso (historial abierto en ese ciclo)
         List<HistorialCurso> hcs = historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, ciclo.getId());
         List<Alumno> alumnos = hcs.stream().map(HistorialCurso::getAlumno).toList();
         if (alumnos.isEmpty()) {
@@ -49,14 +48,12 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                     .build();
         }
 
-        // Traer calificaciones del año para esos alumnos, solo materias del curso indicado
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
         List<Long> alumnoIds = alumnos.stream().map(Alumno::getId).toList();
         List<Calificacion> califs = calificacionRepository
                 .findByAlumnosCursoCicloAndAnio(alumnoIds, cursoId, ciclo.getId(), desde, hasta);
 
-        // (alumnoId -> (materiaId -> agregados))
         class Agg { int sum1=0,cnt1=0,sum2=0,cnt2=0; String materiaNombre; }
         Map<Long, Map<Long, Agg>> map = new LinkedHashMap<>();
 
@@ -77,7 +74,6 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
             else if (c.getEtapa() == 2) { agg.sum2 += nota; agg.cnt2++; }
         }
 
-        // Índice alumno -> datos
         Map<Long, Alumno> idxAlumno = alumnos.stream()
                 .collect(Collectors.toMap(Alumno::getId, a -> a));
 
@@ -98,12 +94,11 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 boolean apr1 = e1 != null && e1 >= 6.0;
                 boolean apr2 = e2 != null && e2 >= 6.0;
 
-                // Si ambas etapas aprobadas, no aparece
                 if (apr1 && apr2) continue;
 
                 CondicionRinde cond = (apr1 ^ apr2)
-                        ? CondicionRinde.COLOQUIO   // sólo una aprobada → diciembre
-                        : CondicionRinde.EXAMEN;     // ninguna aprobada → febrero
+                        ? CondicionRinde.COLOQUIO
+                        : CondicionRinde.EXAMEN;
 
                 filas.add(ReporteRindeDto.builder()
                         .alumnoId(a.getId())
@@ -113,7 +108,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                         .materiaId(materiaId)
                         .materiaNombre(agg.materiaNombre)
                         .e1(e1).e2(e2).pg(pg)
-                        .co(null).ex(null).pf(null) // placeholders para cuando cargues mesas
+                        .co(null).ex(null).pf(null)
                         .condicion(cond)
                         .build());
             }
