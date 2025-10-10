@@ -1,6 +1,6 @@
 package com.grup14.luterano.response.calificaciones;
 
-import com.grup14.luterano.dto.CalificacionDto;
+import com.grup14.luterano.dto.calificaciones.CalificacionDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

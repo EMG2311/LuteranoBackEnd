@@ -1,6 +1,6 @@
 package com.grup14.luterano.mappers;
 
-import com.grup14.luterano.dto.CalificacionDto;
+import com.grup14.luterano.dto.calificaciones.CalificacionDto;
 import com.grup14.luterano.entities.Calificacion;
 import com.grup14.luterano.entities.HistorialMateria;
 import com.grup14.luterano.entities.MateriaCurso;

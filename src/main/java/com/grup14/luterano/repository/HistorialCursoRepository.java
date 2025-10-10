@@ -52,4 +52,6 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
             @Param("cursoId") Long cursoId,
             @Param("cicloId") Long cicloId
     );
+
+    
 }

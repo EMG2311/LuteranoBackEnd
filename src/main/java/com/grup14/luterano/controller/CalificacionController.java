@@ -5,6 +5,8 @@ import com.grup14.luterano.request.calificacion.CalificacionRequest;
 import com.grup14.luterano.request.calificacion.CalificacionUpdateRequest;
 import com.grup14.luterano.response.calificaciones.CalificacionListResponse;
 import com.grup14.luterano.response.calificaciones.CalificacionResponse;
+import com.grup14.luterano.response.calificaciones.CalificacionesAlumnoAnioResponse;
+import com.grup14.luterano.response.calificaciones.CalificacionesCursoAnioResponse;
 import com.grup14.luterano.service.CalificacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -144,6 +146,54 @@ public class CalificacionController {
                     CalificacionListResponse.builder()
                             .calificaciones(List.of()).code(-2)
                             .mensaje("Error no controlado " + e.getMessage()).build()
+            );
+        }
+    }
+
+
+    @GetMapping("/alumnos/{alumnoId}/notas/resumen")
+    @Operation(
+            summary = "Resumen de notas por materia (E1/E2/PG) para un año",
+            description = "Agrupa notas por materia y calcula promedios de cada etapa y general."
+    )
+    public ResponseEntity<CalificacionesAlumnoAnioResponse> resumenNotasAlumnoPorAnio(
+            @PathVariable Long alumnoId,
+            @RequestParam int anio
+    ) {
+        try {
+            var res = calificacionService.listarResumenPorAnio(alumnoId, anio);
+            return ResponseEntity.ok(res);
+
+        } catch (CalificacionException e) {
+            return ResponseEntity.status(422).body(
+                    CalificacionesAlumnoAnioResponse.builder().code(-1).mensaje(e.getMessage()).build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    CalificacionesAlumnoAnioResponse.builder().code(-2).mensaje("Error inesperado: " + e.getMessage()).build()
+            );
+        }
+    }
+    @GetMapping("/curso/{cursoId}/notas/resumen")
+    @Operation(
+            summary = "Resumen de notas por materia (E1/E2/PG) para un año",
+            description = "Agrupa notas por materia y calcula promedios de cada etapa y general."
+    )
+    public ResponseEntity<CalificacionesCursoAnioResponse> resumenNotasCursoPorAnio(
+            @PathVariable Long cursoId,
+            @RequestParam int anio
+    ) {
+        try {
+            var res = calificacionService.listarResumenCursoPorAnio(cursoId, anio);
+            return ResponseEntity.ok(res);
+
+        } catch (CalificacionException e) {
+            return ResponseEntity.status(422).body(
+                    CalificacionesCursoAnioResponse.builder().code(-1).mensaje(e.getMessage()).build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    CalificacionesCursoAnioResponse.builder().code(-2).mensaje("Error inesperado: " + e.getMessage()).build()
             );
         }
     }

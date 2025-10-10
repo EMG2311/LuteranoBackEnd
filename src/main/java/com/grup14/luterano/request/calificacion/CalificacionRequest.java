@@ -1,6 +1,6 @@
 package com.grup14.luterano.request.calificacion;
 
-import com.grup14.luterano.dto.CalificacionDto;
+import com.grup14.luterano.dto.calificaciones.CalificacionDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

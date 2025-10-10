@@ -1,17 +1,13 @@
-package com.grup14.luterano.dto;
+package com.grup14.luterano.dto.calificaciones;
 
-import com.grup14.luterano.entities.HistorialMateria;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @SuperBuilder(toBuilder = true)

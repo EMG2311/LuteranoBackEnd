@@ -1,6 +1,7 @@
 package com.grup14.luterano.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.grup14.luterano.dto.calificaciones.CalificacionDto;
 import com.grup14.luterano.dto.materiaCurso.MateriaCursoDto;
 import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import lombok.AllArgsConstructor;

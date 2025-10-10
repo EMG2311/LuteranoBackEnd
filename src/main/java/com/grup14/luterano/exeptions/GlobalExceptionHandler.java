@@ -40,14 +40,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    // >>> AQUÍ capturás el caso del WARN que mostrás <<<
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
 
-        String param = ex.getName(); // ej: "alumnoId"
+        String param = ex.getName();
         String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "desconocido";
-        Object value = ex.getValue(); // ej: "{2"
+        Object value = ex.getValue();
 
         logger.warn("Type mismatch en {} - param='{}', requerido='{}', valor='{}'",
                 request.getRequestURI(), param, requiredType, value);
