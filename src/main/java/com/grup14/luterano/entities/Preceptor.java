@@ -21,4 +21,17 @@ public class Preceptor extends PersonaConUsuario {
     @OneToMany(mappedBy = "preceptor")
     @Builder.Default
     private List<Curso> cursos = new ArrayList<>();
+
+
+    public void addCurso(Curso c) {
+        if (c == null) return;
+        if (!this.cursos.contains(c)) this.cursos.add(c);
+        if (c.getPreceptor() != this) c.setPreceptor(this);
+    }
+
+    public void removeCurso(Curso c) {
+        if (c == null) return;
+        this.cursos.remove(c);
+        if (c.getPreceptor() == this) c.setPreceptor(null);
+    }
 }

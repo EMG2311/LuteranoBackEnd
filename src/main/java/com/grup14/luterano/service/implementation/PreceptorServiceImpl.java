@@ -16,12 +16,14 @@ import com.grup14.luterano.request.Preceptor.PreceptorUpdateRequest;
 import com.grup14.luterano.response.Preceptor.PreceptorResponse;
 import com.grup14.luterano.response.Preceptor.PreceptorResponseList;
 import com.grup14.luterano.service.PreceptorService;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
@@ -36,61 +38,87 @@ public class PreceptorServiceImpl implements PreceptorService {
     }
 
     @Override
+    @Transactional
     public PreceptorResponse crearPreceptor(PreceptorRequest request) {
-        Optional<Preceptor> existentePorEmail = preceptorRepository.findByEmail(request.getEmail());
-        Optional<Preceptor> existentePorDni = preceptorRepository.findByDni(request.getDni());
-        Optional<User> existeUser = userRepository.findByEmail(request.getEmail());
-        if (existentePorEmail.isPresent() ) {
-            throw new PreceptorException("Ya existe un preceptor registrado con ese email");
-        }
-        if (existentePorDni.isPresent() ) {
-            throw new PreceptorException("Ya existe un preceptor registrado con ese DNI");
-        }
-        if(existeUser.isEmpty()){
-            throw new PreceptorException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
-        }
-        if(!Rol.ROLE_PRECEPTOR.name().equals(existeUser.get().getRol().getName())){
+        preceptorRepository.findByEmailAndActiveIsTrue(request.getEmail())
+                .ifPresent(p -> { throw new PreceptorException("Ya existe un preceptor activo con ese email"); });
+        preceptorRepository.findByDniAndActiveIsTrue(request.getDni())
+                .ifPresent(p -> { throw new PreceptorException("Ya existe un preceptor activo con ese DNI"); });
+
+        Optional<Preceptor> preceptorInactivo = preceptorRepository.findByEmailAndActiveIsFalse(request.getEmail());
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new PreceptorException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar"));
+
+        if (!Rol.ROLE_PRECEPTOR.name().equals(user.getRol().getName())) {
             throw new PreceptorException("El usuario no tiene rol preceptor");
         }
-        if(!existeUser.get().getName().equals(request.getNombre())
-                || !existeUser.get().getLastName().equals(request.getApellido())){
-            existeUser.get().setName(request.getNombre());
-            existeUser.get().setLastName(request.getApellido());
+
+        if (!Objects.equals(user.getName(), request.getNombre())
+                || !Objects.equals(user.getLastName(), request.getApellido())) {
+            user.setName(request.getNombre());
+            user.setLastName(request.getApellido());
         }
 
-        validarFechas(request.getFechaNacimiento(),request.getFechaIngreso());
+        validarFechas(request.getFechaNacimiento(), request.getFechaIngreso());
 
-        Preceptor preceptor =  Preceptor.builder()
-                .nombre(request.getNombre())
-                .apellido(request.getApellido())
-                .genero(request.getGenero())
-                .tipoDoc(request.getTipoDoc())
-                .dni(request.getDni())
-                .email(request.getEmail())
-                .direccion(request.getDireccion())
-                .telefono(request.getTelefono())
-                .fechaNacimiento(request.getFechaNacimiento())
-                .fechaIngreso(request.getFechaIngreso())
-                .user(existeUser.get())
-                .build();
+        Preceptor preceptor;
+        if (preceptorInactivo.isPresent()) {
+            preceptor = preceptorInactivo.get();
+
+            if (!Objects.equals(preceptor.getDni(), request.getDni())) {
+                throw new PreceptorException(
+                        "Existe un preceptor inactivo con ese email pero con distinto DNI. No se puede reactivar. " +
+                                "El DNI registrado es: " + preceptor.getDni()
+                );
+            }
+
+            preceptor.setActive(true);
+            preceptor.setNombre(request.getNombre());
+            preceptor.setApellido(request.getApellido());
+            preceptor.setGenero(request.getGenero());
+            preceptor.setTipoDoc(request.getTipoDoc());
+            preceptor.setDireccion(request.getDireccion());
+            preceptor.setTelefono(request.getTelefono());
+            preceptor.setFechaNacimiento(request.getFechaNacimiento());
+            preceptor.setFechaIngreso(request.getFechaIngreso());
+            preceptor.setUser(user);
+        } else {
+            preceptor = Preceptor.builder()
+                    .nombre(request.getNombre())
+                    .apellido(request.getApellido())
+                    .genero(request.getGenero())
+                    .tipoDoc(request.getTipoDoc())
+                    .dni(request.getDni())
+                    .email(request.getEmail())
+                    .direccion(request.getDireccion())
+                    .telefono(request.getTelefono())
+                    .fechaNacimiento(request.getFechaNacimiento())
+                    .fechaIngreso(request.getFechaIngreso())
+                    .user(user)
+                    .active(true)
+                    .build();
+        }
 
         preceptorRepository.save(preceptor);
-        logger.info("Se creo correctamente el preceptor {} {}", preceptor.getNombre(), preceptor.getApellido());
+        logger.info("Preceptor {} {} registrado/reactivado correctamente (id={})",
+                preceptor.getNombre(), preceptor.getApellido(), preceptor.getId());
+
         return PreceptorResponse.builder()
                 .preceptor(PreceptorMapper.toDto(preceptor))
                 .code(0)
-                .mensaje("Se creo correctamente el preceptor")
+                .mensaje("Se registró/reactivó correctamente el preceptor")
                 .build();
     }
 
     @Override
     public PreceptorResponse updatePreceptor(PreceptorUpdateRequest updateRequest) {
-        Preceptor preceptor = preceptorRepository.findById(updateRequest.getId())
-                .orElseThrow(() -> new PreceptorException("No existe preceptor con id: " + updateRequest.getId()));
+        Preceptor preceptor = preceptorRepository.findByIdAndActiveIsTrue(updateRequest.getId())
+                .orElseThrow(() -> new PreceptorException("No existe preceptor activo con id: " + updateRequest.getId()));
         User user=preceptor.getUser();
         boolean necesitaActualizarUsuario=false;
         if (user == null) {
-            throw new RuntimeException("El preceptor no tiene usuario asociado");
+            throw new PreceptorException("El preceptor no tiene usuario asociado");
         }
 
         if (updateRequest.getNombre() != null) {
@@ -150,19 +178,35 @@ public class PreceptorServiceImpl implements PreceptorService {
 
     @Override
     public PreceptorResponse deletePreceptor(Long id) {
-        Preceptor preceptor = preceptorRepository.findById(id)
-                .orElseThrow(() -> new PreceptorException("No existe preceptor con id " + id));
-        preceptorRepository.delete(preceptor);
-        logger.info("Preceptor eliminado: {}", id);
+        Preceptor preceptor = preceptorRepository.findByIdAndActiveIsTrue(id)
+                .orElseThrow(() -> new PreceptorException("No existe el preceptor id " + id));
+        preceptor.setActive(false);
+        preceptor.setUser(null);
+        preceptorRepository.save(preceptor);
+
+        logger.info("Se desactivó el preceptor {} y se eliminó su usuario asociado", id);
+
         return PreceptorResponse.builder()
                 .preceptor(new PreceptorDto())
                 .code(0)
-                .mensaje("Se eliminó correctamente el preceptor")
+                .mensaje("Se eliminó correctamente el usuario y se desactivó el preceptor")
                 .build();
     }
 
     @Override
     public PreceptorResponseList listPreceptores() {
+        List<PreceptorDto> preceptores = preceptorRepository.findByActiveIsTrue().stream()
+                .map(PreceptorMapper::toDto)
+                .collect(Collectors.toList());
+        return PreceptorResponseList.builder()
+                .preceptores(preceptores)
+                .code(0)
+                .mensaje("Se listaron correctamente los preceptores")
+                .build();
+    }
+
+    @Override
+    public PreceptorResponseList listAllPreceptores() {
         List<PreceptorDto> preceptores = preceptorRepository.findAll().stream()
                 .map(PreceptorMapper::toDto)
                 .collect(Collectors.toList());

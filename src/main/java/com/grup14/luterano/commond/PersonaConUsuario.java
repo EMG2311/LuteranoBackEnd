@@ -20,6 +20,7 @@ public class PersonaConUsuario {
     private String telefono;
     private Date fechaNacimiento;
     private Date fechaIngreso;
+    private boolean active;
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

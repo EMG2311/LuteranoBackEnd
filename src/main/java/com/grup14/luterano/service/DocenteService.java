@@ -12,4 +12,5 @@ public interface DocenteService {
     DocenteResponse updateDocente(DocenteUpdateRequest docenteRequest);
     DocenteResponse deleteDocente(Long id);
     DocenteResponseList listDocentes();
+    DocenteResponseList listAllDocentes();
 }

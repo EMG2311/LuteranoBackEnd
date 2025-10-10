@@ -3,8 +3,10 @@ package com.grup14.luterano.entities;
 import com.grup14.luterano.commond.Inasistencia;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 

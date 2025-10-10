@@ -21,17 +21,25 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User>findByName(String name);
 
     @Query("""
-    SELECT u FROM User u
-    WHERE u.id NOT IN (SELECT d.user.id FROM Docente d)
-      AND u.id NOT IN (SELECT p.user.id FROM Preceptor p)
+     SELECT u
+        FROM User u
+        WHERE NOT EXISTS (
+            SELECT 1 FROM Docente d WHERE d.user.id = u.id
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM Preceptor p WHERE p.user.id = u.id
+        )
 """)
     Optional<List<User>> findUsuariosSinAsignar();
 
     @Query("""
-    SELECT u FROM User u
-    WHERE u.rol = :role
-      AND u.id NOT IN (SELECT d.user.id FROM Docente d)
-      AND u.id NOT IN (SELECT p.user.id FROM Preceptor p)
+    SELECT u
+      FROM User u
+      LEFT JOIN Docente d ON d.user.id = u.id
+      LEFT JOIN Preceptor p ON p.user.id = u.id
+      WHERE u.rol = :role
+        AND d.id IS NULL
+        AND p.id IS NULL
 """)
     Optional<List<User>> findUsuariosSinAsignarPorRol(@Param("role") Role role);
 }

@@ -22,6 +22,7 @@ public class CursoMapper {
                 // Mapea el aula si existe
                 .aula(AulaMapper.toDto(entity.getAula()))
                 // Se mapea la lista de MateriaCurso a una lista de MateriaCursoDto
+                .preceptorId(entity.getPreceptor()!=null?entity.getPreceptor().getId():null)
                 .dictados(entity.getDictados().stream()
                         .map(MateriaCursoMapper::toDto)
                         .collect(Collectors.toList()))

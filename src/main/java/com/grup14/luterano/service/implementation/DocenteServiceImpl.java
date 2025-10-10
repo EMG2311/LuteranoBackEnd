@@ -50,61 +50,86 @@ public class DocenteServiceImpl implements DocenteService {
     @Override
     @Transactional
     public DocenteResponse crearDocente(DocenteRequest docenteRequest) {
-        Optional<Docente> existentePorEmail = docenteRepository.findByEmail(docenteRequest.getEmail());
-        Optional<Docente> existentePorDni = docenteRepository.findByDni(docenteRequest.getDni());
-        Optional<User> existeUser = userRepository.findByEmail(docenteRequest.getEmail());
-        if (existentePorEmail.isPresent() ) {
-            throw new DocenteException("Ya existe un docente registrado con ese email");
-        }
-        if (existentePorDni.isPresent() ) {
-            throw new DocenteException("Ya existe un docente registrado con ese DNI");
-        }
-        if(existeUser.isEmpty()){
-            throw new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar");
-        }
-        if(!Rol.ROLE_DOCENTE.name().equals(existeUser.get().getRol().getName())){
+        docenteRepository.findByEmailAndActiveIsTrue(docenteRequest.getEmail())
+                .ifPresent(d -> { throw new DocenteException("Ya existe un docente activo con ese email"); });
+        docenteRepository.findByDniAndActiveIsTrue(docenteRequest.getDni())
+                .ifPresent(d -> { throw new DocenteException("Ya existe un docente activo con ese DNI"); });
+
+        Optional<Docente> docenteInactivo = docenteRepository.findByEmailAndActiveIsFalse(docenteRequest.getEmail());
+
+        User user = userRepository.findByEmail(docenteRequest.getEmail())
+                .orElseThrow(() -> new DocenteException("No existe un usuario con ese mail. Por favor crearlo y volver a intentar"));
+
+        if (!Rol.ROLE_DOCENTE.name().equals(user.getRol().getName())) {
             throw new DocenteException("El usuario no tiene rol docente");
         }
-        if(!existeUser.get().getName().equals(docenteRequest.getNombre())
-        || !existeUser.get().getLastName().equals(docenteRequest.getApellido())){
-            existeUser.get().setName(docenteRequest.getNombre());
-            existeUser.get().setLastName(docenteRequest.getApellido());
+
+        if (!user.getName().equals(docenteRequest.getNombre())
+                || !user.getLastName().equals(docenteRequest.getApellido())) {
+            user.setName(docenteRequest.getNombre());
+            user.setLastName(docenteRequest.getApellido());
         }
 
-        validarFechaAnteriorAActual(docenteRequest.getFechaNacimiento()
-                ,"La fecha de nacimiento debe ser anterior a la fecha actual");
+        validarFechaAnteriorAActual(docenteRequest.getFechaNacimiento(),
+                "La fecha de nacimiento debe ser anterior a la fecha actual");
         validarFechaAnteriorAActual(docenteRequest.getFechaIngreso(),
                 "La fecha de ingreso debe ser anterior a la fecha actual");
         validarFechaPosterior(docenteRequest.getFechaIngreso(), docenteRequest.getFechaNacimiento(),
                 "La fecha de ingreso debe ser posterior a la fecha de nacimiento");
 
-        Docente docente =  Docente.builder()
-                .nombre(docenteRequest.getNombre())
-                .apellido(docenteRequest.getApellido())
-                .genero(docenteRequest.getGenero())
-                .tipoDoc(docenteRequest.getTipoDoc())
-                .dni(docenteRequest.getDni())
-                .email(docenteRequest.getEmail())
-                .direccion(docenteRequest.getDireccion())
-                .telefono(docenteRequest.getTelefono())
-                .fechaNacimiento(docenteRequest.getFechaNacimiento())
-                .fechaIngreso(docenteRequest.getFechaIngreso())
-                .user(existeUser.get())
-                .build();
+        Docente docente;
+
+        if (docenteInactivo.isPresent()) {
+            docente = docenteInactivo.get();
+
+            if (!docente.getDni().equals(docenteRequest.getDni())) {
+                throw new DocenteException("Existe un docente inactivo con ese email pero con distinto DNI. No se puede reactivar." +
+                        "El dni que estaba cargado es: "+ docente.getDni());
+            }
+
+            docente.setActive(true);
+            docente.setNombre(docenteRequest.getNombre());
+            docente.setApellido(docenteRequest.getApellido());
+            docente.setGenero(docenteRequest.getGenero());
+            docente.setTipoDoc(docenteRequest.getTipoDoc());
+            docente.setDireccion(docenteRequest.getDireccion());
+            docente.setTelefono(docenteRequest.getTelefono());
+            docente.setFechaNacimiento(docenteRequest.getFechaNacimiento());
+            docente.setFechaIngreso(docenteRequest.getFechaIngreso());
+            docente.setUser(user);
+
+        } else {
+            docente = Docente.builder()
+                    .nombre(docenteRequest.getNombre())
+                    .apellido(docenteRequest.getApellido())
+                    .genero(docenteRequest.getGenero())
+                    .tipoDoc(docenteRequest.getTipoDoc())
+                    .dni(docenteRequest.getDni())
+                    .email(docenteRequest.getEmail())
+                    .direccion(docenteRequest.getDireccion())
+                    .telefono(docenteRequest.getTelefono())
+                    .fechaNacimiento(docenteRequest.getFechaNacimiento())
+                    .fechaIngreso(docenteRequest.getFechaIngreso())
+                    .user(user)
+                    .active(true)
+                    .build();
+        }
 
         docenteRepository.save(docente);
-        logger.info("Se creo correctamente el docente {} {}", docente.getNombre(), docente.getApellido());
+        logger.info("Docente {} {} registrado/reactivado correctamente (id={})",
+                docente.getNombre(), docente.getApellido(), docente.getId());
+
         return DocenteResponse.builder()
                 .docente(DocenteMapper.toDto(docente))
                 .code(0)
-                .mensaje("Se creo correctamente el docente")
+                .mensaje("Se registró/reactivó correctamente el docente")
                 .build();
     }
 
     @Override
     public DocenteResponse updateDocente(DocenteUpdateRequest updateRequest) {
-        Docente docente = docenteRepository.findById(updateRequest.getId())
-                .orElseThrow(() -> new DocenteException("No existe docente con id: " + updateRequest.getId()));
+        Docente docente = docenteRepository.findByIdAndActiveIsTrue(updateRequest.getId())
+                .orElseThrow(() -> new DocenteException("No existe docente activo con id: " + updateRequest.getId()));
         User user=docente.getUser();
         boolean necesitaActualizarUsuario=false;
         if (user == null) {
@@ -192,9 +217,11 @@ public class DocenteServiceImpl implements DocenteService {
     @Override
     @Transactional
     public DocenteResponse deleteDocente(Long id) {
-        Docente docente = docenteRepository.findById(id).orElseThrow(() -> new DocenteException("No existe el docente id " + id));
-        docenteRepository.deleteById(id);
-        logger.info("Se elimino correctamente el docente " + id);
+        Docente docente = docenteRepository.findByIdAndActiveIsTrue(id).orElseThrow(() -> new DocenteException("No existe el docente id " + id));
+        docente.setActive(false);
+        docente.setUser(null);
+        docenteRepository.save(docente);
+        logger.info("Se desactivo correctamente el docente " + id);
         return DocenteResponse.builder()
                 .docente(new DocenteDto())
                 .code(0)
@@ -204,12 +231,35 @@ public class DocenteServiceImpl implements DocenteService {
 
     @Override
     public DocenteResponseList listDocentes() {
-        List<DocenteDto> docentes = docenteRepository.findAll().stream()
+        List<DocenteDto> docentes = docenteRepository.findByActiveIsTrue().stream()
                 .map(docente -> {
-                    // Convertimos el docente a DTO básico
                     DocenteDto dto = DocenteMapper.toDto(docente);
 
-                    // Convertimos la lista de dictados a LigeroDto
+                    if (docente.getDictados() != null) {
+                        List<MateriaCursoLigeroDto> dictadosLigero = docente.getDictados().stream()
+                                .map(MateriaCursoMapper::toLigeroDto)
+                                .collect(Collectors.toList());
+
+                        dto.setDictados(dictadosLigero);
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return DocenteResponseList.builder()
+                .docenteDtos(docentes)
+                .code(0)
+                .mensaje("Se listaron correctamente los docentes")
+                .build();
+    }
+
+    @Override
+    public DocenteResponseList listAllDocentes() {
+        List<DocenteDto> docentes = docenteRepository.findByActiveIsTrue().stream()
+                .map(docente -> {
+                    DocenteDto dto = DocenteMapper.toDto(docente);
+
                     if (docente.getDictados() != null) {
                         List<MateriaCursoLigeroDto> dictadosLigero = docente.getDictados().stream()
                                 .map(MateriaCursoMapper::toLigeroDto)

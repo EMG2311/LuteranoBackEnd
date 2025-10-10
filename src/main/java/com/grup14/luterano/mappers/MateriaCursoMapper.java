@@ -14,7 +14,7 @@ public class MateriaCursoMapper {
                 .id(entity.getId())
                 .materia(MateriaMapper.toDto(entity.getMateria()))
                 .cursoId(entity.getCurso() != null ? entity.getCurso().getId() : null)
-                .docente(DocenteMapper.toLigeroDto(entity.getDocente())) // solo datos básicos
+                .docente(DocenteMapper.toLigeroDto(entity.getDocente()))
                 .build();
     }
     public static MateriaCursoLigeroDto toLigeroDto(MateriaCurso entity) {

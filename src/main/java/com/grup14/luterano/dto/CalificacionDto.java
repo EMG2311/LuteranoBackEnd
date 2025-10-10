@@ -1,25 +1,37 @@
 package com.grup14.luterano.dto;
 
+import com.grup14.luterano.entities.HistorialMateria;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor@AllArgsConstructor
 public class CalificacionDto {
     private Long id;
-    private float nota;
-    private int numeroNota;
-    private float PG;
-    private LocalDate fecha;
 
-    private AlumnoDto alumno;
-    private MateriaDto materia;
-    private CicloLectivoDto cicloLectivo;
-    private HistorialCalificacionesDto historialCalificaciones;
+    @Min(value = 1, message = "La nota mínima es 1")
+    @Max(value = 10, message = "La nota máxima es 10")
+    private Integer nota;
+
+    @Min(value = 1, message = "La etapa debe ser >= 1")
+    private int etapa;
+
+    @Min(value = 1, message = "El número de nota debe ser >= 1")
+    @Max(value = 4, message = "El número de nota debe ser <= 4")
+    private int numeroNota;
+
+    private LocalDate fecha;
+    private Long materiaId;
+    private String materiaNombre;
+    private Long materiaCursoId;
 }

@@ -28,4 +28,6 @@ public class Alumno extends Persona {
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
     private List<HistorialCurso> historialCursos = new ArrayList<>();
 
+    @OneToMany(mappedBy = "alumno")
+    private List<MesaExamenAlumno> mesasExamen = new ArrayList<>();
 }

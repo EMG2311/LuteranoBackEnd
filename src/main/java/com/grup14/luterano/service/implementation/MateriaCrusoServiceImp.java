@@ -64,7 +64,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
 
         return MateriaCursoResponse.builder()
                 .code(0)
-                .manesaje(mensaje)
+                .mensaje(mensaje)
                 .build();
     }
 
@@ -165,7 +165,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
         return MateriaCursoResponse.builder()
                 .materiaCursoDto(MateriaCursoMapper.toDto(materiaCurso))
                 .code(0)
-                .manesaje("Docente asignado correctamente")
+                .mensaje("Docente asignado correctamente")
                 .build();
     }
 
@@ -187,7 +187,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
         return MateriaCursoResponse.builder()
                 .materiaCursoDto(MateriaCursoMapper.toDto(materiaCurso))
                 .code(0)
-                .manesaje("Docente desasignado correctamente")
+                .mensaje("Docente desasignado correctamente")
                 .build();
     }
 }

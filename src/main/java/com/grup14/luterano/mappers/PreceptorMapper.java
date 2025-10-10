@@ -10,7 +10,6 @@ public class PreceptorMapper {
         if (entity == null) {
             return null;
         }
-
         return PreceptorDto.builder()
                 .id(entity.getId())
                 .nombre(entity.getNombre())
@@ -23,7 +22,17 @@ public class PreceptorMapper {
                 .telefono(entity.getTelefono())
                 .fechaNacimiento(entity.getFechaNacimiento())
                 .fechaIngreso(entity.getFechaIngreso())
+                .user(UserMapper.toDto(entity.getUser()))
+                .cursos(
+                        entity.getCursos() == null
+                                ? java.util.Collections.emptyList()
+                                : entity.getCursos()
+                                .stream()
+                                .map(CursoMapper::toDto)
+                                .collect(java.util.stream.Collectors.toList())
+                )
                 .build();
+
     }
 
     public static Preceptor toEntity(PreceptorDto dto) {

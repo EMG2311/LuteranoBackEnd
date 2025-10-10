@@ -175,6 +175,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUsuarioByEmail(String email) {
         User user = userRepository.findByEmail(email).get();
         return UserResponse.builder().email(user.getEmail())
+                .id(user.getId())
                 .name(user.getName())
                 .lastName(user.getLastName())
                 .userStatus(user.getUserStatus())

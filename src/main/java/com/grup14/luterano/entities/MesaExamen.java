@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity@Builder
 @Data
@@ -20,12 +22,15 @@ public class MesaExamen {
 
     private LocalDate fecha;
 
-    @ManyToOne
-    private Modulo modulo;
+    @ManyToOne(optional = false)
+    private MateriaCurso materiaCurso;
 
     @ManyToOne
     private Aula aula;
 
     @Enumerated(EnumType.STRING)
     private EstadoMesaExamen estado;
+
+    @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MesaExamenAlumno> alumnos = new ArrayList<>();
 }
