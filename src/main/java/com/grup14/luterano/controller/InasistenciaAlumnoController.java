@@ -51,9 +51,9 @@ public class InasistenciaAlumnoController {
             @RequestBody @Validated InasistenciaAlumnoUpdateRequest request) {
         try {
             return ResponseEntity.ok(inasistenciaAlumnoService.updateInasistenciaAlumno(id, request));
-        } catch (IllegalArgumentException e) {
+        } catch (InasistenciaAlumnoException e) {
             // El ID no es válido o la entidad no existe
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(422)
                     .body(InasistenciaAlumnoResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             // Otros errores internos
@@ -71,8 +71,8 @@ public class InasistenciaAlumnoController {
                     .code(200)
                     .mensaje("Inasistencia eliminada exitosamente.")
                     .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        } catch (InasistenciaAlumnoException e) {
+            return ResponseEntity.status(422)
                     .body(InasistenciaAlumnoResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -85,7 +85,10 @@ public class InasistenciaAlumnoController {
     public ResponseEntity<InasistenciaAlumnoResponse> getInasistenciaAlumnoById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(inasistenciaAlumnoService.getInasistenciaAlumnoById(id));
-        } catch (Exception e) {
+        } catch (InasistenciaAlumnoException e) {
+            return ResponseEntity.status(422)
+                    .body(InasistenciaAlumnoResponse.builder().code(-1).mensaje(e.getMessage()).build());}
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(InasistenciaAlumnoResponse.builder()
                             .code(-2)

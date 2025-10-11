@@ -51,14 +51,14 @@ public class InasistenciaAlumnoServiceImpl implements InasistenciaAlumnoService 
 
         Optional<User> optionalUser = userRepository.findByEmail(userEmail);
         if (optionalUser.isEmpty()) {
-            throw new IllegalArgumentException("Usuario no encontrado.");
+            throw new InasistenciaAlumnoException ("Usuario no encontrado.");
         }
         User usuario = optionalUser.get();
 
         //  Validar que el alumno exista
         Optional<Alumno> alumnoOptional = alumnoRepository.findById(inasistenciaAlumnoRequest.getAlumnoId());
         if (alumnoOptional.isEmpty()) {
-            throw new IllegalArgumentException("El Alumno con el ID proporcionado no existe.");
+            throw new InasistenciaAlumnoException ("El Alumno con el ID proporcionado no existe.");
         }
         Alumno alumno = alumnoOptional.get();
 
@@ -91,7 +91,7 @@ public class InasistenciaAlumnoServiceImpl implements InasistenciaAlumnoService 
 
         //  Validar el ID
         if (id == null) {
-            throw new IllegalArgumentException("El ID de la inasistencia no puede ser nulo.");
+            throw new InasistenciaAlumnoException("El ID de la inasistencia no puede ser nulo.");
         }
         //  Buscar la inasistencia en la base de datos
         Optional<InasistenciaAlumno> inasistenciaOptional = inasistenciaAlumnoRepository.findById(id);
@@ -99,7 +99,7 @@ public class InasistenciaAlumnoServiceImpl implements InasistenciaAlumnoService 
 
         //  Lanzar una excepción si la inasistencia no existe
         if (inasistenciaOptional.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la inasistencia con el ID proporcionado: " + id);
+            throw new InasistenciaAlumnoException ("No se encontró la inasistencia con el ID proporcionado: " + id);
         }
 
         //  Actualizar el estado de la entidad
