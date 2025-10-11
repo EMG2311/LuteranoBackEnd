@@ -48,9 +48,9 @@ public class InasistenciaDocenteController {
             @RequestBody @Validated InasistenciaDocenteUpdateRequest request) {
         try {
             return ResponseEntity.ok(inasistenciaDocenteService.updateInasistenciaDocente(id, request));
-        } catch (IllegalArgumentException e) {
+        } catch (InasistenciaDocenteException e) {
             // El ID no es válido o la entidad no existe
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(422)
                     .body(InasistenciaDocenteResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             // Otros errores internos
@@ -68,8 +68,8 @@ public class InasistenciaDocenteController {
                     .code(200)
                     .mensaje("Inasistencia eliminada exitosamente.")
                     .build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        } catch (InasistenciaDocenteException e) {
+            return ResponseEntity.status(422)
                     .body(InasistenciaDocenteResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

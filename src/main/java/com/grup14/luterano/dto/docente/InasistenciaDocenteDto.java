@@ -16,7 +16,7 @@ public class InasistenciaDocenteDto {
     private Long id;
     private LocalDate fecha;
     private EstadoAsistencia estado;
-    private Long docenteId;  //PUEDO QUERER SU NOMBRE Y NO SU ID?
-    private Long usuarioId;  //QUIEN REGISTRO LA INASISTENCIA
+    private Long docenteId;
+    private Long usuarioId;
 
 }

@@ -17,8 +17,5 @@ public class InasistenciaDocenteUpdateRequest {
     private Long id;
     private LocalDate fecha;
     private EstadoAsistencia estado;
-    //NO ACTUALIZO EL DOCENTE NI EL PRECEPTOR
-    //  private Long docenteId;  //PUEDO QUERER SU NOMBRE Y NO SU ID?
-    //private Long preceptorId;  //QUIEN REGISTRO LA INASISTENCIA
 
 }

@@ -1,10 +1,8 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.dto.docente.InasistenciaDocenteDto;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.InasistenciaDocente;
-import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.exeptions.InasistenciaDocenteException;
 import com.grup14.luterano.mappers.InasistenciaDocenteMapper;
@@ -23,15 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -52,21 +47,20 @@ public class InasistenciaDocenteServiceImpl implements InasistenciaDocenteServic
     private UserRepository UserRepository;
     @Autowired
     private UserRepository userRepository;
-    private static final Logger logger = LoggerFactory.getLogger(AulaServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(InasistenciaDocenteServiceImpl.class);
 
 
 
     @Override
     @Transactional
     public InasistenciaDocenteResponse crearInasistenciaDocente(InasistenciaDocenteRequest inasistenciaDocenteRequest) {
-
-        // 1. Get the authenticated user
+            // Capturar el usuario autenticado
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
 
         Optional<User> optionalUser = userRepository.findByEmail(userEmail);
         if (optionalUser.isEmpty()) {
-            throw new IllegalArgumentException("Usuario no encontrado.");
+            throw new InasistenciaDocenteException ("Usuario no encontrado.");
         }
 
         User usuario = optionalUser.get();
@@ -75,7 +69,7 @@ public class InasistenciaDocenteServiceImpl implements InasistenciaDocenteServic
         //  Validar que el docente exista
         Optional<Docente> docenteOptional = docenteRepository.findById(inasistenciaDocenteRequest.getDocenteId());
         if (docenteOptional.isEmpty()) {
-            throw new IllegalArgumentException("El docente con el ID proporcionado no existe.");
+            throw new InasistenciaDocenteException("El docente con el ID proporcionado no existe.");
         }
         Docente docente = docenteOptional.get();
 
@@ -107,7 +101,7 @@ public class InasistenciaDocenteServiceImpl implements InasistenciaDocenteServic
     public InasistenciaDocenteResponse updateInasistenciaDocente(Long id,InasistenciaDocenteUpdateRequest request) {
         //  Validar el ID
         if (id == null) {
-            throw new IllegalArgumentException("El ID de la inasistencia no puede ser nulo.");
+            throw new InasistenciaDocenteException("El ID de la inasistencia no puede ser nulo.");
         }
 
         //  Buscar la inasistencia en la base de datos
@@ -115,7 +109,7 @@ public class InasistenciaDocenteServiceImpl implements InasistenciaDocenteServic
 
         //  Lanzar una excepción si la inasistencia no existe
         if (inasistenciaOptional.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la inasistencia con el ID proporcionado: " + id);
+            throw new InasistenciaDocenteException("No se encontró la inasistencia con el ID proporcionado: " + id);
         }
 
         //  Actualizar el estado de la entidad

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
@@ -14,21 +15,13 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 
-public class InasistenciaDocente  {
+public class InasistenciaDocente extends Inasistencia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private LocalDate fecha;
-
-    @Enumerated(EnumType.STRING)
-    private EstadoAsistencia estado;
-
-    @ManyToOne
-    private User usuario;
 
     @ManyToOne
     private Docente docente;
