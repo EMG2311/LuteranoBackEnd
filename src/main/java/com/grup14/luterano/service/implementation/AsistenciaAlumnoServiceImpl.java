@@ -92,19 +92,20 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
             throw new AsistenciaException("Debe indicar alumnoId, fecha y estado");
         }
 
-        alumnoRepo.findById(req.getAlumnoId())
+        Alumno alumno = alumnoRepo.findById(req.getAlumnoId())
                 .orElseThrow(() -> new AsistenciaException("Alumno no encontrado"));
 
         User usuario = currentUserOrNull();
 
-        var asistencia = asistenciaAlumnoRepo.findByAlumno_IdAndFecha(req.getAlumnoId(), req.getFecha())
+        AsistenciaAlumno asistencia = asistenciaAlumnoRepo.findByAlumno_IdAndFecha(req.getAlumnoId(), req.getFecha())
                 .orElseGet(() -> AsistenciaAlumno.builder()
-                        .alumno(Alumno.builder().id(req.getAlumnoId()).build())
+                        .alumno(alumno)
                         .fecha(req.getFecha())
                         .build());
 
         asistencia.setEstado(req.getEstado());
         asistencia.setUsuario(usuario);
+        asistencia.setObservacion(req.getObservacion());
         asistenciaAlumnoRepo.save(asistencia);
 
         return AsistenciaAlumnoResponse.builder()

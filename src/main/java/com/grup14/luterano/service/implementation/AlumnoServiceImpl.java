@@ -2,6 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
 import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.mappers.AlumnoMapper;
@@ -81,7 +82,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
         alumno.setCursoActual(curso);
         alumno.setTutor(tutor);
-
+        alumno.setEstado(EstadoAlumno.REGULAR);
         alumnoRepository.save(alumno);
 
         logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
