@@ -22,7 +22,8 @@ public abstract class AsistenciaBase {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoAsistencia estado;
-
+    @Column(length = 300)
+    private String observacion;
     @ManyToOne
     private User usuario;
 }

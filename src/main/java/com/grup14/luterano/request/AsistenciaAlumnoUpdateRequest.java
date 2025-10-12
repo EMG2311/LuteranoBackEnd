@@ -14,4 +14,5 @@ public class AsistenciaAlumnoUpdateRequest {
     private Long alumnoId;
     private LocalDate fecha;
     private EstadoAsistencia estado;
+    private String observacion;
 }

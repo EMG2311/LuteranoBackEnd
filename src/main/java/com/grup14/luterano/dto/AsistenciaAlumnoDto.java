@@ -17,4 +17,5 @@ public class AsistenciaAlumnoDto {
     private String alumnoApellido;
     private LocalDate fecha;
     private EstadoAsistencia estado;
+    private String observacion;
 }

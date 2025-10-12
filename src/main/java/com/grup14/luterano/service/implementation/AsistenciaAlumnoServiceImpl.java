@@ -8,13 +8,16 @@ import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import com.grup14.luterano.exeptions.AsistenciaException;
+import com.grup14.luterano.mappers.AsistenciaAlumnoMapper;
 import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.AsistenciaAlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.UserRepository;
 import com.grup14.luterano.request.AsistenciaAlumnoBulkRequest;
 import com.grup14.luterano.request.AsistenciaAlumnoUpdateRequest;
+import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
+import com.grup14.luterano.service.AsistenciaAlumnoService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,7 +28,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 @Service@AllArgsConstructor
-public class AsistenciaAlumnoServiceImpl {
+public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
 
     private final AsistenciaAlumnoRepository asistenciaAlumnoRepo;
     private final CursoRepository cursoRepo;
@@ -78,14 +81,14 @@ public class AsistenciaAlumnoServiceImpl {
         }
 
         return AsistenciaAlumnoResponseList.builder()
-                .items(result.stream().map(this::toDto).toList())
+                .items(result.stream().map(AsistenciaAlumnoMapper::toDto).toList())
                 .code(200)
                 .mensaje("OK")
                 .build();
     }
 
     @Transactional
-    public AsistenciaAlumnoDto actualizarAsistenciaAlumno(AsistenciaAlumnoUpdateRequest req) {
+    public AsistenciaAlumnoResponse actualizarAsistenciaAlumno(AsistenciaAlumnoUpdateRequest req) {
         if (req.getAlumnoId() == null || req.getFecha() == null || req.getEstado() == null) {
             throw new AsistenciaException("Debe indicar alumnoId, fecha y estado");
         }
@@ -105,7 +108,11 @@ public class AsistenciaAlumnoServiceImpl {
         asistencia.setUsuario(usuario);
         asistenciaAlumnoRepo.save(asistencia);
 
-        return toDto(asistencia);
+        return AsistenciaAlumnoResponse.builder()
+                .asistenciaAlumnoDto(AsistenciaAlumnoMapper.toDto(asistencia))
+                .code(0)
+                .mensaje("OK")
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -118,21 +125,11 @@ public class AsistenciaAlumnoServiceImpl {
         var lista = asistenciaAlumnoRepo.findByAlumno_CursoActual_IdAndFecha(cursoId, fecha);
 
         return AsistenciaAlumnoResponseList.builder()
-                .items(lista.stream().map(this::toDto).toList())
+                .items(lista.stream().map(AsistenciaAlumnoMapper::toDto).toList())
                 .code(200)
                 .mensaje("OK")
                 .build();
     }
 
-    private AsistenciaAlumnoDto toDto(AsistenciaAlumno a) {
-        var al = a.getAlumno();
-        return AsistenciaAlumnoDto.builder()
-                .id(a.getId())
-                .alumnoId(al != null ? al.getId() : null)
-                .alumnoNombre(al != null ? al.getNombre() : null)
-                .alumnoApellido(al != null ? al.getApellido() : null)
-                .fecha(a.getFecha())
-                .estado(a.getEstado())
-                .build();
-    }
+
 }
