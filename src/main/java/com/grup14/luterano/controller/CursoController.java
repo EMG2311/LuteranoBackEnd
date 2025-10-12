@@ -2,6 +2,7 @@ package com.grup14.luterano.controller;
 
 
 import com.grup14.luterano.exeptions.CursoException;
+import com.grup14.luterano.exeptions.PreceptorCursoException;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
@@ -107,6 +108,50 @@ public class CursoController {
                             .build());
         }
 
+    }
+
+    @GetMapping("/list/preceptor/{preceptorId}")
+    @Operation(summary = "lista los cursos de un preceptor")
+    public ResponseEntity<CursoResponseList> listarCursosPorPreceptor(@PathVariable Long preceptorId) {
+        try {
+            return ResponseEntity.ok(cursoService.listarCursosPorPreceptor(preceptorId));
+        } catch (PreceptorCursoException e) {
+            return ResponseEntity.status(422).body(
+                    CursoResponseList.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    CursoResponseList.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/list/docente/{docenteId}")
+    @Operation(summary = "lista los cursos de un docente")
+    public ResponseEntity<CursoResponseList> listarCursosPorDocente(@PathVariable Long docenteId) {
+        try {
+            return ResponseEntity.ok(cursoService.listarCursosPorDocente(docenteId));
+        } catch (PreceptorCursoException e) {
+            return ResponseEntity.status(422).body(
+                    CursoResponseList.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    CursoResponseList.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build()
+            );
+        }
     }
 
 

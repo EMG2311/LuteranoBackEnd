@@ -76,6 +76,24 @@ public class AulaController {
         }
     }
 
+    @GetMapping("/list/libres")
+    @Operation(summary = "Elimina un aula por id", description = "Elimina un aula si existe.")
+    public ResponseEntity<AulaResponseList> listarAulasSinCurso() {
+        try {
+            return ResponseEntity.ok(aulaService.listarAulasSinCurso());
+        } catch (AulaException e) {
+            return ResponseEntity.status(422).body(AulaResponseList.builder()
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(AulaResponseList.builder()
+                            .code(-2).mensaje("Error no controlado: " + e.getMessage())
+                            .build());
+        }
+    }
+
     @GetMapping("/list")
     @Operation(summary = "Lista todas las aulas", description = "Devuelve una lista de todas las aulas.")
     public ResponseEntity<AulaResponseList> listAulas() {

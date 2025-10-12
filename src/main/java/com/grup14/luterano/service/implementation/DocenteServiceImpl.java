@@ -218,6 +218,7 @@ public class DocenteServiceImpl implements DocenteService {
     @Transactional
     public DocenteResponse deleteDocente(Long id) {
         Docente docente = docenteRepository.findByIdAndActiveIsTrue(id).orElseThrow(() -> new DocenteException("No existe el docente id " + id));
+        materiaCursoRepository.unassignDocenteFromAll(id);
         docente.setActive(false);
         docente.setUser(null);
         docenteRepository.save(docente);

@@ -38,7 +38,7 @@ public class PreceptorCursoServiceImpl implements PreceptorCursoService {
         preceptor.addCurso(curso);
         curso.setPreceptor(preceptor);
         cursoRepository.save(curso);
-        System.out.println(preceptor.getCursos());
+        preceptorRepository.save(preceptor);
         return CursoResponse.builder()
                 .curso(CursoMapper.toDto(curso))
                 .code(0)

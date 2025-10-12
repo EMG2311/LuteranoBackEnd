@@ -12,5 +12,6 @@ public interface AulaService {
     AulaResponse deleteAula(Long id);
     AulaResponse getAulaById(Long id);
     AulaResponseList listAulas();
+    AulaResponseList listarAulasSinCurso();
 
 }

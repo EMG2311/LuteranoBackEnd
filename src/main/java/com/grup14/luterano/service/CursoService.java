@@ -13,5 +13,8 @@ public interface CursoService {
     CursoResponse deleteCurso(Long id);
     CursoResponse getCursoById(Long id);
     CursoResponseList listCursos();
+    CursoResponseList listarCursosPorPreceptor(Long preceptorId);
+    CursoResponseList listarCursosPorDocente(Long docenteId);
+
 
 }

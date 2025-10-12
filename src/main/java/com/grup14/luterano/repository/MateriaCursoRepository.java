@@ -1,6 +1,7 @@
 package com.grup14.luterano.repository;
 import com.grup14.luterano.entities.MateriaCurso;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,5 +21,11 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
       where mc.curso.id = :cursoId and lower(m.nombre) = lower(:materiaNombre)
     """)
     Optional<MateriaCurso> findByCursoAndMateriaNombre(@Param("cursoId") Long cursoId, @Param("materiaNombre") String materiaNombre);
-
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update MateriaCurso mc
+        set mc.docente = null
+        where mc.docente.id = :docenteId
+    """)
+    int unassignDocenteFromAll(@Param("docenteId") Long docenteId);
 }

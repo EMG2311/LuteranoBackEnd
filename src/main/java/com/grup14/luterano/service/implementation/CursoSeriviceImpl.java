@@ -3,22 +3,22 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.CursoDto;
 import com.grup14.luterano.entities.Aula;
 import com.grup14.luterano.entities.Curso;
+import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.exeptions.CursoException;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.mappers.MateriaCursoMapper;
-import com.grup14.luterano.repository.AulaRepository;
-import com.grup14.luterano.repository.CursoRepository;
-import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
 import com.grup14.luterano.response.curso.CursoResponse;
 import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
-import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,15 +26,15 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class CursoSeriviceImpl implements CursoService {
 
-    @Autowired
-    private CursoRepository cursoRepository;
-    @Autowired
-    private AulaRepository aulaRepository;
+    private final CursoRepository cursoRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final AulaRepository aulaRepository;
+    private final PreceptorRepository preceptorRepository;
+    private final UserRepository userRepository;
+    private final DocenteRepository docenteRepository;
     private static final Logger logger = LoggerFactory.getLogger(CursoSeriviceImpl.class);
 
 
@@ -160,6 +160,36 @@ public class CursoSeriviceImpl implements CursoService {
                 .cursoDtos(cursos)
                 .code(0)
                 .mensaje("Lista de cursos obtenida correctamente")
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public CursoResponseList listarCursosPorPreceptor(Long preceptorId) {
+
+        preceptorRepository.findByIdAndActiveIsTrue(preceptorId).orElseThrow(()-> new CursoException("No hay ningun preceptor activo con ese Id"));
+
+        List<Curso> cursos = cursoRepository.findByPreceptor_Id(preceptorId);
+
+
+        return CursoResponseList.builder()
+                .cursoDtos(cursos.stream().map(CursoMapper::toDto).toList())
+                .code(200)
+                .mensaje("OK")
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public CursoResponseList listarCursosPorDocente(Long docenteId) {
+
+        docenteRepository.findByIdAndActiveIsTrue(docenteId)
+                .orElseThrow(() -> new CursoException("No hay ningún docente activo con ese Id"));
+
+        java.util.List<Curso> cursos = cursoRepository.findByDocente_Id(docenteId);
+
+        return CursoResponseList.builder()
+                .cursoDtos(cursos.stream().map(CursoMapper::toDto).toList())
+                .code(200)
+                .mensaje("OK")
                 .build();
     }
 

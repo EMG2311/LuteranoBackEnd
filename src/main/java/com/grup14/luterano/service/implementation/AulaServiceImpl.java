@@ -16,11 +16,11 @@ import com.grup14.luterano.request.aula.AulaUpdateRequest;
 import com.grup14.luterano.response.aula.AulaResponse;
 import com.grup14.luterano.response.aula.AulaResponseList;
 import com.grup14.luterano.service.AulaService;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -133,6 +133,17 @@ public class AulaServiceImpl implements AulaService {
                 .aulaDtos(aulas)
                 .code(0)
                 .mensaje("Aulas listadas correctamente")
+                .build();
+    }
+
+
+    @Transactional(readOnly = true)
+    public AulaResponseList listarAulasSinCurso() {
+        List<Aula> aulas = aulaRepository.findByCursoIsNull();
+        return AulaResponseList.builder()
+                .aulaDtos(aulas.stream().map(AulaMapper::toDto).toList())
+                .code(200)
+                .mensaje("OK")
                 .build();
     }
 
