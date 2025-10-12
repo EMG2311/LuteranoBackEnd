@@ -1,6 +1,7 @@
-package com.grup14.luterano.dto;
+package com.grup14.luterano.entities;
 
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,15 +9,20 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
-@SuperBuilder(toBuilder=true)
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class InasistenciaAlumnoDto {
-    private Long id;
+@NoArgsConstructor
+@MappedSuperclass
+@SuperBuilder
+public abstract class AsistenciaBase {
+
+    @Column(nullable = false)
     private LocalDate fecha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EstadoAsistencia estado;
-   // private Long alumnoId;
-    private Long alumnoId;
-    private Long usuarioId;
+
+    @ManyToOne
+    private User usuario;
 }

@@ -14,5 +14,6 @@ public interface AlumnoRepository extends JpaRepository<Alumno,Long> , JpaSpecif
     Optional<Alumno> findByNombre (String nombre);
     Optional<Alumno> findByApellido (String apellido);
     List<Alumno> findByTutor_IdAndEstadoNot(Long tutorId, EstadoAlumno estado);
-
+    List<Alumno> findByCursoActual_Id(Long cursoId);
+    List<Alumno> findByCursoActual_IdAndEstadoNot(Long cursoId, EstadoAlumno estado);
 }
