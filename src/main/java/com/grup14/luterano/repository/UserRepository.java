@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByEmail(String email);
     Optional<List<User>> findByUserStatus(UserStatus userStatus);
     Optional<List<User>> findByRol(Role rol);
+    Optional<User>findByName(String name);
+
     @Query("""
      SELECT u
         FROM User u
