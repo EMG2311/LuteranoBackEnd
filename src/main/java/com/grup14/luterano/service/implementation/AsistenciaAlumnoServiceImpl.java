@@ -1,6 +1,5 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.AsistenciaAlumnoDto;
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.AsistenciaAlumno;
 import com.grup14.luterano.entities.Curso;
@@ -13,8 +12,8 @@ import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.AsistenciaAlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.UserRepository;
-import com.grup14.luterano.request.AsistenciaAlumnoBulkRequest;
-import com.grup14.luterano.request.AsistenciaAlumnoUpdateRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoBulkRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoUpdateRequest;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
 import com.grup14.luterano.service.AsistenciaAlumnoService;

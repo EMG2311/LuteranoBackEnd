@@ -1,4 +1,4 @@
-package com.grup14.luterano.request;
+package com.grup14.luterano.request.asistenciaAlumno;
 
 
 import com.grup14.luterano.entities.enums.EstadoAsistencia;

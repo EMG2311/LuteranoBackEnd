@@ -3,8 +3,8 @@ package com.grup14.luterano.controller;
 
 import com.grup14.luterano.dto.AsistenciaAlumnoDto;
 import com.grup14.luterano.exeptions.AsistenciaException;
-import com.grup14.luterano.request.AsistenciaAlumnoBulkRequest;
-import com.grup14.luterano.request.AsistenciaAlumnoUpdateRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoBulkRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoUpdateRequest;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
 import com.grup14.luterano.service.AsistenciaAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;

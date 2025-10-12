@@ -1,8 +1,7 @@
 package com.grup14.luterano.service;
 
-import com.grup14.luterano.dto.AsistenciaAlumnoDto;
-import com.grup14.luterano.request.AsistenciaAlumnoBulkRequest;
-import com.grup14.luterano.request.AsistenciaAlumnoUpdateRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoBulkRequest;
+import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoUpdateRequest;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
 
