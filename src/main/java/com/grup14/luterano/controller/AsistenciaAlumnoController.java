@@ -5,7 +5,9 @@ import com.grup14.luterano.dto.AsistenciaAlumnoDto;
 import com.grup14.luterano.exeptions.AsistenciaException;
 import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoBulkRequest;
 import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoUpdateRequest;
+import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
+import com.grup14.luterano.response.asistenciaDocente.AsistenciaDocenteResponse;
 import com.grup14.luterano.service.AsistenciaAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -54,29 +56,21 @@ public class AsistenciaAlumnoController {
 
     @PutMapping("/update")
     @Operation(summary = "Actualiza la asistencia puntual de un alumno (upsert por alumnoId+fecha)")
-    public ResponseEntity<AsistenciaAlumnoResponseList> actualizarAsistenciaAlumno(
+    public ResponseEntity<AsistenciaAlumnoResponse> actualizarAsistenciaAlumno(
             @RequestBody @Validated AsistenciaAlumnoUpdateRequest req) {
         try {
-            AsistenciaAlumnoDto dto = asistenciaAlumnoService.actualizarAsistenciaAlumno(req);
-            return ResponseEntity.ok(
-                    AsistenciaAlumnoResponseList.builder()
-                            .items(List.of(dto))
-                            .code(0)
-                            .mensaje("OK")
-                            .build()
-            );
+            return ResponseEntity.ok(asistenciaAlumnoService.actualizarAsistenciaAlumno(req));
+
         } catch (AsistenciaException e) {
             return ResponseEntity.status(422).body(
-                    AsistenciaAlumnoResponseList.builder()
-                            .items(List.of())
+                    AsistenciaAlumnoResponse.builder()
                             .code(-1)
                             .mensaje("Error al actualizar asistencia: " + e.getMessage())
                             .build()
             );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    AsistenciaAlumnoResponseList.builder()
-                            .items(List.of())
+                    AsistenciaAlumnoResponse.builder()
                             .code(-2)
                             .mensaje("Error no controlado: " + e.getMessage())
                             .build()
