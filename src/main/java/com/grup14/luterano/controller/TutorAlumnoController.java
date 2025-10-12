@@ -4,6 +4,7 @@ import com.grup14.luterano.exeptions.MateriaCursoException;
 import com.grup14.luterano.response.MateriaCurso.MateriaCursoListResponse;
 import com.grup14.luterano.response.MateriaCurso.MateriaCursoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
+import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.service.TutorAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/materiasCurso")
+    @RequestMapping("/tutorAlumno")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @Tag(
         name = "TutorAlumno Controller",
@@ -63,6 +64,27 @@ public class TutorAlumnoController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(
                     AlumnoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/{tutorId}/alumnos")
+    @Operation(summary = "Lista los alumnos a cargo del tutor")
+    public ResponseEntity<AlumnoResponseList> listarAlumnosACargo(
+            @PathVariable Long tutorId) {
+        try {
+            return ResponseEntity.ok(tutorAlumnoService.listarAlumnosACargo(tutorId));
+        } catch (MateriaCursoException e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponseList.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    AlumnoResponseList.builder()
                             .code(-2)
                             .mensaje("Error no controlado: " + e.getMessage())
                             .build());

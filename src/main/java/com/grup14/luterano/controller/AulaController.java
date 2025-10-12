@@ -77,7 +77,7 @@ public class AulaController {
     }
 
     @GetMapping("/list/libres")
-    @Operation(summary = "Elimina un aula por id", description = "Elimina un aula si existe.")
+    @Operation(summary = "Lista las aulas libres")
     public ResponseEntity<AulaResponseList> listarAulasSinCurso() {
         try {
             return ResponseEntity.ok(aulaService.listarAulasSinCurso());
