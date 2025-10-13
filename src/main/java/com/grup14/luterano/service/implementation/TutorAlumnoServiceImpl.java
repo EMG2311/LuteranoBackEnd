@@ -33,7 +33,7 @@ public class TutorAlumnoServiceImpl implements TutorAlumnoService {
         Alumno alumno = alumnoRepository.findById(idAlumno)
                 .orElseThrow(()-> new TutorAlumnoException("No existe el alumno con id "+ idAlumno));
 
-        if(Objects.equals(alumno.getTutor().getId(), idTutor)){
+        if (alumno.getTutor() != null && Objects.equals(alumno.getTutor().getId(), idTutor)) {
             throw new TutorAlumnoException("El alumno ya tiene este tutor asignado");
         }
         alumno.setTutor(tutor);
