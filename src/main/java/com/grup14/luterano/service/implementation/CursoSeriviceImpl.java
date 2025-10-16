@@ -35,6 +35,8 @@ public class CursoSeriviceImpl implements CursoService {
     private final PreceptorRepository preceptorRepository;
     private final UserRepository userRepository;
     private final DocenteRepository docenteRepository;
+    private final MateriaCursoRepository materiaCursoRepository;
+    private final AlumnoRepository alumnoRepository;
     private static final Logger logger = LoggerFactory.getLogger(CursoSeriviceImpl.class);
 
 
@@ -123,17 +125,44 @@ public class CursoSeriviceImpl implements CursoService {
     }
 
     @Override
+    @Transactional
     public CursoResponse deleteCurso(Long id) {
-        Curso curso = cursoRepository.findById(id).orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + id));
+        var curso = cursoRepository.findById(id)
+                .orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + id));
 
-        cursoRepository.deleteById(id);
-        logger.info("Curso eliminado con ID: {}", id);
+        // 1) Política con alumnos: impedir borrar si hay asignados
+        var alumnos = alumnoRepository.findByCursoActual_Id(id);
+        if (!alumnos.isEmpty()) {
+            throw new CursoException("No se puede eliminar: tiene alumnos asignados (" + alumnos.size() + ").");
+        }
+
+        // 2) Romper 1-1 con Aula (ambos lados)
+        if (curso.getAula() != null) {
+            var aula = curso.getAula();
+            curso.setAula(null);
+            if (aula.getCurso() != null) aula.setCurso(null);
+            aulaRepository.save(aula); // opcional pero prolijo
+        }
+
+        // 3) Borrar dictados (1-N) del lado hijo
+        materiaCursoRepository.deleteByCursoId(id);
+        // No hace falta clear() si borraste via repo, pero no molesta:
+        curso.getDictados().clear();
+
+        // 4) Romper N-1 con Preceptor usando helper del otro lado
+        if (curso.getPreceptor() != null) {
+            curso.getPreceptor().removeCurso(curso); // quita de la lista y hace setPreceptor(null)
+        }
+
+        // 5) Guardar limpieza y eliminar
+        cursoRepository.save(curso);
+        cursoRepository.delete(curso);
+
         return CursoResponse.builder()
                 .curso(new CursoDto())
                 .code(0)
                 .mensaje("Curso eliminado correctamente")
                 .build();
-
     }
 
     @Override

@@ -14,6 +14,8 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
     List<MateriaCurso>findByMateriaId(Long idMateria);
     boolean existsByMateriaIdAndCursoId(Long materiaId, Long cursoId);
     Optional<MateriaCurso> findByMateriaIdAndCursoId(Long materiaId, Long cursoId);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    void deleteByCursoId(Long id);
     List<MateriaCurso> findByCursoId(Long cursoId);
     @Query("""
       select mc from MateriaCurso mc

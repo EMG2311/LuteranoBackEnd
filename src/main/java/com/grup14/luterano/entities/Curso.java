@@ -18,7 +18,7 @@ public class Curso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
   
-    @JoinColumn(nullable = false)
+    @Column(nullable = false)
     @Min(value = 1,message = "El año tiene que ser mayor/igual a 1")
     @Max(value = 6,message = "El año tiene que ser menor/igual a 6")
     private int anio;
