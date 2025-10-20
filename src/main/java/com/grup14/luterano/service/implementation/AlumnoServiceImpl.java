@@ -231,5 +231,21 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .build();
     }
 
+    @Override
+    public AlumnoResponse buscarPorDni(String dni) {
+        if (dni == null || dni.isBlank()) {
+            throw new AlumnoException("Debe indicar un DNI válido.");
+        }
+
+        Alumno alumno = alumnoRepository.findByDni(dni.trim())
+                .orElseThrow(() -> new AlumnoException("No existe un alumno con DNI " + dni));
+
+        return AlumnoResponse.builder()
+                .alumno(AlumnoMapper.toDto(alumno))
+                .code(0)
+                .mensaje("OK")
+                .build();
+    }
+
 
 }

@@ -14,7 +14,7 @@ public interface AlumnoService {
     AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest);
     AlumnoResponse updateAlumno(AlumnoUpdateRequest  alumnoUpdateRequest);
     AlumnoResponse deleteAlumno(Long id);
-
+    AlumnoResponse buscarPorDni(String dni);
     AlumnoResponseList listAlumnos();
     AlumnoResponseList listAlumnos(AlumnoFiltrosRequest alumnoFiltrosRequest);
 

@@ -180,4 +180,28 @@ public class AlumnoController {
         }
     }
 
+    @GetMapping("/dni/{dni}")
+    @Operation(summary = "Busca un alumno por DNI")
+    public ResponseEntity<AlumnoResponse> buscarPorDni(@PathVariable String dni) {
+        try {
+            return ResponseEntity.ok(alumnoService.buscarPorDni(dni));
+        } catch (AlumnoException e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-2)
+                            .mensaje("Error interno al buscar el alumno por DNI.")
+                            .build()
+            );
+        }
+    }
+
 }
