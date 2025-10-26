@@ -11,4 +11,5 @@ public interface AsistenciaAlumnoService {
     AsistenciaAlumnoResponseList registrarAsistenciaCurso(AsistenciaAlumnoBulkRequest req);
     AsistenciaAlumnoResponse actualizarAsistenciaAlumno(AsistenciaAlumnoUpdateRequest req);
     AsistenciaAlumnoResponseList listarAsistenciaCursoPorFecha(Long cursoId, LocalDate fecha);
+    Long resetHistorialCompleto(Long alumnoId);
 }

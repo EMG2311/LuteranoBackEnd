@@ -131,5 +131,16 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
                 .build();
     }
 
+    @Transactional
+    public Long resetHistorialCompleto(Long alumnoId) {
+        if (alumnoId == null) {
+            throw new AsistenciaException("Debe indicar alumnoId");
+        }
 
+        // Validar que el alumno exista
+        alumnoRepo.findById(alumnoId)
+                .orElseThrow(() -> new AsistenciaException("Alumno no encontrado"));
+        return asistenciaAlumnoRepo.deleteByAlumno_Id(alumnoId);
+
+    }
 }

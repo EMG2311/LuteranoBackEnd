@@ -100,4 +100,33 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
                                            @Param("desde") LocalDate desde,
                                            @Param("hasta") LocalDate hasta,
                                            Pageable pageable);
+
+
+
+    @Query("""
+        select aa.alumno.id,
+               sum(
+                   case
+                       when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.AUSENTE
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.JUSTIFICADO
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.CON_LICENCIA
+                           then 1.0
+                       when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.RETIRO
+                           then 0.25
+                       else 0.0
+                   end
+               )
+        from AsistenciaAlumno aa
+        where aa.fecha between :desde and :hasta
+          and aa.alumno.id in :alumnoIds
+        group by aa.alumno.id
+    """)
+    List<Object[]> sumarInasistenciasPorAlumnoEntreFechas(
+            LocalDate desde, LocalDate hasta, List<Long> alumnoIds
+    );
+
+    long deleteByAlumno_Id(Long alumnoId);
+
+    long countByAlumno_Id(Long alumnoId);
 }

@@ -104,4 +104,17 @@ public class AsistenciaAlumnoController {
             );
         }
     }
+
+    @DeleteMapping("/{alumnoId}/historial")
+    @Operation(summary = "Elimina todo el historial de asistencias del alumno")
+    public ResponseEntity<Long> resetHistorialCompleto(
+            @PathVariable Long alumnoId) {
+        try {
+            var resp = asistenciaAlumnoService.resetHistorialCompleto(alumnoId);
+            return ResponseEntity.ok(resp);
+        }
+         catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L);
+        }
+    }
 }
