@@ -53,5 +53,16 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
             @Param("cicloId") Long cicloId
     );
 
+
+    @Query("""
+   select hc
+   from HistorialCurso hc
+   join fetch hc.alumno a
+   join fetch hc.curso c
+   where hc.cicloLectivo.id = :cicloId
+     and hc.fechaHasta is null
+   order by c.anio asc, c.nivel asc, c.division asc, a.apellido asc, a.nombre asc
+""")
+    List<HistorialCurso> findAbiertosByCiclo(@Param("cicloId") Long cicloId);
     
 }
