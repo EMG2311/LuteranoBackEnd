@@ -21,7 +21,8 @@ public class MesaExamen {
     private Long id;
 
     private LocalDate fecha;
-
+    @ManyToOne(optional = false)
+    private TurnoExamen turno;
     @ManyToOne(optional = false)
     private MateriaCurso materiaCurso;
 
@@ -33,4 +34,6 @@ public class MesaExamen {
 
     @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MesaExamenAlumno> alumnos = new ArrayList<>();
+    @OneToOne(mappedBy = "mesa", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private ActaExamen acta;
 }

@@ -1,9 +1,6 @@
 package com.grup14.luterano.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,13 +10,18 @@ import java.time.LocalDate;
 
 @Entity@Builder@Data@AllArgsConstructor@NoArgsConstructor
 public class ActaExamen {
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate fecha;
-    private String detalle;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "mesa_id", unique = true)
+    private MesaExamen mesa;
 
-    @ManyToOne
-    private MesaExamen mesaExamen;
+    private String numeroActa;
+    private LocalDate fechaCierre;
+
+    @Builder.Default
+    private boolean cerrada = false;
+
+    private String observaciones;
 }

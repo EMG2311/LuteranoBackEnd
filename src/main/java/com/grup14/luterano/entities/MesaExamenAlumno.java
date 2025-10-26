@@ -1,5 +1,6 @@
 package com.grup14.luterano.entities;
 
+import com.grup14.luterano.entities.enums.EstadoConvocado;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,9 +23,14 @@ public class MesaExamenAlumno {
     @ManyToOne(optional = false)
     private MesaExamen mesaExamen;
 
-    private Integer nota;
+    @Enumerated(EnumType.STRING)
+    private EstadoConvocado estado;  // NEW
+
+    private Integer notaFinal;       // rename
+    @ManyToOne(optional = false)
+    private TurnoExamen turno;
 
     public boolean estaAprobado() {
-        return nota != null && nota >= 6.0f;
+        return notaFinal != null && notaFinal >= 6.0f;
     }
 }
