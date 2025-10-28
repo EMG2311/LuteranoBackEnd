@@ -126,6 +126,17 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
             LocalDate desde, LocalDate hasta, List<Long> alumnoIds
     );
 
+        @Query("""
+                select a.estado, count(a)
+                from AsistenciaAlumno a
+                where a.alumno.id = :alumnoId
+                    and a.fecha between :desde and :hasta
+                group by a.estado
+        """)
+        java.util.List<Object[]> contarPorEstadoEntreFechas(@Param("alumnoId") Long alumnoId,
+                                                                                                                @Param("desde") LocalDate desde,
+                                                                                                                @Param("hasta") LocalDate hasta);
+
     long deleteByAlumno_Id(Long alumnoId);
 
     long countByAlumno_Id(Long alumnoId);
