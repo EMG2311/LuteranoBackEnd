@@ -16,4 +16,12 @@ public interface AlumnoRepository extends JpaRepository<Alumno,Long> , JpaSpecif
     List<Alumno> findByTutor_IdAndEstadoNot(Long tutorId, EstadoAlumno estado);
     List<Alumno> findByCursoActual_Id(Long cursoId);
     List<Alumno> findByCursoActual_IdAndEstadoNot(Long cursoId, EstadoAlumno estado);
+
+
+    //Cuenta el número total de alumnos asignados al curso actual
+
+    long countByCursoActual_Id(Long cursoId);
+
+
+
 }
