@@ -30,4 +30,7 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
         where mc.docente.id = :docenteId
     """)
     int unassignDocenteFromAll(@Param("docenteId") Long docenteId);
+
+  // Para disponibilidad docente: materias dictadas por un docente
+  java.util.List<MateriaCurso> findByDocente_Id(Long docenteId);
 }

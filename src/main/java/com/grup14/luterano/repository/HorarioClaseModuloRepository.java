@@ -42,4 +42,7 @@ public interface HorarioClaseModuloRepository  extends JpaRepository<HorarioClas
 
     List<HorarioClaseModulo> findByMateriaCurso_Curso_IdAndDiaSemana(Long cursoId, DiaSemana dia);
     int deleteByMateriaCurso_IdAndDiaSemanaAndModulo_Id(Long materiaCursoId, DiaSemana dia, Long moduloId);
+
+        // Para disponibilidad docente: obtener todos los bloques asignados a un docente
+        List<HorarioClaseModulo> findByMateriaCurso_Docente_IdOrderByDiaSemanaAscModulo_OrdenAsc(Long docenteId);
 }
