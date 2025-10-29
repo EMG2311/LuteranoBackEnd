@@ -103,4 +103,29 @@ public interface CalificacionRepository extends JpaRepository<Calificacion,Long>
                                                       @Param("cicloId") Long cicloId,
                                                       @Param("desde") java.time.LocalDate desde,
                                                       @Param("hasta") java.time.LocalDate hasta);
+
+
+    /* [Promedio de Alumnos] Calcula el promedio de las calificaciones FINALES para una materia dictada por un curso específico (MateriaCurso).
+      NOTA: Asumo que la calificación final es la nota con número_nota = 4.
+     */
+    @Query("""
+    SELECT AVG(c.nota) FROM Calificacion c 
+    WHERE c.historialMateria.materiaCurso.id = :materiaCursoId 
+      AND c.numeroNota = 4 """)
+    Double calculateFinalGradeAverageByMateriaCurso(Long materiaCursoId);
+
+    /* [Tasa de Aprobación] Calcula el porcentaje de alumnos que aprobaron.
+      ASUMIMOS que la nota mínima de aprobación es 6. */
+    @Query(value = """
+    SELECT (
+        CAST(SUM(CASE WHEN c.nota >= 6 THEN 1 ELSE 0 END) AS DOUBLE) * 100.0 / COUNT(c.id)
+    )
+    FROM Calificacion c
+    WHERE c.historialMateria.materiaCurso.id = :materiaCursoId 
+      AND c.numeroNota = 4 """, nativeQuery = false)
+    // Usamos HQL/JPQL
+    Double calculateApprovalRateByMateriaCurso(Long materiaCursoId);
+
+
+
 }

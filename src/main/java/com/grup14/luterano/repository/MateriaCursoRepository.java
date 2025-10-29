@@ -17,6 +17,16 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteByCursoId(Long id);
     List<MateriaCurso> findByCursoId(Long cursoId);
+
+    @Query("SELECT mc.materia.nombre FROM MateriaCurso mc WHERE mc.materia.id = :materiaId")
+    Optional<String> findMateriaNombreById(Long materiaId);
+
+
+    @Query("SELECT CONCAT(mc.curso.anio, ' ', mc.curso.division) FROM MateriaCurso mc WHERE mc.curso.id = :cursoId")
+    Optional<String> findCursoNombreById(Long cursoId);
+
+
+
     @Query("""
       select mc from MateriaCurso mc
       join mc.materia m
