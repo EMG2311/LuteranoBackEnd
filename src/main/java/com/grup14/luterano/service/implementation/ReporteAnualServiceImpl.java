@@ -14,6 +14,7 @@ import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.reporteAnual.ReporteAnualAlumnoResponse;
 import com.grup14.luterano.service.ReporteAnualService;
 import com.grup14.luterano.service.ReporteNotasService;
+import com.grup14.luterano.service.NotaFinalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
     private final MesaExamenAlumnoRepository mesaExamenAlumnoRepo;
     private final AsistenciaAlumnoRepository asistenciaAlumnoRepo;
     private final ReporteNotasService reporteNotasService;
+    private final NotaFinalService notaFinalService;
 
     @Override
     @Transactional(readOnly = true)
@@ -184,7 +186,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                         .e2(r.getE2())
                         .pg(r.getPg())
                         .estado(r.getEstado())
-                        .notaFinal(mea != null ? mea.getNotaFinal() : null)
+                        .notaFinal(notaFinalService.calcularNotaFinal(alumno.getId(), mId, anio))
                         .estadoFinal(estadoFinal)
                         .estadoMateria(estadoMateria)
                         .build());
@@ -215,7 +217,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                     .e2Notas(new Integer[]{null, null, null, null})
                     .e1(null).e2(null).pg(null)
                     .estado(null)
-                    .notaFinal(mea.getNotaFinal())
+                    .notaFinal(notaFinalService.calcularNotaFinal(alumno.getId(), mId, anio))
                     .estadoFinal(estadoFinal)
                     .estadoMateria(estadoMateria)
                     .build());
@@ -247,7 +249,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         if (hc != null && hc.getPromedio() != null) {
             promedioFinalCurso = hc.getPromedio();
         } else {
-            promedioFinalCurso = calcularPromedioCursoDesdeMaterias(ultimoFinalPorMateria, porMateria);
+            promedioFinalCurso = calcularPromedioCursoDesdeMaterias(alumno.getId(), anio, ultimoFinalPorMateria, porMateria);
         }
 
         // Legajo: por ahora asumimos DNI como legajo si no hay campo específico
@@ -274,18 +276,19 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 .build();
     }
 
-    private BigDecimal calcularPromedioCursoDesdeMaterias(Map<Long, MesaExamenAlumno> finales,
+    private BigDecimal calcularPromedioCursoDesdeMaterias(Long alumnoId, int anio,
+                                                          Map<Long, MesaExamenAlumno> finales,
                                                           Map<Long, CalificacionesMateriaResumenDto> porMateria) {
         if (porMateria == null || porMateria.isEmpty()) return null;
         double suma = 0.0; int n = 0;
         for (var entry : porMateria.entrySet()) {
             Long mId = entry.getKey();
-            CalificacionesMateriaResumenDto r = entry.getValue();
-            // Si tiene final, usarlo; si no, usar promedio general
-            MesaExamenAlumno mea = finales.get(mId);
-            Integer nf = (mea != null) ? mea.getNotaFinal() : null;
-            if (nf != null) { suma += nf; n++; continue; }
-            if (r.getPg() != null) { suma += r.getPg(); n++; }
+            // Usar NotaFinalService para calcular la nota final
+            Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, mId, anio);
+            if (notaFinal != null) {
+                suma += notaFinal;
+                n++;
+            }
         }
         if (n == 0) return null;
         double promedio = Math.round((suma / n) * 10.0) / 10.0;
