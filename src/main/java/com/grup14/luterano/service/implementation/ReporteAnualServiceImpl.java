@@ -8,7 +8,6 @@ import com.grup14.luterano.dto.reporteNotas.CalificacionesAlumnoResumenDto;
 import com.grup14.luterano.dto.reporteNotas.CalificacionesMateriaResumenDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
-import com.grup14.luterano.entities.enums.EstadoConvocado;
 import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.*;
@@ -45,12 +44,29 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         Alumno alumno = alumnoRepo.findById(alumnoId)
                 .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado (id=" + alumnoId + ")"));
 
+        return generarReporteAnual(alumno, anio);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteAnualAlumnoResponse informeAnualAlumnoPorDni(String dni, int anio) {
+        if (dni == null || dni.trim().isEmpty()) {
+            throw new IllegalArgumentException("DNI es requerido");
+        }
+
+        Alumno alumno = alumnoRepo.findByDni(dni)
+                .orElseThrow(() -> new IllegalArgumentException("Alumno no encontrado con DNI: " + dni));
+
+        return generarReporteAnual(alumno, anio);
+    }
+
+    private ReporteAnualAlumnoResponse generarReporteAnual(Alumno alumno, int anio) {
         LocalDate mid = LocalDate.of(anio, 7, 1);
         var ciclo = cicloRepo.findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
         // Historial del curso vigente en el año
-    HistorialCurso hc = historialCursoRepo.findVigenteEnFecha(alumnoId, ciclo.getId(), mid)
+    HistorialCurso hc = historialCursoRepo.findVigenteEnFecha(alumno.getId(), ciclo.getId(), mid)
         .orElse(null);
 
     // Curso del año: priorizar HistorialCurso del ciclo; si no existe, usar cursoActual del alumno
@@ -63,7 +79,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
 
         // 1) Reutilizamos resumen de notas por materia del servicio existente
         CalificacionesAlumnoResumenDto califResumen = Optional.ofNullable(
-                reporteNotasService.listarResumenPorAnio(alumnoId, anio)
+                reporteNotasService.listarResumenPorAnio(alumno.getId(), anio)
         ).map(r -> r.getCalificacionesAlumnoResumenDto()).orElse(null);
 
         Map<Long, CalificacionesMateriaResumenDto> porMateria = new HashMap<>();
@@ -76,7 +92,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
         List<MesaExamenAlumno> finales = mesaExamenAlumnoRepo
-                .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, desde, hasta);
+                .findByAlumno_IdAndMesaExamen_FechaBetween(alumno.getId(), desde, hasta);
 
         Map<Long, MesaExamenAlumno> ultimoFinalPorMateria = new HashMap<>();
         for (MesaExamenAlumno mea : finales) {
@@ -105,9 +121,9 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         // 4) Inasistencias del año
         Double ponderado = 0.0;
         var ponderados = asistenciaAlumnoRepo
-                .sumarInasistenciasPorAlumnoEntreFechas(desde, hasta, java.util.List.of(alumnoId));
-        if (!ponderados.isEmpty()) {
-            Object[] row = ponderados.get(0);
+                .sumarInasistenciasPorAlumnoEntreFechas(desde, hasta, java.util.List.of(alumno.getId()));
+        if (ponderados != null && !((List<?>) ponderados).isEmpty()) {
+            Object[] row = (Object[]) ((List<?>) ponderados).get(0);
             if (row != null && row.length > 1 && row[1] instanceof Number n) {
                 ponderado = n.doubleValue();
             } else if (row != null && row.length > 0 && row[0] instanceof Number n2) {
@@ -117,7 +133,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         }
 
         long ausentes = 0, tardes = 0, justificados = 0, conLicencia = 0, retiros = 0;
-        for (Object[] r : asistenciaAlumnoRepo.contarPorEstadoEntreFechas(alumnoId, desde, hasta)) {
+        for (Object[] r : asistenciaAlumnoRepo.contarPorEstadoEntreFechas(alumno.getId(), desde, hasta)) {
             if (r == null || r.length < 2) continue;
             EstadoAsistencia estado = (EstadoAsistencia) r[0];
             long count = ((Number) r[1]).longValue();

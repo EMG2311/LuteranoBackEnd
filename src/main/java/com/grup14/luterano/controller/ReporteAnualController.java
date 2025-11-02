@@ -35,4 +35,22 @@ public class ReporteAnualController {
                     .body(ReporteAnualAlumnoResponse.builder().code(-2).mensaje("Error inesperado: " + e.getMessage()).build());
         }
     }
+
+    @GetMapping("/alumnos/dni/{dni}")
+    @Operation(summary = "Informe anual por DNI de alumno", description = "Devuelve un JSON con resumen de rendimiento, inasistencias y previas para el año dado buscando por DNI")
+    public ResponseEntity<ReporteAnualAlumnoResponse> informeAnualAlumnoPorDni(
+            @PathVariable String dni,
+            @RequestParam int anio
+    ) {
+        try {
+            var res = reporteAnualService.informeAnualAlumnoPorDni(dni, anio);
+            return ResponseEntity.ok(res);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(422)
+                    .body(ReporteAnualAlumnoResponse.builder().code(-1).mensaje(e.getMessage()).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ReporteAnualAlumnoResponse.builder().code(-2).mensaje("Error inesperado: " + e.getMessage()).build());
+        }
+    }
 }

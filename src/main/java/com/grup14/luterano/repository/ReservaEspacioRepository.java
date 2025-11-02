@@ -37,5 +37,13 @@ public interface ReservaEspacioRepository extends JpaRepository <ReservaEspacio,
 
     List<ReservaEspacio> findByUsuarioId(Long usuarioId);
 
+    // Obtener reservas activas para un espacio y fecha específica
+    @Query("SELECT r FROM ReservaEspacio r " +
+            "WHERE r.espacioAulico.id = :espacioId " +
+            "AND r.fecha = :fecha " +
+            "AND r.estado IN ('PENDIENTE', 'APROBADA')")
+    List<ReservaEspacio> findActiveReservasByEspacioAndFecha(
+            @Param("espacioId") Long espacioId,
+            @Param("fecha") LocalDate fecha);
 
 }

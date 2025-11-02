@@ -6,14 +6,18 @@ import com.grup14.luterano.exeptions.ModuloException;
 import com.grup14.luterano.response.modulo.ModuloEstadoListResponse;
 import com.grup14.luterano.response.modulo.ModuloEstadoSemanaResponse;
 import com.grup14.luterano.response.modulo.ModuloListResponse;
+import com.grup14.luterano.response.modulo.ModuloReservaEstadoResponse;
 import com.grup14.luterano.response.modulo.ModuloSemanaResponse;
 import com.grup14.luterano.service.ModuloService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -147,6 +151,33 @@ public class ModuloController {
                             .code(-2)
                             .mensaje("Error no controlado: " + e.getMessage())
                             .modulosPorDia(vacio)
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/reservas/estado")
+    @Operation(summary = "Devuelve los módulos con su estado de ocupación para un espacio áulico y fecha específica")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
+    public ResponseEntity<ModuloReservaEstadoResponse> obtenerModulosConReservas(
+            @RequestParam Long espacioAulicoId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        try {
+            return ResponseEntity.ok(moduloService.obtenerModulosConReservas(espacioAulicoId, fecha));
+        } catch (ModuloException e) {
+            return ResponseEntity.status(422).body(
+                    ModuloReservaEstadoResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .modulos(Collections.emptyList())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ModuloReservaEstadoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .modulos(Collections.emptyList())
                             .build()
             );
         }

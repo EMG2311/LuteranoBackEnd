@@ -34,6 +34,11 @@ public class MesaExamen {
 
     @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MesaExamenAlumno> alumnos = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MesaExamenDocente> docentes = new ArrayList<>();
+    
     @OneToOne(mappedBy = "mesa", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private ActaExamen acta;
 }

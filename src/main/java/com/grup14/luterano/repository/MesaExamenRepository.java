@@ -61,4 +61,14 @@ public interface MesaExamenRepository extends JpaRepository<MesaExamen,Long> {
       and (m.fecha < :desde or m.fecha > :hasta)
 """)
     List<MesaExamen> findByTurnoOutsideRange(Long turnoId, LocalDate desde, LocalDate hasta);
+
+    @Query("""
+    SELECT m 
+    FROM MesaExamen m 
+    JOIN m.docentes md 
+    WHERE md.docente.id = :docenteId 
+    AND m.fecha = :fecha 
+    AND m.id <> :excludeMesaId
+    """)
+    List<MesaExamen> findMesasConflictoParaDocente(Long docenteId, LocalDate fecha, Long excludeMesaId);
 }

@@ -137,6 +137,16 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
                                                                                                                 @Param("desde") LocalDate desde,
                                                                                                                 @Param("hasta") LocalDate hasta);
 
+    @Query("""
+        select a 
+        from AsistenciaAlumno a
+        left join fetch a.alumno al
+        left join fetch al.cursoActual c
+        where a.alumno.id = :alumnoId
+        order by a.fecha desc
+    """)
+    List<AsistenciaAlumno> findByAlumnoIdWithCurso(@Param("alumnoId") Long alumnoId);
+
     long deleteByAlumno_Id(Long alumnoId);
 
     long countByAlumno_Id(Long alumnoId);
