@@ -64,5 +64,43 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
    order by c.anio asc, c.nivel asc, c.division asc, a.apellido asc, a.nombre asc
 """)
     List<HistorialCurso> findAbiertosByCiclo(@Param("cicloId") Long cicloId);
+
+    // Métodos para ranking por promedio
+    @Query("""
+        select hc
+        from HistorialCurso hc
+        join fetch hc.alumno a
+        where hc.curso.id = :cursoId
+          and hc.cicloLectivo.id = :cicloId
+          and hc.fechaHasta is null
+          and hc.promedio is not null
+        order by hc.promedio desc, a.apellido asc, a.nombre asc
+    """)
+    List<HistorialCurso> findRankingByCursoAndCiclo(
+            @Param("cursoId") Long cursoId,
+            @Param("cicloId") Long cicloId
+    );
+
+    @Query("""
+        select hc
+        from HistorialCurso hc
+        join fetch hc.alumno a
+        join fetch hc.curso c
+        where hc.cicloLectivo.id = :cicloId
+          and hc.fechaHasta is null
+          and hc.promedio is not null
+        order by hc.promedio desc, a.apellido asc, a.nombre asc
+    """)
+    List<HistorialCurso> findRankingByCiclo(@Param("cicloId") Long cicloId);
+
+    @Query("""
+        select distinct c
+        from HistorialCurso hc
+        join hc.curso c
+        where hc.cicloLectivo.id = :cicloId
+          and hc.fechaHasta is null
+        order by c.anio asc, c.nivel asc, c.division asc
+    """)
+    List<com.grup14.luterano.entities.Curso> findCursosActivosByCiclo(@Param("cicloId") Long cicloId);
     
 }
