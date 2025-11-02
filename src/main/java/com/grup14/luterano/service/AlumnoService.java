@@ -17,6 +17,8 @@ public interface AlumnoService {
     AlumnoResponse buscarPorDni(String dni);
     AlumnoResponseList listAlumnos();
     AlumnoResponseList listAlumnos(AlumnoFiltrosRequest alumnoFiltrosRequest);
+    AlumnoResponseList listAlumnosEgresados(); // Para consultar egresados
+    AlumnoResponseList listAlumnosExcluidos(); // Para consultar excluidos por repetición
 
     AlumnoResponse asignarCurso(HistorialCursoRequest historialCursoRequest);
     ///luego hacer:registrar asistencia

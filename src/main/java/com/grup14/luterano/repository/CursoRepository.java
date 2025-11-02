@@ -16,6 +16,7 @@ public interface CursoRepository extends JpaRepository<Curso,Long> {
     Optional<Curso> findByAnio (Integer anio);
     Optional<Curso> findByDivision (Division division);
     Optional<Curso> findByNivel (Nivel nivel);
+    Optional<Curso> findByAnioAndDivision(Integer anio, Division division);
     Optional<Curso> findByAnioAndDivisionAndNivel(Integer anio, Division division, Nivel nivel);
     List<Curso> findByPreceptor_Id(Long preceptorId);
     @Query("""

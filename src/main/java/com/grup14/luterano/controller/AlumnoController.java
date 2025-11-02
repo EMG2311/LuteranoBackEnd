@@ -15,6 +15,7 @@ import com.grup14.luterano.response.docente.DocenteResponse;
 import com.grup14.luterano.response.docente.DocenteResponseList;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.service.AlumnoService;
+import com.grup14.luterano.service.AlumnoReactivacionService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,9 +42,11 @@ import java.util.List;
 public class AlumnoController {
 
     private final AlumnoService alumnoService;
+    private final AlumnoReactivacionService reactivacionService;
 
-    public AlumnoController(AlumnoService alumnoService){
+    public AlumnoController(AlumnoService alumnoService, AlumnoReactivacionService reactivacionService){
         this.alumnoService=alumnoService;
+        this.reactivacionService=reactivacionService;
     }
 
     @PostMapping("/create")
@@ -150,6 +153,42 @@ public class AlumnoController {
         }
     }
 
+    @GetMapping("/egresados")
+    @Operation(summary = "Lista alumnos egresados", 
+               description = "Obtiene la lista de todos los alumnos que han egresado del colegio")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
+    public ResponseEntity<AlumnoResponseList> listarAlumnosEgresados() {
+        try {
+            return ResponseEntity.ok(alumnoService.listAlumnosEgresados());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponseList.builder()
+                            .alumnoDtos(List.of())
+                            .code(-2)
+                            .mensaje("Error interno del servidor: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    @GetMapping("/excluidos")
+    @Operation(summary = "Lista alumnos excluidos por repetición", 
+               description = "Obtiene la lista de todos los alumnos excluidos por exceder el límite de repeticiones")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
+    public ResponseEntity<AlumnoResponseList> listarAlumnosExcluidos() {
+        try {
+            return ResponseEntity.ok(alumnoService.listAlumnosExcluidos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponseList.builder()
+                            .alumnoDtos(List.of())
+                            .code(-2)
+                            .mensaje("Error interno del servidor: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
 
 
     @PostMapping("/asignarCursoAlumno")
@@ -199,6 +238,33 @@ public class AlumnoController {
                             .alumno(null)
                             .code(-2)
                             .mensaje("Error interno al buscar el alumno por DNI.")
+                            .build()
+            );
+        }
+    }
+    
+    @PostMapping("/{id}/reactivar")
+    @Operation(summary = "Reactiva un alumno excluido por repetición", 
+               description = "Reactiva un alumno que fue excluido por exceder el límite de repeticiones. " +
+                           "Elimina las calificaciones del último curso pero mantiene el historial de otros cursos.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
+    public ResponseEntity<AlumnoResponse> reactivarAlumno(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(reactivacionService.reactivarAlumno(id));
+        } catch (AlumnoException e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-2)
+                            .mensaje("Error interno al reactivar el alumno: " + e.getMessage())
                             .build()
             );
         }

@@ -23,11 +23,20 @@ public class Alumno extends Persona {
     @Enumerated(EnumType.STRING)
     private EstadoAlumno estado;
 
+    // Campos para control de repeticiones
+    @Builder.Default
+    private Integer cantidadRepeticiones = 0;
+    
+    @Builder.Default
+    private Integer maxRepeticionesPermitidas = 2;
+
     @ManyToOne
    private Tutor tutor;
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<HistorialCurso> historialCursos = new ArrayList<>();
 
     @OneToMany(mappedBy = "alumno")
+    @Builder.Default
     private List<MesaExamenAlumno> mesasExamen = new ArrayList<>();
 }

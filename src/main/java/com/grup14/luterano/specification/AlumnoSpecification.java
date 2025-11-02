@@ -2,7 +2,10 @@ package com.grup14.luterano.specification;
 
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.enums.Division;
+import com.grup14.luterano.entities.enums.EstadoAlumno;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.util.List;
 
 public class AlumnoSpecification {
 
@@ -35,5 +38,16 @@ public class AlumnoSpecification {
     public static Specification<Alumno> divisionEquals(Division division) {
         return (root, query, cb) ->
                 division == null ? null : cb.equal(root.get("cursoActual").get("division"), division);
+    }
+    
+    public static Specification<Alumno> estadoNotIn(List<EstadoAlumno> estados) {
+        return (root, query, cb) ->
+                (estados == null || estados.isEmpty()) 
+                        ? null 
+                        : cb.not(root.get("estado").in(estados));
+    }
+    
+    public static Specification<Alumno> alumnosActivos() {
+        return estadoNotIn(List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION));
     }
 }

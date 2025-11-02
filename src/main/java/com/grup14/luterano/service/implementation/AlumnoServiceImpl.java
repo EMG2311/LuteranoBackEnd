@@ -66,12 +66,13 @@ public class AlumnoServiceImpl implements AlumnoService {
                     throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
                 });
 
-
-        Curso curso = null;
-        if (alumnoRequest.getCursoActual() != null && alumnoRequest.getCursoActual().getId() != null) {
-            curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
-                    .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
+        // Validación obligatoria: el curso debe estar especificado
+        if (alumnoRequest.getCursoActual() == null || alumnoRequest.getCursoActual().getId() == null) {
+            throw new AlumnoException("Es obligatorio asignar un curso al crear un alumno");
         }
+
+        Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
+                .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
 
         Tutor tutor = null;
         if (alumnoRequest.getTutor() != null && alumnoRequest.getTutor().getId() != null) {
@@ -83,7 +84,26 @@ public class AlumnoServiceImpl implements AlumnoService {
         alumno.setCursoActual(curso);
         alumno.setTutor(tutor);
         alumno.setEstado(EstadoAlumno.REGULAR);
-        alumnoRepository.save(alumno);
+        alumno = alumnoRepository.save(alumno);
+
+        // Crear el historial de curso automáticamente (ahora siempre se ejecuta)
+        // Obtener el ciclo lectivo activo
+        LocalDate hoy = LocalDate.now();
+        CicloLectivo cicloActivo = cicloLectivoRepository
+                .findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(hoy, hoy)
+                .orElseThrow(() -> new AlumnoException("No hay un ciclo lectivo activo para la fecha actual"));
+        
+        HistorialCurso historialCurso = HistorialCurso.builder()
+                .alumno(alumno)
+                .curso(curso)
+                .cicloLectivo(cicloActivo)
+                .fechaDesde(hoy)
+                .fechaHasta(null) // Se cerrará cuando termine el ciclo lectivo o cambie de curso
+                .build();
+        historialCursoRepository.save(historialCurso);
+        
+        logger.info("Historial de curso creado automáticamente para alumno: DNI={}, Curso={}, Ciclo={}",
+                alumno.getDni(), curso.getAnio() + "°" + curso.getDivision(), cicloActivo.getNombre());
 
         logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
                 alumno.getDni(), alumno.getNombre(), alumno.getApellido());
@@ -144,7 +164,8 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     @Override
     public AlumnoResponseList listAlumnos() {
-        List<AlumnoDto> alumnos = alumnoRepository.findAll()
+        List<AlumnoDto> alumnos = alumnoRepository.findByEstadoNotIn(
+                List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION))
                 .stream()
                 .map(AlumnoMapper::toDto)
                 .collect(Collectors.toList());
@@ -162,7 +183,8 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .and(AlumnoSpecification.apellidoContains(alumnoFiltrosRequest.getApellido()))
                 .and(AlumnoSpecification.dniContains(alumnoFiltrosRequest.getDni()))
                 .and(AlumnoSpecification.cursoAnioEquals(alumnoFiltrosRequest.getAnio()))
-                .and(AlumnoSpecification.divisionEquals(alumnoFiltrosRequest.getDivision()));
+                .and(AlumnoSpecification.divisionEquals(alumnoFiltrosRequest.getDivision()))
+                .and(AlumnoSpecification.alumnosActivos()); // Excluir egresados y borrados
 
         List<AlumnoDto> alumnos = alumnoRepository.findAll(spec).stream()
                 .map(AlumnoMapper::toDto)
@@ -174,6 +196,34 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .mensaje("OK")
                 .build();
 
+    }
+
+    @Override
+    public AlumnoResponseList listAlumnosEgresados() {
+        List<AlumnoDto> alumnos = alumnoRepository.findByEstado(EstadoAlumno.EGRESADO)
+                .stream()
+                .map(AlumnoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return AlumnoResponseList.builder()
+                .alumnoDtos(alumnos)
+                .code(0)
+                .mensaje("Lista de alumnos egresados obtenida correctamente")
+                .build();
+    }
+
+    @Override
+    public AlumnoResponseList listAlumnosExcluidos() {
+        List<AlumnoDto> alumnos = alumnoRepository.findByEstado(EstadoAlumno.EXCLUIDO_POR_REPETICION)
+                .stream()
+                .map(AlumnoMapper::toDto)
+                .collect(Collectors.toList());
+
+        return AlumnoResponseList.builder()
+                .alumnoDtos(alumnos)
+                .code(0)
+                .mensaje("Lista de alumnos excluidos por repetición obtenida correctamente")
+                .build();
     }
 
 

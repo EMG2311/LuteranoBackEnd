@@ -64,6 +64,9 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
    order by c.anio asc, c.nivel asc, c.division asc, a.apellido asc, a.nombre asc
 """)
     List<HistorialCurso> findAbiertosByCiclo(@Param("cicloId") Long cicloId);
+    
+    // Para reactivación de alumnos: obtener historiales ordenados por fecha
+    List<HistorialCurso> findByAlumno_IdOrderByFechaDesdeDesc(Long alumnoId);
 
     // Métodos para ranking por promedio
     @Query("""
