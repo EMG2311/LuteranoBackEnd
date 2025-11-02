@@ -2,7 +2,9 @@ package com.grup14.luterano.repository;
 
 import com.grup14.luterano.entities.MesaExamenAlumno;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -10,6 +12,7 @@ import java.util.List;
 public interface MesaExamenAlumnoRepository extends JpaRepository<MesaExamenAlumno,Long> {
     boolean existsByMesaExamen_IdAndAlumno_Id(Long mesaId, Long alumnoId);
     List<MesaExamenAlumno> findByMesaExamen_Id(Long mesaId);
+    @Transactional@Modifying
     void deleteByMesaExamen_IdAndAlumno_Id(Long mesaId, Long alumnoId);
 
     // Para reporte anual: finales del alumno dentro de un rango de fechas
