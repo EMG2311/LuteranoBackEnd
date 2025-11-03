@@ -111,7 +111,7 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
         SELECT hc.alumno.id
         FROM HistorialCurso hc
         WHERE hc.curso.id = :cursoId
-        AND hc.cicloLectivo.anio = :cicloLectivoAnio
+        AND YEAR(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
     """)
     List<Long> findAlumnosIdsPorCursoYCiclo(@Param("cursoId") Long cursoId, 
                                            @Param("cicloLectivoAnio") Integer cicloLectivoAnio);

@@ -1,6 +1,8 @@
 package com.grup14.luterano.controller;
 
 import com.grup14.luterano.dto.notaFinal.NotaFinalDetalleDto;
+import com.grup14.luterano.response.notaFinal.NotaFinalResponse;
+import com.grup14.luterano.response.notaFinal.NotaFinalSimpleResponse;
 import com.grup14.luterano.service.NotaFinalService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -87,33 +89,4 @@ public class NotaFinalController {
                     .build());
         }
     }
-}
-
-@lombok.Data
-@lombok.Builder
-@lombok.NoArgsConstructor
-@lombok.AllArgsConstructor
-class NotaFinalResponse {
-    private Integer notaFinal;
-    private String origen; // "MESA_EXAMEN" o "PROMEDIO_GENERAL"
-    private Double promedioGeneral; // Solo si origen es PROMEDIO_GENERAL
-    private Long mesaExamenId; // Solo si origen es MESA_EXAMEN
-    private Long alumnoId;
-    private Long materiaId;
-    private Integer anio;
-    private int code;
-    private String mensaje;
-}
-
-@lombok.Data
-@lombok.Builder
-@lombok.NoArgsConstructor
-@lombok.AllArgsConstructor
-class NotaFinalSimpleResponse {
-    private Integer notaFinal;
-    private Long alumnoId;
-    private Long materiaId;
-    private Integer anio;
-    private int code;
-    private String mensaje;
 }

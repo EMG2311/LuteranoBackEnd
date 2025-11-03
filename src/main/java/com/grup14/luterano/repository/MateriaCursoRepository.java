@@ -44,8 +44,8 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
            d.nombre as nombreDocente,
            c.id as cursoId,
            c.anio as anio,
-           c.nivel as nivel,
-           c.division as division
+           CAST(c.nivel AS string) as nivel,
+           CAST(c.division AS string) as division
     FROM MateriaCurso mc
     JOIN mc.materia m
     JOIN mc.curso c
@@ -53,7 +53,7 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
     WHERE EXISTS (
         SELECT 1 FROM HistorialCurso hc
         WHERE hc.curso.id = c.id
-        AND hc.cicloLectivo.anio = :cicloLectivoAnio
+        AND YEAR(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
     )
     ORDER BY m.nombre, d.apellido, c.anio, c.division
   """)
@@ -68,8 +68,8 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
            d.nombre as nombreDocente,
            c.id as cursoId,
            c.anio as anio,
-           c.nivel as nivel,
-           c.division as division
+           CAST(c.nivel AS string) as nivel,
+           CAST(c.division AS string) as division
     FROM MateriaCurso mc
     JOIN mc.materia m
     JOIN mc.curso c
@@ -78,7 +78,7 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
     AND EXISTS (
         SELECT 1 FROM HistorialCurso hc
         WHERE hc.curso.id = c.id
-        AND hc.cicloLectivo.anio = :cicloLectivoAnio
+        AND YEAR(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
     )
     ORDER BY d.apellido, c.anio, c.division
   """)
@@ -94,8 +94,8 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
            d.nombre as nombreDocente,
            c.id as cursoId,
            c.anio as anio,
-           c.nivel as nivel,
-           c.division as division
+           CAST(c.nivel AS string) as nivel,
+           CAST(c.division AS string) as division
     FROM MateriaCurso mc
     JOIN mc.materia m
     JOIN mc.curso c
@@ -104,7 +104,7 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso,Long>
     AND EXISTS (
         SELECT 1 FROM HistorialCurso hc
         WHERE hc.curso.id = c.id
-        AND hc.cicloLectivo.anio = :cicloLectivoAnio
+        AND YEAR(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
     )
     ORDER BY m.nombre, c.anio, c.division
   """)
