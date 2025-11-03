@@ -176,9 +176,21 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         MesaExamen m = mesaRepo.findById(mesaId)
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
-        mesaAluRepo.deleteByMesaExamen_IdAndAlumno_Id(mesaId, alumnoId);
-        m = mesaRepo.findById(mesaId).orElseThrow();
-        return MesaExamenResponse.builder().code(0).mensaje("Convocado eliminado").mesa(MesaExamenMapper.toDto(m, true)).build();
+        
+        // Buscar y remover el alumno de la colección
+        boolean removed = m.getAlumnos().removeIf(mesaAlumno -> 
+            mesaAlumno.getAlumno().getId().equals(alumnoId));
+        
+        if (!removed) {
+            throw new MesaExamenException("El alumno no está convocado a esta mesa");
+        }
+        mesaRepo.save(m);
+        
+        return MesaExamenResponse.builder()
+            .code(0)
+            .mensaje("Convocado eliminado")
+            .mesa(MesaExamenMapper.toDto(m, true))
+            .build();
     }
 
     @Override
