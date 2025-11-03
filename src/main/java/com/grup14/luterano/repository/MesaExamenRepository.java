@@ -71,4 +71,17 @@ public interface MesaExamenRepository extends JpaRepository<MesaExamen,Long> {
     AND m.id <> :excludeMesaId
     """)
     List<MesaExamen> findMesasConflictoParaDocente(Long docenteId, LocalDate fecha, Long excludeMesaId);
+
+    @Query("""
+    select m from MesaExamen m
+    left join fetch m.alumnos al
+    left join fetch al.alumno a
+    left join fetch m.materiaCurso mc
+    left join fetch mc.materia mat
+    left join fetch mc.curso c
+    left join fetch m.aula au
+    left join fetch m.turno t
+    where m.id = :id
+    """)
+    Optional<MesaExamen> findByIdWithAlumnos(Long id);
 }

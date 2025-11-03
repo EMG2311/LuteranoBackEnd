@@ -117,7 +117,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
 
     @Override
     public MesaExamenResponse obtener(Long id) {
-        MesaExamen m = mesaRepo.findById(id)
+        MesaExamen m = mesaRepo.findByIdWithAlumnos(id)
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         return MesaExamenResponse.builder().code(0).mensaje("OK").mesa(MesaExamenMapper.toDto(m, true)).build();
     }
@@ -173,9 +173,11 @@ public class MesaExamenServiceImpl implements MesaExamenService {
 
     @Override
     public MesaExamenResponse quitarConvocado(Long mesaId, Long alumnoId) {
-        MesaExamen m = mesaRepo.findById(mesaId)
+        MesaExamen m = mesaRepo.findByIdWithAlumnos(mesaId)
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
+        
+        log.info("Antes de quitar: Mesa {} tiene {} alumnos convocados", mesaId, m.getAlumnos().size());
         
         // Buscar y remover el alumno de la colección
         boolean removed = m.getAlumnos().removeIf(mesaAlumno -> 
@@ -184,6 +186,10 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         if (!removed) {
             throw new MesaExamenException("El alumno no está convocado a esta mesa");
         }
+        
+        log.info("Después de quitar: Mesa {} tiene {} alumnos convocados", mesaId, m.getAlumnos().size());
+        
+        // Guardar la mesa actualizada
         mesaRepo.save(m);
         
         return MesaExamenResponse.builder()
