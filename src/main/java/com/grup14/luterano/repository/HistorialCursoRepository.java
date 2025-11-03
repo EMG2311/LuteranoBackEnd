@@ -106,4 +106,14 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso,L
     """)
     List<com.grup14.luterano.entities.Curso> findCursosActivosByCiclo(@Param("cicloId") Long cicloId);
     
+    // Para reporte de desempeño docente: obtener IDs de alumnos por curso y ciclo
+    @Query("""
+        SELECT hc.alumno.id
+        FROM HistorialCurso hc
+        WHERE hc.curso.id = :cursoId
+        AND hc.cicloLectivo.anio = :cicloLectivoAnio
+    """)
+    List<Long> findAlumnosIdsPorCursoYCiclo(@Param("cursoId") Long cursoId, 
+                                           @Param("cicloLectivoAnio") Integer cicloLectivoAnio);
+    
 }
