@@ -5,7 +5,10 @@ import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.CondicionRinde;
 import com.grup14.luterano.exeptions.ReporteRindeException;
 import com.grup14.luterano.mappers.CursoMapper;
-import com.grup14.luterano.repository.*;
+import com.grup14.luterano.repository.CalificacionRepository;
+import com.grup14.luterano.repository.CicloLectivoRepository;
+import com.grup14.luterano.repository.CursoRepository;
+import com.grup14.luterano.repository.HistorialCursoRepository;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
 import com.grup14.luterano.service.ReporteRindenService;
 import lombok.AllArgsConstructor;
@@ -16,7 +19,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service@AllArgsConstructor
+@Service
+@AllArgsConstructor
 public class ReporteRindenServiceImpl implements ReporteRindenService {
 
     private final CursoRepository cursoRepository;
@@ -54,7 +58,10 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
         List<Calificacion> califs = calificacionRepository
                 .findByAlumnosCursoCicloAndAnio(alumnoIds, cursoId, ciclo.getId(), desde, hasta);
 
-        class Agg { int sum1=0,cnt1=0,sum2=0,cnt2=0; String materiaNombre; }
+        class Agg {
+            int sum1 = 0, cnt1 = 0, sum2 = 0, cnt2 = 0;
+            String materiaNombre;
+        }
         Map<Long, Map<Long, Agg>> map = new LinkedHashMap<>();
 
         for (Calificacion c : califs) {
@@ -70,8 +77,13 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
 
             Integer nota = c.getNota();
             if (nota == null) continue;
-            if (c.getEtapa() == 1) { agg.sum1 += nota; agg.cnt1++; }
-            else if (c.getEtapa() == 2) { agg.sum2 += nota; agg.cnt2++; }
+            if (c.getEtapa() == 1) {
+                agg.sum1 += nota;
+                agg.cnt1++;
+            } else if (c.getEtapa() == 2) {
+                agg.sum2 += nota;
+                agg.cnt2++;
+            }
         }
 
         Map<Long, Alumno> idxAlumno = alumnos.stream()
@@ -115,7 +127,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
         }
 
         // Orden visual: Apellido, Nombre, Materia
-        var coll = java.text.Collator.getInstance(new java.util.Locale("es","AR"));
+        var coll = java.text.Collator.getInstance(new java.util.Locale("es", "AR"));
         coll.setStrength(java.text.Collator.PRIMARY);
         filas.sort(Comparator
                 .comparing(ReporteRindeDto::getApellido, coll)
@@ -123,7 +135,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 .thenComparing(ReporteRindeDto::getMateriaNombre, coll));
 
         int totalColoquio = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.COLOQUIO).count();
-        int totalExamen   = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.EXAMEN).count();
+        int totalExamen = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.EXAMEN).count();
 
         return ReporteRindenResponse.builder()
                 .curso(CursoMapper.toDto(curso))
@@ -144,5 +156,8 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
         if (e2 == null) return e1;
         return round1((e1 + e2) / 2.0);
     }
-    private static Double round1(double v) { return Math.round(v * 10.0) / 10.0; }
+
+    private static Double round1(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
 }

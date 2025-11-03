@@ -5,7 +5,6 @@ import com.grup14.luterano.auth.infrastructure.AuthenticateException;
 import com.grup14.luterano.auth.infrastructure.AuthenticationRequest;
 import com.grup14.luterano.auth.infrastructure.AuthenticationResponse;
 import com.grup14.luterano.auth.infrastructure.RegisterRequest;
-import com.grup14.luterano.entities.User;
 
 public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest request) throws AuthenticateException;

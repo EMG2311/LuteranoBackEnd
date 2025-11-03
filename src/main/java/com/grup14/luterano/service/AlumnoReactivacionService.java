@@ -3,7 +3,7 @@ package com.grup14.luterano.service;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 
 public interface AlumnoReactivacionService {
-    
+
     /**
      * Reactiva un alumno excluido por repetición:
      * - Cambia estado a REGULAR

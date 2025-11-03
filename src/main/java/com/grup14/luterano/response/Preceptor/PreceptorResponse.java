@@ -6,8 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data@AllArgsConstructor@NoArgsConstructor@Builder
-public class PreceptorResponse{
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class PreceptorResponse {
     private PreceptorDto preceptor;
     private Integer code;
     private String mensaje;

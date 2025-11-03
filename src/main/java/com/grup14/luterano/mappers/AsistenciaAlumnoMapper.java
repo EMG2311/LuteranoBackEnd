@@ -12,7 +12,7 @@ public class AsistenciaAlumnoMapper {
                 .alumnoNombre(al != null ? al.getNombre() : null)
                 .alumnoApellido(al != null ? al.getApellido() : null)
                 .fecha(a.getFecha())
-                .observacion(a.getObservacion()!=null ? a.getObservacion():null)
+                .observacion(a.getObservacion() != null ? a.getObservacion() : null)
                 .estado(a.getEstado())
                 .build();
     }

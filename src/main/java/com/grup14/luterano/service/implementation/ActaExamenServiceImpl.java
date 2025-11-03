@@ -1,6 +1,5 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.ActaExamenDto;
 import com.grup14.luterano.entities.ActaExamen;
 import com.grup14.luterano.entities.MesaExamen;
 import com.grup14.luterano.entities.enums.EstadoMesaExamen;
@@ -79,9 +78,9 @@ public class ActaExamenServiceImpl implements ActaExamenService {
         ActaExamen acta = actaRepo.findById(req.getId())
                 .orElseThrow(() -> new RuntimeException("Acta no encontrada"));
 
-        if (req.getNumeroActa()!=null && !req.getNumeroActa().isBlank())
+        if (req.getNumeroActa() != null && !req.getNumeroActa().isBlank())
             acta.setNumeroActa(req.getNumeroActa());
-        if (req.getObservaciones()!=null)
+        if (req.getObservaciones() != null)
             acta.setObservaciones(req.getObservaciones());
 
         actaRepo.save(acta);
@@ -155,10 +154,10 @@ public class ActaExamenServiceImpl implements ActaExamenService {
 
     private static String generarNumeroActa(MesaExamen mesa) {
         // Formato ejemplo: ACTA-<anioTurno>-<mesTurno>-<mesaId>-<hash>
-        String suf = UUID.randomUUID().toString().substring(0,8).toUpperCase();
+        String suf = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         var t = mesa.getTurno();
-        String mes = (t!=null && t.getFechaInicio()!=null) ? String.valueOf(t.getFechaInicio().getMonthValue()) : "00";
-        String anio= (t!=null) ? String.valueOf(t.getAnio()) : "0000";
+        String mes = (t != null && t.getFechaInicio() != null) ? String.valueOf(t.getFechaInicio().getMonthValue()) : "00";
+        String anio = (t != null) ? String.valueOf(t.getAnio()) : "0000";
         return "ACTA-" + anio + "-" + mes + "-" + mesa.getId() + "-" + suf;
     }
 

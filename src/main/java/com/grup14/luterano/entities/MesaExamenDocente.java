@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "mesa_examen_docente",
         uniqueConstraints = @UniqueConstraint(columnNames = {"mesa_examen_id", "docente_id"}))
 public class MesaExamenDocente {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

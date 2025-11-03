@@ -2,26 +2,18 @@ package com.grup14.luterano.controller;
 
 
 import com.grup14.luterano.exeptions.AlumnoException;
-import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.exeptions.HistorialCursoException;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
-import com.grup14.luterano.request.docente.DocenteUpdateRequest;
 import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
-import com.grup14.luterano.response.docente.DocenteResponse;
-import com.grup14.luterano.response.docente.DocenteResponseList;
-import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
-import com.grup14.luterano.service.AlumnoService;
 import com.grup14.luterano.service.AlumnoReactivacionService;
-import com.grup14.luterano.validation.MayorDeEdadGruoup;
+import com.grup14.luterano.service.AlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,9 +36,9 @@ public class AlumnoController {
     private final AlumnoService alumnoService;
     private final AlumnoReactivacionService reactivacionService;
 
-    public AlumnoController(AlumnoService alumnoService, AlumnoReactivacionService reactivacionService){
-        this.alumnoService=alumnoService;
-        this.reactivacionService=reactivacionService;
+    public AlumnoController(AlumnoService alumnoService, AlumnoReactivacionService reactivacionService) {
+        this.alumnoService = alumnoService;
+        this.reactivacionService = reactivacionService;
     }
 
     @PostMapping("/create")
@@ -57,14 +49,12 @@ public class AlumnoController {
             return ResponseEntity.ok(alumnoService.crearAlumno(alumnoRequest));
         } catch (AlumnoException e) {
             return ResponseEntity.status(422).body(
-                            alumnoRequest.toResponse(e.getMessage(),-1));
+                    alumnoRequest.toResponse(e.getMessage(), -1));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(alumnoRequest.toResponse(e.getMessage(),-2));
+                    .body(alumnoRequest.toResponse(e.getMessage(), -2));
         }
     }
-
-
 
 
     @PutMapping("/update")
@@ -98,7 +88,7 @@ public class AlumnoController {
             // Llama al servicio para eliminar el alumno por su ID
             AlumnoResponse response = alumnoService.deleteAlumno(id);
             return ResponseEntity.ok(response);
-        }  catch (AlumnoException d) {
+        } catch (AlumnoException d) {
             return ResponseEntity.status(422).body(AlumnoResponse.builder()
                     .code(-1)
                     .mensaje(d.getMessage())
@@ -126,6 +116,7 @@ public class AlumnoController {
                             .build());
         }
     }
+
     @PostMapping("/filtros")
     @Operation(summary = "Lista alumnos con filtros dinámicos",
             description = "Permite filtrar por nombre, apellido, dni, año y división")
@@ -154,8 +145,8 @@ public class AlumnoController {
     }
 
     @GetMapping("/egresados")
-    @Operation(summary = "Lista alumnos egresados", 
-               description = "Obtiene la lista de todos los alumnos que han egresado del colegio")
+    @Operation(summary = "Lista alumnos egresados",
+            description = "Obtiene la lista de todos los alumnos que han egresado del colegio")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
     public ResponseEntity<AlumnoResponseList> listarAlumnosEgresados() {
         try {
@@ -172,8 +163,8 @@ public class AlumnoController {
     }
 
     @GetMapping("/excluidos")
-    @Operation(summary = "Lista alumnos excluidos por repetición", 
-               description = "Obtiene la lista de todos los alumnos excluidos por exceder el límite de repeticiones")
+    @Operation(summary = "Lista alumnos excluidos por repetición",
+            description = "Obtiene la lista de todos los alumnos excluidos por exceder el límite de repeticiones")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
     public ResponseEntity<AlumnoResponseList> listarAlumnosExcluidos() {
         try {
@@ -188,7 +179,6 @@ public class AlumnoController {
             );
         }
     }
-
 
 
     @PostMapping("/asignarCursoAlumno")
@@ -242,11 +232,11 @@ public class AlumnoController {
             );
         }
     }
-    
+
     @PostMapping("/{id}/reactivar")
-    @Operation(summary = "Reactiva un alumno excluido por repetición", 
-               description = "Reactiva un alumno que fue excluido por exceder el límite de repeticiones. " +
-                           "Elimina las calificaciones del último curso pero mantiene el historial de otros cursos.")
+    @Operation(summary = "Reactiva un alumno excluido por repetición",
+            description = "Reactiva un alumno que fue excluido por exceder el límite de repeticiones. " +
+                    "Elimina las calificaciones del último curso pero mantiene el historial de otros cursos.")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
     public ResponseEntity<AlumnoResponse> reactivarAlumno(@PathVariable Long id) {
         try {

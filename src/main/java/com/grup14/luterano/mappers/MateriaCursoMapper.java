@@ -17,6 +17,7 @@ public class MateriaCursoMapper {
                 .docente(DocenteMapper.toLigeroDto(entity.getDocente()))
                 .build();
     }
+
     public static MateriaCursoLigeroDto toLigeroDto(MateriaCurso entity) {
         if (entity == null) return null;
 
@@ -26,6 +27,7 @@ public class MateriaCursoMapper {
                 .cursoId(entity.getCurso() != null ? entity.getCurso().getId() : null)
                 .build();
     }
+
     // Conversión de DTO a entidad
     public static MateriaCurso toEntity(MateriaCursoDto dto) {
         if (dto == null) return null;

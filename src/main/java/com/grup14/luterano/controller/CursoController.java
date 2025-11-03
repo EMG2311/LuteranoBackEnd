@@ -5,7 +5,6 @@ import com.grup14.luterano.exeptions.CursoException;
 import com.grup14.luterano.exeptions.PreceptorCursoException;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
-import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.response.curso.CursoResponse;
 import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
@@ -22,10 +21,11 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/curso")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')") //or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+//or hasRole('DOCENTE') or hasRole('PRECEPTOR') ????
 public class CursoController {
 
-     @Autowired
+    @Autowired
     private CursoService cursoService;
 
 
@@ -153,9 +153,6 @@ public class CursoController {
             );
         }
     }
-
-
-
 
 
 }

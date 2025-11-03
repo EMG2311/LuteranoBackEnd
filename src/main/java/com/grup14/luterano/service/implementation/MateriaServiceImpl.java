@@ -2,7 +2,6 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.MateriaDto;
 import com.grup14.luterano.entities.Materia;
-import com.grup14.luterano.exeptions.MateriaException;
 import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.MateriaRepository;
 import com.grup14.luterano.request.materia.MateriaRequest;
@@ -13,20 +12,18 @@ import com.grup14.luterano.service.MateriaService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 @Service
 public class MateriaServiceImpl implements MateriaService {
 
     private final MateriaRepository materiaRepository;
     private final Logger logger = LoggerFactory.getLogger(MateriaServiceImpl.class);
 
-    public MateriaServiceImpl(MateriaRepository materiaRepository){
-        this.materiaRepository=materiaRepository;
+    public MateriaServiceImpl(MateriaRepository materiaRepository) {
+        this.materiaRepository = materiaRepository;
     }
 
 

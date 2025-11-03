@@ -8,7 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/reporteAsistenciaPerfecta")
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class ReporteAsistenciaPerfectaController {
 
     private final ReporteAsistenciaPerfectaService service;
+
     @GetMapping()
     @Operation(summary = "Asistencia perfecta por año", description = "Devuelve por curso la lista de alumnos con asistencia perfecta en el año")
     public ResponseEntity<AsistenciaPerfectaResponse> porAnio(@RequestParam int anio) {

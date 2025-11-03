@@ -8,7 +8,6 @@ import com.grup14.luterano.response.Materia.MateriaResponseList;
 import com.grup14.luterano.service.MateriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +26,8 @@ public class MateriaController {
 
     private final MateriaService materiaService;
 
-    public MateriaController(MateriaService materiaService){
-        this.materiaService=materiaService;
+    public MateriaController(MateriaService materiaService) {
+        this.materiaService = materiaService;
     }
 
     @PostMapping("/create")

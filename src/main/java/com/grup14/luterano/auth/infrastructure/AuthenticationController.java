@@ -4,13 +4,14 @@ import com.grup14.luterano.auth.application.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,17 +26,17 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     @Operation(summary = "Loggea al usuario", description = "Devuelve el token con el que se acceden a los demas endpoint")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest){
-        try{
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
+        try {
             AuthenticationResponse authenticationResponse = authenticationService.authenticate(authenticationRequest);
-            if(authenticationResponse==null){
+            if (authenticationResponse == null) {
                 return ResponseEntity.status(422).body(AuthenticationResponse.builder()
                         .token("")
                         .code(-1)
                         .mensaje("Credenciales incorrectas").build());
             }
             return ResponseEntity.ok(authenticationResponse);
-        }catch (AuthenticateException e){
+        } catch (AuthenticateException e) {
             AuthenticationResponse errorResponse = AuthenticationResponse.builder()
                     .token(null)
                     .mensaje(e.getMessage())
@@ -46,7 +47,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Registra un usuario",description = "Registra al usuario con rol DE_VISITA, devuelve el token")
+    @Operation(summary = "Registra un usuario", description = "Registra al usuario con rol DE_VISITA, devuelve el token")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Validated RegisterRequest registerRequest) throws AuthenticateException {
         try {

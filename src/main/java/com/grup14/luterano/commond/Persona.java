@@ -9,8 +9,13 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 
-@Getter@Setter@AllArgsConstructor@NoArgsConstructor
-@MappedSuperclass@SuperBuilder@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@MappedSuperclass
+@SuperBuilder
+@Data
 public class Persona {
     private String nombre;
     private String apellido;

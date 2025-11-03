@@ -10,28 +10,20 @@ import com.grup14.luterano.utils.CsvUtils;
 import com.grup14.luterano.utils.CursoResolver;
 import com.grup14.luterano.utils.FechaParser;
 import com.grup14.luterano.utils.HeaderAliases;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +49,7 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
                     .map(HeaderAliases::canon).collect(java.util.stream.Collectors.toSet());
 
             List<String> requeridosPretty = List.of(
-                    "Grado/Año","División","Plan de Estu.","Nro. Docum.","Apellido","Nombre","Fecha Nacimiento");
+                    "Grado/Año", "División", "Plan de Estu.", "Nro. Docum.", "Apellido", "Nombre", "Fecha Nacimiento");
             List<String> faltantes = new ArrayList<>();
             for (String pretty : requeridosPretty) {
                 if (!headersCanon.contains(HeaderAliases.canon(pretty))) faltantes.add(pretty);
@@ -73,15 +65,18 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
             for (CSVRecord rec : parser) {
                 row++;
                 try {
-                    String gradoRaw    = CsvUtils.get(rec, "grado/ano");
+                    String gradoRaw = CsvUtils.get(rec, "grado/ano");
                     String divisionRaw = CsvUtils.get(rec, "division");
-                    String planRaw     = CsvUtils.get(rec, "plan de estu");
-                    String dni         = CsvUtils.get(rec, "nro docum");
-                    String apellido    = CsvUtils.get(rec, "apellido");
-                    String nombre      = CsvUtils.get(rec, "nombre");
-                    String fNacStr     = CsvUtils.get(rec, "fecha nacimiento");
+                    String planRaw = CsvUtils.get(rec, "plan de estu");
+                    String dni = CsvUtils.get(rec, "nro docum");
+                    String apellido = CsvUtils.get(rec, "apellido");
+                    String nombre = CsvUtils.get(rec, "nombre");
+                    String fNacStr = CsvUtils.get(rec, "fecha nacimiento");
 
-                    if (isBlank(dni) || isBlank(nombre) || isBlank(apellido)) { skipped++; continue; }
+                    if (isBlank(dni) || isBlank(nombre) || isBlank(apellido)) {
+                        skipped++;
+                        continue;
+                    }
 
                     Integer anio = CursoResolver.parseAnio(gradoRaw);
                     Division division = CursoResolver.parseDivision(divisionRaw);
@@ -90,11 +85,12 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
                         throw new IllegalArgumentException("Curso inválido: " + gradoRaw + " / " + divisionRaw + " / " + planRaw);
                     }
 
-                    Curso curso = CursoResolver.findOrThrow(cursoRepository,  anio, division, nivel);
+                    Curso curso = CursoResolver.findOrThrow(cursoRepository, anio, division, nivel);
                     Date fechaNac = FechaParser.parseToDate(fNacStr);
 
                     if (dryRun) {
-                        if (alumnoRepository.findByDni(dni).isPresent()) updated++; else inserted++;
+                        if (alumnoRepository.findByDni(dni).isPresent()) updated++;
+                        else inserted++;
                         continue;
                     }
 
@@ -102,7 +98,8 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
                             upsertAlumnoFila(dni, nombre, apellido, fechaNac, curso) // ⬅️ sin @Transactional
                     );
 
-                    if (Boolean.TRUE.equals(existed)) updated++; else inserted++;
+                    if (Boolean.TRUE.equals(existed)) updated++;
+                    else inserted++;
 
                 } catch (Exception exRow) {
                     skipped++;
@@ -185,6 +182,7 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
         alumno.setCursoActual(curso);
         alumnoRepository.save(alumno);
     }
+
     private void cerrarHistorialCursoYMaterias(HistorialCurso hc, LocalDate fechaCierre) {
         // cerrar HM “en curso” del HC origen
         for (HistorialMateria hm : hc.getHistorialMaterias()) {
@@ -199,5 +197,7 @@ public class CidiAlumnoImportServiceImpl implements CidiAlumnoImportService {
         historialCursoRepository.save(hc);
     }
 
-    private static boolean isBlank(String s) { return s == null || s.isBlank(); }
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
 }

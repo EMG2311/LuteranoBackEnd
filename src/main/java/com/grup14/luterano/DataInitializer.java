@@ -41,13 +41,13 @@ public class DataInitializer {
                             return roleRepository.save(role);
                         });
             }
-            userRepository.findByEmail("admin@gmail.com").orElseGet(()->
-                 userRepository.save(User.builder()
-                                 .name("Admin")
-                                 .lastName("Muy Admin")
-                                .email("admin@gmail.com")
-                                .password(passwordEncoder.encode("1234"))
-                    .userStatus(UserStatus.CREADO)
+            userRepository.findByEmail("admin@gmail.com").orElseGet(() ->
+                    userRepository.save(User.builder()
+                            .name("Admin")
+                            .lastName("Muy Admin")
+                            .email("admin@gmail.com")
+                            .password(passwordEncoder.encode("1234"))
+                            .userStatus(UserStatus.CREADO)
                             .rol(roleRepository.findByName("ROLE_ADMIN").get())
                             .build())
             );
@@ -76,7 +76,8 @@ public class DataInitializer {
 
     @Bean
     CommandLineRunner initModulos(ModuloRepository moduloRepository) {
-        record Def(int orden, int dh, int dm, int hh, int hm) {}
+        record Def(int orden, int dh, int dm, int hh, int hm) {
+        }
 
         return args -> {
             // upsert por orden (idempotente)
@@ -105,26 +106,26 @@ public class DataInitializer {
             //    09:15–09:25, 10:25–10:35, 11:35–11:45
             // =============================
             var defs = List.of(
-                    new Def(1,  7,15, 7,45),
-                    new Def(2,  7,45, 8,15),
-                    new Def(3,  8,15, 8,45),
-                    new Def(4,  8,45, 9,15),
+                    new Def(1, 7, 15, 7, 45),
+                    new Def(2, 7, 45, 8, 15),
+                    new Def(3, 8, 15, 8, 45),
+                    new Def(4, 8, 45, 9, 15),
 
                     // gap (recreo) 09:15–09:25
 
-                    new Def(5,  9,25, 9,55),
-                    new Def(6,  9,55,10,25),
+                    new Def(5, 9, 25, 9, 55),
+                    new Def(6, 9, 55, 10, 25),
 
                     // gap (recreo) 10:25–10:35
 
-                    new Def(7, 10,35,11,05),
-                    new Def(8, 11,05,11,35),
+                    new Def(7, 10, 35, 11, 05),
+                    new Def(8, 11, 05, 11, 35),
 
                     // gap (recreo) 11:35–11:45
 
-                    new Def(9, 11,45,12,15),
-                    new Def(10,12,15,12,45),
-                    new Def(11,12,45,13,15)
+                    new Def(9, 11, 45, 12, 15),
+                    new Def(10, 12, 15, 12, 45),
+                    new Def(11, 12, 45, 13, 15)
 
                     // Si querés uno vespertino extra (medio):
                     // new Def(12, 15,00,15,30)

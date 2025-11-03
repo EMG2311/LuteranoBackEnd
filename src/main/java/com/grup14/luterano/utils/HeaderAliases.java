@@ -1,14 +1,13 @@
 package com.grup14.luterano.utils;
 
 import java.text.Normalizer;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class HeaderAliases {
-    private HeaderAliases() {}
+    private HeaderAliases() {
+    }
 
     // notaXetapaY (ej: nota1etapa2)
     private static final Pattern NOTA_ETAPA = Pattern.compile(".*?nota\\s*(\\d+)\\s*etapa\\s*(\\d+).*");

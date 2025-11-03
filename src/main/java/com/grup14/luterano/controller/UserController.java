@@ -34,8 +34,8 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService){
-        this.userService=userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping
@@ -46,56 +46,57 @@ public class UserController {
 
     @GetMapping("/{status}")
     @Operation(summary = "Lista usuarios según filtro", description = "Lista usuarios según el filtro, solo ADMIN y DIRECTOR pueden usar")
-    public ResponseEntity<List<UserResponse>> listarUsuariosFiltro(@PathVariable@Valid UserStatus status) {
+    public ResponseEntity<List<UserResponse>> listarUsuariosFiltro(@PathVariable @Valid UserStatus status) {
         return ResponseEntity.ok(userService.listUserFiltro(status));
     }
 
     @PostMapping("/activar")
     @Operation(summary = "Completar creacion Usuarios", description = "Cambia el status del usuario a CREADO")
-    public ResponseEntity<UserCreadoResponse> ActivarCuenta(@RequestBody @Valid EmailRequest email){
-        try{
+    public ResponseEntity<UserCreadoResponse> ActivarCuenta(@RequestBody @Valid EmailRequest email) {
+        try {
             return ResponseEntity.ok(userService.ActivarCuenta(email));
-        }catch (UserException e){
+        } catch (UserException e) {
             return ResponseEntity.status(422).body(UserCreadoResponse.builder()
-                            .email(null)
-                            .code(-1)
-                            .mensaje(e.getMessage())
-                            .role(null)
-                            .userStatus(null)
+                    .email(null)
+                    .code(-1)
+                    .mensaje(e.getMessage())
+                    .role(null)
+                    .userStatus(null)
                     .build());
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserCreadoResponse.builder()
-                            .code(-2)
-                            .mensaje("Error no contorlado: "+e.getMessage())
+                    .code(-2)
+                    .mensaje("Error no contorlado: " + e.getMessage())
                     .build());
         }
     }
 
     @PutMapping("/update")
     @Operation(summary = "Actualiza los usuarios", description = "Actualiza el usuario, se pasa el id, los demas campos se completan por el valor a actualizar")
-    public ResponseEntity<UserUpdateResponse> updateUser(@Valid@RequestBody  UserUpdateRequest userUpdateRequest){
-        try{
+    public ResponseEntity<UserUpdateResponse> updateUser(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
+        try {
             return ResponseEntity.ok(userService.updateUser(userUpdateRequest));
-        }catch (UserException u){
+        } catch (UserException u) {
             return ResponseEntity.status(422).body(UserUpdateResponse.builder()
                     .email(userUpdateRequest.getEmail())
                     .rol(null)
                     .mensaje(u.getMessage())
                     .code(-1)
                     .build());
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserUpdateResponse.builder()
                     .code(-2)
-                    .mensaje("Error no contorlado: "+e.getMessage())
+                    .mensaje("Error no contorlado: " + e.getMessage())
                     .build());
         }
     }
+
     @PostMapping("/email")
     @Operation(summary = "Busca un usuario con mail")
-    public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid@RequestBody EmailRequest emailRequest){
-        try{
+    public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid @RequestBody EmailRequest emailRequest) {
+        try {
             return ResponseEntity.ok(userService.getUsuarioByEmail(emailRequest.getEmail()));
-        }catch (EntityNotFoundException u){
+        } catch (EntityNotFoundException u) {
             return ResponseEntity.status(422).body(UserResponse.builder()
                     .email(emailRequest.getEmail())
                     .code(-1)
@@ -106,27 +107,26 @@ public class UserController {
 
     @DeleteMapping("/email")
     @Operation(summary = "Elimina un usuario con mail")
-    public ResponseEntity<UserResponse> borrarUser(@Valid@RequestBody EmailRequest emailRequest){
-        try{
+    public ResponseEntity<UserResponse> borrarUser(@Valid @RequestBody EmailRequest emailRequest) {
+        try {
             return ResponseEntity.ok(userService.borrarUsuario(emailRequest.getEmail()));
-        }catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(422).body(UserResponse.builder().email(emailRequest.getEmail())
                     .mensaje("No existe ese mail")
                     .code(-1)
                     .build());
-        }catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(UserResponse.builder()
                     .code(-3)
                     .mensaje("No se puede eliminar el usuario que esta asignado.")
                     .build());
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserResponse.builder()
                     .code(-2)
-                    .mensaje("Error no contorlado: "+e.getMessage())
+                    .mensaje("Error no contorlado: " + e.getMessage())
                     .build());
         }
     }
-
 
 
     @GetMapping("/sin-asignar")
@@ -140,10 +140,10 @@ public class UserController {
                     .code(-1)
                     .mensaje(e.getMessage())
                     .build());
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(UserListResponse.builder()
                     .code(-2)
-                    .mensaje("Error no contorlado: "+e.getMessage())
+                    .mensaje("Error no contorlado: " + e.getMessage())
                     .build());
         }
     }

@@ -48,6 +48,7 @@ public class ReporteNotasController {
             );
         }
     }
+
     @GetMapping("/curso/{cursoId}/notas/resumen")
     @Operation(
             summary = "Resumen de notas por materia (E1/E2/PG) para un año",

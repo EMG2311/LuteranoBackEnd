@@ -20,7 +20,6 @@ import com.grup14.luterano.service.UserService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,24 +54,25 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> listUserFiltro(UserStatus userStatus) {
         List<UserResponse> userResponses = new ArrayList<>();
 
-        for(User user : userRepository.findByUserStatus(userStatus).get()){
+        for (User user : userRepository.findByUserStatus(userStatus).get()) {
             userResponses.add(UserResponse.builder()
-                            .id(user.getId())
-                            .email(user.getEmail())
-                            .name(user.getName())
-                            .lastName(user.getLastName())
-                            .role(user.getRol())
-                            .userStatus(user.getUserStatus())
-                            .mensaje("")
-                            .code(0)
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .lastName(user.getLastName())
+                    .role(user.getRol())
+                    .userStatus(user.getUserStatus())
+                    .mensaje("")
+                    .code(0)
                     .build());
         }
         return userResponses;
     }
+
     public List<UserResponse> listAllUser() {
         List<UserResponse> userResponses = new ArrayList<>();
 
-        for(User user : userRepository.findAll()){
+        for (User user : userRepository.findAll()) {
             userResponses.add(UserResponse.builder()
                     .id(user.getId())
                     .email(user.getEmail())
@@ -93,14 +92,14 @@ public class UserServiceImpl implements UserService {
     public UserCreadoResponse ActivarCuenta(EmailRequest email) {
         User user = userRepository.findByEmail(email.getEmail())
                 .orElseThrow(() -> new UserException("Usuario " + email.getEmail() + " no encontrado"));
-        if (user.getUserStatus() != UserStatus.CREADO){
-            logger.error("--------- El usuario " + email.getEmail()+" tiene el estado no esta borrado-------");
-            throw new UserException("El usuario " + email.getEmail()+ " tiene el estado no esta borrado");
+        if (user.getUserStatus() != UserStatus.CREADO) {
+            logger.error("--------- El usuario " + email.getEmail() + " tiene el estado no esta borrado-------");
+            throw new UserException("El usuario " + email.getEmail() + " tiene el estado no esta borrado");
         }
 
         user.setUserStatus(UserStatus.CREADO);
         userRepository.save(user);
-        logger.info("---------- Se completo la creacion del usuario "+ email.getEmail()+" ----------");
+        logger.info("---------- Se completo la creacion del usuario " + email.getEmail() + " ----------");
         return UserCreadoResponse.builder()
                 .email(user.getEmail())
                 .name(user.getName())
@@ -117,7 +116,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserUpdateResponse updateUser(UserUpdateRequest userUpdate) {
         User user = userRepository.findById(userUpdate.getId())
-                .orElseThrow(() -> new UserException("No existe el id "+userUpdate.getId()));
+                .orElseThrow(() -> new UserException("No existe el id " + userUpdate.getId()));
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String usernameLogueado = authentication.getName();
@@ -129,10 +128,10 @@ public class UserServiceImpl implements UserService {
         if (userUpdate.getEmail() != null) {
             user.setEmail(userUpdate.getEmail());
         }
-        if(userUpdate.getName() != null){
+        if (userUpdate.getName() != null) {
             user.setName(userUpdate.getName());
         }
-        if(userUpdate.getLastName() != null){
+        if (userUpdate.getLastName() != null) {
             user.setLastName(userUpdate.getLastName());
         }
         if (userUpdate.getPassword() != null) {
@@ -157,8 +156,8 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
-        
-        eventPublisher.publishEvent(new UserEvent(this,UserEvent.Tipo.ACTUALIZAR,user));
+
+        eventPublisher.publishEvent(new UserEvent(this, UserEvent.Tipo.ACTUALIZAR, user));
 
         return UserUpdateResponse.builder()
                 .email(user.getEmail())
@@ -188,8 +187,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse borrarUsuario(String email) {
         User user = userRepository.findByEmail(email).get();
-        if(user.getUserStatus()==UserStatus.BORRADO){
-            throw new UserException("El usuario "+email+" ya esta borrado");
+        if (user.getUserStatus() == UserStatus.BORRADO) {
+            throw new UserException("El usuario " + email + " ya esta borrado");
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -224,7 +223,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserListResponse listUserSinAsignar() {
-        List<User> users= userRepository.findUsuariosSinAsignar().get();
+        List<User> users = userRepository.findUsuariosSinAsignar().get();
         return UserListResponse.builder()
                 .usuarios(users.stream().map(UserMapper::toDto).collect(Collectors.toList()))
                 .code(0)
@@ -245,9 +244,6 @@ public class UserServiceImpl implements UserService {
                 .mensaje("Se listaron correctamente los usuarios sin asignar con rol " + rol.name())
                 .build();
     }
-
-
-
 
 
 }

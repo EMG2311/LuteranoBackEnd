@@ -12,19 +12,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/promocion")
 @RequiredArgsConstructor
 @Tag(name = "Promoción Masiva", description = "Operaciones para promoción masiva de alumnos")
 public class PromocionMasivaController {
-    
+
     private final PromocionMasivaService promocionMasivaService;
-    
+
     @PostMapping("/masiva")
-    @Operation(summary = "Ejecutar promoción masiva", 
-               description = "Procesa todos los alumnos activos según reglas: <3 materias desaprobadas=promociona, >=3=repite, 6to=egresa")
+    @Operation(summary = "Ejecutar promoción masiva",
+            description = "Procesa todos los alumnos activos según reglas: <3 materias desaprobadas=promociona, >=3=repite, 6to=egresa")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Promoción ejecutada exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
@@ -36,7 +39,7 @@ public class PromocionMasivaController {
         try {
             PromocionMasivaResponse response = promocionMasivaService.ejecutarPromocionMasiva(request);
             return ResponseEntity.ok(response);
-            
+
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     PromocionMasivaResponse.builder()
@@ -51,7 +54,7 @@ public class PromocionMasivaController {
                             .mensaje("Error: " + e.getMessage())
                             .build()
             );
-            
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     PromocionMasivaResponse.builder()
@@ -68,10 +71,10 @@ public class PromocionMasivaController {
             );
         }
     }
-    
+
     @PostMapping("/masiva/simulacion")
-    @Operation(summary = "Simular promoción masiva", 
-               description = "Simula la promoción sin hacer cambios reales en la base de datos")
+    @Operation(summary = "Simular promoción masiva",
+            description = "Simula la promoción sin hacer cambios reales en la base de datos")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
     public ResponseEntity<PromocionMasivaResponse> simularPromocionMasiva(@Valid @RequestBody PromocionMasivaRequest request) {
         // Forzar dryRun a true para simulación

@@ -8,7 +8,10 @@ import com.grup14.luterano.response.tutor.TutorResponseList;
 
 public interface TutorService {
     TutorResponse crearTutor(TutorRequest TutorRequest);
+
     TutorResponse updateTutor(TutorUpdateRequest TutorRequest);
+
     TutorResponse deleteTutor(Long id);
+
     TutorResponseList listTutores();
 }

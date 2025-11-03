@@ -10,10 +10,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Entity@SuperBuilder@AllArgsConstructor
+@Entity
+@SuperBuilder
+@AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class Tutor extends Persona {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 }

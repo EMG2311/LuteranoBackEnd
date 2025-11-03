@@ -1,6 +1,5 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.AsistenciaDocenteDto;
 import com.grup14.luterano.entities.AsistenciaDocente;
 import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.User;

@@ -2,7 +2,6 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.CicloLectivoDto;
 import com.grup14.luterano.entities.CicloLectivo;
-import com.grup14.luterano.exeptions.AulaException;
 import com.grup14.luterano.exeptions.CicloLectivoException;
 import com.grup14.luterano.mappers.CicloLectivoMapper;
 import com.grup14.luterano.repository.CicloLectivoRepository;
@@ -10,17 +9,15 @@ import com.grup14.luterano.response.cicloLectivo.CicloLectivoResponse;
 import com.grup14.luterano.response.cicloLectivo.CicloLectivoResponseList;
 import com.grup14.luterano.service.CicloLectivoService;
 import jakarta.transaction.Transactional;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -55,7 +52,7 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     // Impl metodos de la interfaz
 
     @Override
-    public  CicloLectivoResponse crearSiguienteCicloLectivo() {
+    public CicloLectivoResponse crearSiguienteCicloLectivo() {
         int anioSiguiente;
 
         Optional<CicloLectivo> ultimoCiclo = cicloLectivoRepository.findTopByOrderByFechaHastaDesc();
@@ -81,11 +78,11 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     }
 
     @Override
-    public  CicloLectivoResponse crearCicloLectivoPorAnio(int anio) {
+    public CicloLectivoResponse crearCicloLectivoPorAnio(int anio) {
 
         CicloLectivo nuevoCiclo = construirCicloLectivo(anio);
 
-        if(cicloLectivoRepository.existsByNombre(nuevoCiclo.getNombre())){
+        if (cicloLectivoRepository.existsByNombre(nuevoCiclo.getNombre())) {
             throw new CicloLectivoException("Ya existe un ciclo lectivo para ese año");
         }
         CicloLectivo savedCiclo = cicloLectivoRepository.save(nuevoCiclo);
@@ -118,8 +115,8 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
     public CicloLectivoResponseList ListCiclosLectivos() {
 
         List<CicloLectivoDto> ciclos = cicloLectivoRepository.findAll().stream()
-        .map(CicloLectivoMapper::toDto)
-        .toList();
+                .map(CicloLectivoMapper::toDto)
+                .toList();
 
         // Mapea la lista de entidades a una lista de DTOs
         return CicloLectivoResponseList.builder()

@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class TutorServiceImpl implements TutorService {
@@ -81,7 +82,7 @@ public class TutorServiceImpl implements TutorService {
 
         if (request.getFechaNacimiento() != null) tutor.setFechaNacimiento(request.getFechaNacimiento());
         if (request.getFechaIngreso() != null) tutor.setFechaIngreso(request.getFechaIngreso());
-        validarFechas(request.getFechaNacimiento(),request.getFechaIngreso());
+        validarFechas(request.getFechaNacimiento(), request.getFechaIngreso());
         tutorRepository.save(tutor);
         logger.info("Tutor actualizado: {}", tutor.getId());
         return TutorResponse.builder()

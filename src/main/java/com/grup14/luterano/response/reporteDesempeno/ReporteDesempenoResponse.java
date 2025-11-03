@@ -13,23 +13,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReporteDesempenoResponse {
-    
+
     private Integer code;
     private String mensaje;
-    
+
     // Información del reporte
     private Integer cicloLectivoAnio;
     private String nombreCicloLectivo;
-    
+
     // Estadísticas globales
     private Integer totalMaterias;
     private Integer totalDocentes;
     private Integer totalAlumnos;
     private Integer totalCursos;
-    
+
     // Resultados por materia
     private List<ReporteDesempenoMateriaDto> resultadosPorMateria;
-    
+
     // Análisis general
     private String resumenEjecutivo;
     private List<String> hallazgosImportantes;

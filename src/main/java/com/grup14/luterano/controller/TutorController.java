@@ -43,13 +43,13 @@ public class TutorController {
         } catch (TutorException e) {
             return ResponseEntity.status(422).body(TutorResponse.builder()
                     .code(-1)
-                    .mensaje("Error al crear tutor "+e.getMessage())
+                    .mensaje("Error al crear tutor " + e.getMessage())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(TutorResponse.builder()
                             .code(-2)
-                            .mensaje("Error no controlado "+e.getMessage())
+                            .mensaje("Error no controlado " + e.getMessage())
                             .build());
         }
     }

@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
-@Data@Builder
+
+@Data
+@Builder
 public class ModuloListResponse {
     private List<ModuloDto> modulos;
     private Integer code;

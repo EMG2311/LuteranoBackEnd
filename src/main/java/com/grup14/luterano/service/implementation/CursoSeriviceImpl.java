@@ -3,10 +3,8 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.CursoDto;
 import com.grup14.luterano.entities.Aula;
 import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.exeptions.CursoException;
 import com.grup14.luterano.mappers.CursoMapper;
-import com.grup14.luterano.mappers.MateriaCursoMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
@@ -16,7 +14,6 @@ import com.grup14.luterano.service.CursoService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +57,7 @@ public class CursoSeriviceImpl implements CursoService {
             aula = aulaRepository.findById(cursoRequest.getAulaId())
                     .orElseThrow(() -> new CursoException("Aula no encontrada con ID: " + cursoRequest.getAulaId()));
 
-        //  Validar que el aula no esté asignada a otro curso
+            //  Validar que el aula no esté asignada a otro curso
             if (aula.getCurso() != null) {
                 throw new CursoException("El aula ya está asignada a otro curso.");
             }
@@ -195,7 +192,7 @@ public class CursoSeriviceImpl implements CursoService {
     @Transactional(readOnly = true)
     public CursoResponseList listarCursosPorPreceptor(Long preceptorId) {
 
-        preceptorRepository.findByIdAndActiveIsTrue(preceptorId).orElseThrow(()-> new CursoException("No hay ningun preceptor activo con ese Id"));
+        preceptorRepository.findByIdAndActiveIsTrue(preceptorId).orElseThrow(() -> new CursoException("No hay ningun preceptor activo con ese Id"));
 
         List<Curso> cursos = cursoRepository.findByPreceptor_Id(preceptorId);
 

@@ -12,10 +12,14 @@ import lombok.experimental.SuperBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity@Data@AllArgsConstructor@SuperBuilder
+@Entity
+@Data
+@AllArgsConstructor
+@SuperBuilder
 @NoArgsConstructor
 public class Alumno extends Persona {
-    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private Curso cursoActual;
@@ -26,12 +30,12 @@ public class Alumno extends Persona {
     // Campos para control de repeticiones
     @Builder.Default
     private Integer cantidadRepeticiones = 0;
-    
+
     @Builder.Default
     private Integer maxRepeticionesPermitidas = 2;
 
     @ManyToOne
-   private Tutor tutor;
+    private Tutor tutor;
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
     @Builder.Default
     private List<HistorialCurso> historialCursos = new ArrayList<>();

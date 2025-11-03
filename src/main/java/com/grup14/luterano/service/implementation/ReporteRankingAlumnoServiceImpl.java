@@ -9,8 +9,8 @@ import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
-import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosColegioResponse;
+import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingTodosCursosResponse;
 import com.grup14.luterano.service.ReporteRankingAlumnoService;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCiclo(cursoId, ciclo.getId());
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
-        String cursoNombre = curso.getAnio() + "° " + curso.getDivision() + " - " + curso.getNivel();
+        String cursoNombre = curso.getAnio() + "° " + curso.getDivision().toString() + " - " + curso.getNivel().toString();
 
         return RankingAlumnosCursoResponse.builder()
                 .ranking(ranking)
@@ -93,7 +93,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
 
         // Obtener todos los cursos activos
         List<Curso> cursos = historialCursoRepo.findCursosActivosByCiclo(ciclo.getId());
-        
+
         List<CursoRankingDto> cursosRanking = cursos.stream()
                 .map(curso -> {
                     // Obtener ranking del curso
@@ -138,8 +138,8 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
             }
 
             // Si estamos fuera del top 3 y no hay empate con el top 3, parar
-            if (posicionActual > 3 && (ranking.isEmpty() || 
-                ranking.get(ranking.size() - 1).getPosicion() < 3)) {
+            if (posicionActual > 3 && (ranking.isEmpty() ||
+                    ranking.get(ranking.size() - 1).getPosicion() < 3)) {
                 break;
             }
 
@@ -147,7 +147,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
             boolean empateConTop3 = false;
             if (posicionActual > 3 && !ranking.isEmpty()) {
                 empateConTop3 = ranking.stream()
-                        .anyMatch(r -> r.getPosicion() <= 3 && 
+                        .anyMatch(r -> r.getPosicion() <= 3 &&
                                 r.getPromedio().compareTo(promedioActual) == 0);
             }
 

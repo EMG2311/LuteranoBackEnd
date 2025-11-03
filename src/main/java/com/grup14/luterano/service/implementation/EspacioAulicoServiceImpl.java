@@ -40,7 +40,9 @@ public class EspacioAulicoServiceImpl implements EspacioAulicoService {
     public EspacioAulicoResponse crearEspacioAulico(EspacioAulicoRequest request) {
 
         repository.findByNombreIgnoreCase(request.getNombre())
-                .ifPresent(espacio -> { throw new EspacioAulicoException("Ya existe un espacio áulico con el nombre: " + request.getNombre());});
+                .ifPresent(espacio -> {
+                    throw new EspacioAulicoException("Ya existe un espacio áulico con el nombre: " + request.getNombre());
+                });
 
         EspacioAulico espacioAulico = EspacioAulicoMapper.toEntity(request);
 
@@ -67,9 +69,12 @@ public class EspacioAulicoServiceImpl implements EspacioAulicoService {
                 .orElseThrow(() -> new EspacioAulicoException("No se encontró el espacio áulico con ID: " + espacioAulicoUpdateRequest.getId()));
 
         //  Actualizar campos
-        if (!espacioAulicoUpdateRequest.getNombre().isEmpty()) espacioExistente.setNombre(espacioAulicoUpdateRequest.getNombre());
-        if (!espacioAulicoUpdateRequest.getUbicacion().isEmpty()) espacioExistente.setUbicacion(espacioAulicoUpdateRequest.getUbicacion());
-        if (espacioAulicoUpdateRequest.getCapacidad() != null) espacioExistente.setCapacidad(espacioAulicoUpdateRequest.getCapacidad());
+        if (!espacioAulicoUpdateRequest.getNombre().isEmpty())
+            espacioExistente.setNombre(espacioAulicoUpdateRequest.getNombre());
+        if (!espacioAulicoUpdateRequest.getUbicacion().isEmpty())
+            espacioExistente.setUbicacion(espacioAulicoUpdateRequest.getUbicacion());
+        if (espacioAulicoUpdateRequest.getCapacidad() != null)
+            espacioExistente.setCapacidad(espacioAulicoUpdateRequest.getCapacidad());
 
         espacioExistente = repository.save(espacioExistente);
         logger.info("Espacio áulico actualizado con ID: {}", espacioExistente.getId());

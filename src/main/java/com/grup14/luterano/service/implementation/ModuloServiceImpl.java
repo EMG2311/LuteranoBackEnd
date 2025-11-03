@@ -10,16 +10,8 @@ import com.grup14.luterano.entities.enums.DiaSemana;
 import com.grup14.luterano.exeptions.ModuloException;
 import com.grup14.luterano.mappers.HorarioClaseModuloMapper;
 import com.grup14.luterano.mappers.ModuloMapper;
-import com.grup14.luterano.repository.CursoRepository;
-import com.grup14.luterano.repository.EspacioAulicoRepository;
-import com.grup14.luterano.repository.HorarioClaseModuloRepository;
-import com.grup14.luterano.repository.ModuloRepository;
-import com.grup14.luterano.repository.ReservaEspacioRepository;
-import com.grup14.luterano.response.modulo.ModuloEstadoListResponse;
-import com.grup14.luterano.response.modulo.ModuloEstadoSemanaResponse;
-import com.grup14.luterano.response.modulo.ModuloListResponse;
-import com.grup14.luterano.response.modulo.ModuloReservaEstadoResponse;
-import com.grup14.luterano.response.modulo.ModuloSemanaResponse;
+import com.grup14.luterano.repository.*;
+import com.grup14.luterano.response.modulo.*;
 import com.grup14.luterano.service.ModuloService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +24,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service@AllArgsConstructor
+@Service
+@AllArgsConstructor
 public class ModuloServiceImpl implements ModuloService {
     private final ModuloRepository moduloRepository;
     private final HorarioClaseModuloRepository horarioRepository;
@@ -43,8 +36,8 @@ public class ModuloServiceImpl implements ModuloService {
     @Override
     @Transactional(readOnly = true)
     public ModuloListResponse modulosLibresDelCursoPorDia(Long cursoId, DiaSemana dia) {
-        cursoRepository.findById(cursoId).orElseThrow(()->
-                new ModuloException("No existe el curso con id "+cursoId));
+        cursoRepository.findById(cursoId).orElseThrow(() ->
+                new ModuloException("No existe el curso con id " + cursoId));
         List<Modulo> libres = moduloRepository.findModulosLibresPorCursoYDia(cursoId, dia);
         return ModuloListResponse.builder()
                 .modulos(libres.stream().map(ModuloMapper::toDto).toList())
@@ -57,8 +50,8 @@ public class ModuloServiceImpl implements ModuloService {
     @Transactional(readOnly = true)
     public ModuloSemanaResponse modulosLibresDelCursoTodaLaSemana(Long cursoId) {
         Map<DiaSemana, List<ModuloDto>> mapa = new java.util.LinkedHashMap<>();
-        cursoRepository.findById(cursoId).orElseThrow(()->
-                new ModuloException("No existe el curso con id "+cursoId));
+        cursoRepository.findById(cursoId).orElseThrow(() ->
+                new ModuloException("No existe el curso con id " + cursoId));
         for (DiaSemana d : DiaSemana.values()) {
             var libres = moduloRepository.findModulosLibresPorCursoYDia(cursoId, d);
             var dtos = libres.stream().map(ModuloMapper::toDto).toList();
@@ -164,9 +157,9 @@ public class ModuloServiceImpl implements ModuloService {
         // Crear mapa de módulos ocupados para búsqueda rápida
         Map<Long, ReservaEspacio> modulosOcupados = reservasActivas.stream()
                 .collect(Collectors.toMap(
-                    r -> r.getModulo().getId(),
-                    Function.identity(),
-                    (existing, replacement) -> existing // En caso de conflicto, mantener el primero
+                        r -> r.getModulo().getId(),
+                        Function.identity(),
+                        (existing, replacement) -> existing // En caso de conflicto, mantener el primero
                 ));
 
         // Mapear a DTOs con estado de ocupación
@@ -175,10 +168,10 @@ public class ModuloServiceImpl implements ModuloService {
                     ReservaEspacio reserva = modulosOcupados.get(modulo.getId());
                     boolean ocupado = reserva != null;
                     String motivoOcupacion = null;
-                    
+
                     if (ocupado) {
                         String solicitante = reserva.getUsuario().getName(); // User tiene 'name' no 'nombre'
-                        String curso = reserva.getCurso().getAnio() + "° " + reserva.getCurso().getDivision(); // Curso no tiene 'nombre'
+                        String curso = reserva.getCurso().getAnio() + "° " + reserva.getCurso().getDivision().toString(); // Curso no tiene 'nombre'
                         motivoOcupacion = String.format("Reserva de %s para %s", solicitante, curso);
                     }
 

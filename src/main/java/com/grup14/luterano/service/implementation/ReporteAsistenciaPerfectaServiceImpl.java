@@ -7,8 +7,8 @@ import com.grup14.luterano.entities.HistorialCurso;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.AsistenciaAlumnoRepository;
 import com.grup14.luterano.repository.CicloLectivoRepository;
-import com.grup14.luterano.repository.HistorialCursoRepository;
 import com.grup14.luterano.repository.CursoRepository;
+import com.grup14.luterano.repository.HistorialCursoRepository;
 import com.grup14.luterano.response.reporteAsistenciaPerfecta.AsistenciaPerfectaCursoRow;
 import com.grup14.luterano.response.reporteAsistenciaPerfecta.AsistenciaPerfectaResponse;
 import com.grup14.luterano.service.ReporteAsistenciaPerfectaService;
@@ -60,7 +60,7 @@ public class ReporteAsistenciaPerfectaServiceImpl implements ReporteAsistenciaPe
         LocalDate hasta = LocalDate.of(anio, 12, 31);
 
         // Calcular suma ponderada por alumno
-    List<Long> allAlumnoIds = hcs.stream().map(h -> h.getAlumno().getId()).distinct().toList();
+        List<Long> allAlumnoIds = hcs.stream().map(h -> h.getAlumno().getId()).distinct().toList();
         Map<Long, Double> ponderadoPorAlumno = new HashMap<>();
         if (!allAlumnoIds.isEmpty()) {
             for (Object[] row : asistenciaRepo.sumarInasistenciasPorAlumnoEntreFechas(desde, hasta, allAlumnoIds)) {

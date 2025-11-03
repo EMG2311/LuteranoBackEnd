@@ -102,7 +102,7 @@ public class ReporteLibreServiceImpl implements ReporteLibreService {
         }
 
 
-        Collator coll = Collator.getInstance(new Locale("es","AR"));
+        Collator coll = Collator.getInstance(new Locale("es", "AR"));
         coll.setStrength(Collator.PRIMARY);
         filas.sort(Comparator
                 .comparing(ReporteLibreDto::getAnio)

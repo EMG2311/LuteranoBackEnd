@@ -11,7 +11,8 @@ import java.time.LocalDate;
 
 @Data
 @SuperBuilder(toBuilder = true)
-@NoArgsConstructor@AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class CalificacionDto {
     private Long id;
 

@@ -11,20 +11,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ModuloRepository extends JpaRepository<Modulo,Long> {
+public interface ModuloRepository extends JpaRepository<Modulo, Long> {
     Optional<Modulo> findByOrden(int orden);
+
     List<Modulo> findAllByOrderByOrdenAsc();
+
     @Query("""
-        select m
-        from Modulo m
-        where not exists (
-            select 1
-            from HorarioClaseModulo h
-            where h.materiaCurso.curso.id = :cursoId
-              and h.diaSemana = :dia
-              and h.modulo = m
-        )
-        order by m.orden asc
-    """)
+                select m
+                from Modulo m
+                where not exists (
+                    select 1
+                    from HorarioClaseModulo h
+                    where h.materiaCurso.curso.id = :cursoId
+                      and h.diaSemana = :dia
+                      and h.modulo = m
+                )
+                order by m.orden asc
+            """)
     List<Modulo> findModulosLibresPorCursoYDia(@Param("cursoId") Long cursoId, @Param("dia") DiaSemana dia);
 }

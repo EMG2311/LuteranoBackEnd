@@ -12,14 +12,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface HistorialMateriaRepository extends JpaRepository<HistorialMateria,Long> {
+public interface HistorialMateriaRepository extends JpaRepository<HistorialMateria, Long> {
     Optional<HistorialMateria> findByHistorialCurso_IdAndMateriaCurso_Id(Long historialCursoId, Long materiaCursoId);
+
     boolean existsByHistorialCurso_Alumno_IdAndMateriaCurso_Materia_Id(Long alumnoId, Long materiaId);
+
     @Query("""
-      select hm from HistorialMateria hm
-      where hm.historialCurso.id = :historialCursoId
-    """)
+              select hm from HistorialMateria hm
+              where hm.historialCurso.id = :historialCursoId
+            """)
     List<HistorialMateria> findAllByHistorialCursoId(@Param("historialCursoId") Long historialCursoId);
-    @Transactional@Modifying
+
+    @Transactional
+    @Modifying
     void deleteByHistorialCurso_Id(Long historialCursoId);
 }

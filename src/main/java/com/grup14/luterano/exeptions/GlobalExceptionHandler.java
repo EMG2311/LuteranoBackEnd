@@ -1,6 +1,5 @@
 package com.grup14.luterano.exeptions;
 
-import com.grup14.luterano.service.implementation.DocenteServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.TypeMismatchException;
 import org.slf4j.Logger;
@@ -8,8 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.HashMap;
 import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

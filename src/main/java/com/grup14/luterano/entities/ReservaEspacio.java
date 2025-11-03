@@ -30,15 +30,16 @@ public class ReservaEspacio {
     @JoinColumn(name = "espacio_aulico_id", nullable = false)
     private EspacioAulico espacioAulico;
 
-    @ManyToOne(optional=false) @JoinColumn(name="modulo_id", nullable=false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "modulo_id", nullable = false)
     private Modulo modulo;
 
     // --- Información Temporal y Solicitante ---
 
-    @Column(name="fecha", nullable = false)
+    @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
 
-    @ManyToOne(optional=false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_solicitante_id", nullable = false)
     private User usuario;
 

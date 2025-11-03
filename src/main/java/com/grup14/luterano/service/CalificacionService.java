@@ -22,4 +22,4 @@ public interface CalificacionService {
 
     CalificacionListResponse listarPorMateria(Long alumnoId, Long materiaId);
 
-   }
+}

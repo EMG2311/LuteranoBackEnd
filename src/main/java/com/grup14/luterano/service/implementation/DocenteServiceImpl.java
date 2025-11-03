@@ -2,7 +2,8 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.docente.DocenteDto;
 import com.grup14.luterano.dto.materiaCurso.MateriaCursoLigeroDto;
-import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.Docente;
+import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.DocenteException;
 import com.grup14.luterano.mappers.DocenteMapper;
@@ -21,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,7 @@ public class DocenteServiceImpl implements DocenteService {
     private final MateriaCursoRepository materiaCursoRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DocenteServiceImpl.class);
+
     public DocenteServiceImpl(DocenteRepository docenteRepository,
                               MateriaRepository materiaRepository,
                               UserRepository userRepository, MateriaCursoRepository materiaCursoRepository) {
@@ -51,9 +55,13 @@ public class DocenteServiceImpl implements DocenteService {
     @Transactional
     public DocenteResponse crearDocente(DocenteRequest docenteRequest) {
         docenteRepository.findByEmailAndActiveIsTrue(docenteRequest.getEmail())
-                .ifPresent(d -> { throw new DocenteException("Ya existe un docente activo con ese email"); });
+                .ifPresent(d -> {
+                    throw new DocenteException("Ya existe un docente activo con ese email");
+                });
         docenteRepository.findByDniAndActiveIsTrue(docenteRequest.getDni())
-                .ifPresent(d -> { throw new DocenteException("Ya existe un docente activo con ese DNI"); });
+                .ifPresent(d -> {
+                    throw new DocenteException("Ya existe un docente activo con ese DNI");
+                });
 
         Optional<Docente> docenteInactivo = docenteRepository.findByEmailAndActiveIsFalse(docenteRequest.getEmail());
 
@@ -84,7 +92,7 @@ public class DocenteServiceImpl implements DocenteService {
 
             if (!docente.getDni().equals(docenteRequest.getDni())) {
                 throw new DocenteException("Existe un docente inactivo con ese email pero con distinto DNI. No se puede reactivar." +
-                        "El dni que estaba cargado es: "+ docente.getDni());
+                        "El dni que estaba cargado es: " + docente.getDni());
             }
 
             docente.setActive(true);
@@ -130,8 +138,8 @@ public class DocenteServiceImpl implements DocenteService {
     public DocenteResponse updateDocente(DocenteUpdateRequest updateRequest) {
         Docente docente = docenteRepository.findByIdAndActiveIsTrue(updateRequest.getId())
                 .orElseThrow(() -> new DocenteException("No existe docente activo con id: " + updateRequest.getId()));
-        User user=docente.getUser();
-        boolean necesitaActualizarUsuario=false;
+        User user = docente.getUser();
+        boolean necesitaActualizarUsuario = false;
         if (user == null) {
             throw new RuntimeException("El docente no tiene usuario asociado");
         }
@@ -139,12 +147,12 @@ public class DocenteServiceImpl implements DocenteService {
         if (updateRequest.getNombre() != null) {
             docente.setNombre(updateRequest.getNombre());
             user.setName(updateRequest.getNombre());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getApellido() != null) {
             docente.setApellido(updateRequest.getApellido());
             user.setLastName(updateRequest.getApellido());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getGenero() != null) {
             docente.setGenero(updateRequest.getGenero());
@@ -158,7 +166,7 @@ public class DocenteServiceImpl implements DocenteService {
         if (updateRequest.getEmail() != null) {
             docente.setEmail(updateRequest.getEmail());
             user.setEmail(updateRequest.getEmail());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getDireccion() != null) {
             docente.setDireccion(updateRequest.getDireccion());
@@ -187,12 +195,12 @@ public class DocenteServiceImpl implements DocenteService {
         }
 
 
-        if(necesitaActualizarUsuario){
+        if (necesitaActualizarUsuario) {
             docente.setUser(user); //Por si se hicieron cambios en el usuario
         }
         docente = docenteRepository.save(docente);
 
-        logger.info("Se actualizo correctamente el docente "+ docente.getId());
+        logger.info("Se actualizo correctamente el docente " + docente.getId());
         return DocenteResponse.builder()
                 .docente(DocenteMapper.toDto(docente))
                 .code(0)

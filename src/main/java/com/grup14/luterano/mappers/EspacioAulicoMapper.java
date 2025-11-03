@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class EspacioAulicoMapper {
-   // Entity a DTO
+    // Entity a DTO
     public static EspacioAulicoDto toDto(EspacioAulico entity) {
         if (entity == null) return null;
         return EspacioAulicoDto.builder()

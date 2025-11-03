@@ -10,16 +10,18 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
-public interface CicloLectivoRepository extends JpaRepository<CicloLectivo,Long> {
-        Optional<CicloLectivo> findByFechaDesdeBeforeAndFechaHastaAfter(LocalDate fecha1, LocalDate fecha2);
-        Optional<CicloLectivo> findTopByOrderByFechaHastaDesc();
+public interface CicloLectivoRepository extends JpaRepository<CicloLectivo, Long> {
+    Optional<CicloLectivo> findByFechaDesdeBeforeAndFechaHastaAfter(LocalDate fecha1, LocalDate fecha2);
 
-        boolean existsByNombre(String nombre);
-        Optional<CicloLectivo> findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(LocalDate desde, LocalDate hasta);
+    Optional<CicloLectivo> findTopByOrderByFechaHastaDesc();
 
-        // Para reporte de desempeño docente: buscar ciclo por año
-        @Query("SELECT cl FROM CicloLectivo cl WHERE YEAR(cl.fechaDesde) = :anio")
-        Optional<CicloLectivo> findByAnio(@Param("anio") Integer anio);
+    boolean existsByNombre(String nombre);
+
+    Optional<CicloLectivo> findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(LocalDate desde, LocalDate hasta);
+
+    // Para reporte de desempeño docente: buscar ciclo por año
+    @Query("SELECT cl FROM CicloLectivo cl WHERE YEAR(cl.fechaDesde) = :anio")
+    Optional<CicloLectivo> findByAnio(@Param("anio") Integer anio);
 
 
 }

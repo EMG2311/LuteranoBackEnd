@@ -34,7 +34,7 @@ public class NotaFinalServiceImpl implements NotaFinalService {
         // 1. Buscar mesa de examen más reciente en el año
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
-        
+
         List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
                 .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, desde, hasta);
 
@@ -62,7 +62,7 @@ public class NotaFinalServiceImpl implements NotaFinalService {
 
         // 3. Si no tiene mesa, calcular desde PG truncado
         CalificacionesAlumnoAnioResponse reporteNotas = reporteNotasService.listarResumenPorAnio(alumnoId, anio);
-        
+
         if (reporteNotas == null || reporteNotas.getCalificacionesAlumnoResumenDto() == null) {
             return null;
         }

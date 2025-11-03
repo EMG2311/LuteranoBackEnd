@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-@Data@NoArgsConstructor
+@Data
+@NoArgsConstructor
 public class DocenteRequest extends DocenteDto {
 
-    public DocenteResponse toResponse(String mensaje,Integer code) {
+    public DocenteResponse toResponse(String mensaje, Integer code) {
         return DocenteResponse.builder()
                 .docente(this)
                 .code(code)

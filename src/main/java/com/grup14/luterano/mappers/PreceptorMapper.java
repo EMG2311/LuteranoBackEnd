@@ -1,9 +1,7 @@
 package com.grup14.luterano.mappers;
 
 import com.grup14.luterano.dto.PreceptorDto;
-import com.grup14.luterano.dto.TutorDto;
 import com.grup14.luterano.entities.Preceptor;
-import com.grup14.luterano.entities.Tutor;
 
 public class PreceptorMapper {
     public static PreceptorDto toDto(Preceptor entity) {

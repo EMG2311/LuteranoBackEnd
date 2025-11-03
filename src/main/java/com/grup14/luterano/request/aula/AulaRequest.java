@@ -3,7 +3,6 @@ package com.grup14.luterano.request.aula;
 
 import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.response.aula.AulaResponse;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;

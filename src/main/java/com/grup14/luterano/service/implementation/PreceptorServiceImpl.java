@@ -2,12 +2,9 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.PreceptorDto;
 import com.grup14.luterano.entities.Preceptor;
-import com.grup14.luterano.entities.Preceptor;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.Rol;
 import com.grup14.luterano.exeptions.PreceptorException;
-import com.grup14.luterano.exeptions.PreceptorException;
-import com.grup14.luterano.mappers.PreceptorMapper;
 import com.grup14.luterano.mappers.PreceptorMapper;
 import com.grup14.luterano.repository.PreceptorRepository;
 import com.grup14.luterano.repository.UserRepository;
@@ -26,24 +23,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 @Service
 public class PreceptorServiceImpl implements PreceptorService {
     private final PreceptorRepository preceptorRepository;
     private static final Logger logger = LoggerFactory.getLogger(PreceptorServiceImpl.class);
     private final UserRepository userRepository;
+
     public PreceptorServiceImpl(PreceptorRepository preceptorRepository,
                                 UserRepository userRepository) {
         this.preceptorRepository = preceptorRepository;
-        this.userRepository=userRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public PreceptorResponse crearPreceptor(PreceptorRequest request) {
         preceptorRepository.findByEmailAndActiveIsTrue(request.getEmail())
-                .ifPresent(p -> { throw new PreceptorException("Ya existe un preceptor activo con ese email"); });
+                .ifPresent(p -> {
+                    throw new PreceptorException("Ya existe un preceptor activo con ese email");
+                });
         preceptorRepository.findByDniAndActiveIsTrue(request.getDni())
-                .ifPresent(p -> { throw new PreceptorException("Ya existe un preceptor activo con ese DNI"); });
+                .ifPresent(p -> {
+                    throw new PreceptorException("Ya existe un preceptor activo con ese DNI");
+                });
 
         Optional<Preceptor> preceptorInactivo = preceptorRepository.findByEmailAndActiveIsFalse(request.getEmail());
 
@@ -115,8 +118,8 @@ public class PreceptorServiceImpl implements PreceptorService {
     public PreceptorResponse updatePreceptor(PreceptorUpdateRequest updateRequest) {
         Preceptor preceptor = preceptorRepository.findByIdAndActiveIsTrue(updateRequest.getId())
                 .orElseThrow(() -> new PreceptorException("No existe preceptor activo con id: " + updateRequest.getId()));
-        User user=preceptor.getUser();
-        boolean necesitaActualizarUsuario=false;
+        User user = preceptor.getUser();
+        boolean necesitaActualizarUsuario = false;
         if (user == null) {
             throw new PreceptorException("El preceptor no tiene usuario asociado");
         }
@@ -124,12 +127,12 @@ public class PreceptorServiceImpl implements PreceptorService {
         if (updateRequest.getNombre() != null) {
             preceptor.setNombre(updateRequest.getNombre());
             user.setName(updateRequest.getNombre());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getApellido() != null) {
             preceptor.setApellido(updateRequest.getApellido());
             user.setLastName(updateRequest.getApellido());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getGenero() != null) {
             preceptor.setGenero(updateRequest.getGenero());
@@ -143,7 +146,7 @@ public class PreceptorServiceImpl implements PreceptorService {
         if (updateRequest.getEmail() != null) {
             preceptor.setEmail(updateRequest.getEmail());
             user.setEmail(updateRequest.getEmail());
-            necesitaActualizarUsuario=true;
+            necesitaActualizarUsuario = true;
         }
         if (updateRequest.getDireccion() != null) {
             preceptor.setDireccion(updateRequest.getDireccion());
@@ -152,23 +155,23 @@ public class PreceptorServiceImpl implements PreceptorService {
             preceptor.setTelefono(updateRequest.getTelefono());
         }
         if (updateRequest.getFechaNacimiento() != null) {
-           validarFechas(updateRequest.getFechaNacimiento(),updateRequest.getFechaIngreso());
+            validarFechas(updateRequest.getFechaNacimiento(), updateRequest.getFechaIngreso());
             preceptor.setFechaNacimiento(updateRequest.getFechaIngreso());
 
         }
 
         if (updateRequest.getFechaIngreso() != null) {
-            validarFechas(updateRequest.getFechaNacimiento(),updateRequest.getFechaIngreso());
+            validarFechas(updateRequest.getFechaNacimiento(), updateRequest.getFechaIngreso());
             preceptor.setFechaIngreso(updateRequest.getFechaIngreso());
         }
 
 
-        if(necesitaActualizarUsuario){
+        if (necesitaActualizarUsuario) {
             preceptor.setUser(user);
         }
         preceptor = preceptorRepository.save(preceptor);
 
-        logger.info("Se actualizo correctamente el preceptor "+ preceptor.getId());
+        logger.info("Se actualizo correctamente el preceptor " + preceptor.getId());
         return PreceptorResponse.builder()
                 .preceptor(PreceptorMapper.toDto(preceptor))
                 .code(0)

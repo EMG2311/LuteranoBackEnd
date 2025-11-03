@@ -2,10 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.entities.Aula;
-import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.exeptions.AlumnoException;
 import com.grup14.luterano.exeptions.AulaException;
-import com.grup14.luterano.mappers.AlumnoMapper;
 import com.grup14.luterano.mappers.AulaMapper;
 import com.grup14.luterano.repository.AulaRepository;
 import com.grup14.luterano.repository.CursoRepository;
@@ -45,7 +42,7 @@ public class AulaServiceImpl implements AulaService {
     @Transactional
     public AulaResponse crearAula(AulaRequest aulaRequest) {
 
-    //Validar si ya existe un aula con el mismo nombre
+        //Validar si ya existe un aula con el mismo nombre
         Optional<Aula> aulaExistente = aulaRepository.findByNombre(aulaRequest.getNombre());
         if (aulaExistente.isPresent()) {
             throw new AulaException("Ya existe un aula con el nombre: " + aulaRequest.getNombre());
@@ -77,7 +74,6 @@ public class AulaServiceImpl implements AulaService {
         if (!aulaUpdateRequest.getNombre().isEmpty()) aula.setNombre(aulaUpdateRequest.getNombre());
         if (!aulaUpdateRequest.getUbicacion().isEmpty()) aula.setUbicacion(aulaUpdateRequest.getUbicacion());
         if (aulaUpdateRequest.getCapacidad() != null) aula.setCapacidad(aulaUpdateRequest.getCapacidad());
-
 
 
         //  Guardar los cambios

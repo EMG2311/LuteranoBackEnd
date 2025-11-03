@@ -1,6 +1,5 @@
 package com.grup14.luterano.entities;
 
-import com.grup14.luterano.entities.enums.DiaSemana;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,15 +9,21 @@ import lombok.NoArgsConstructor;
 import java.time.LocalTime;
 
 @Entity
-@Data @Builder @AllArgsConstructor @NoArgsConstructor
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "modulo", uniqueConstraints = {
         @UniqueConstraint(name = "uk_modulo_orden", columnNames = {"orden"})
 })
 public class Modulo {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Secuencia del día: 1..N (cada uno es un “medio módulo”) */
+    /**
+     * Secuencia del día: 1..N (cada uno es un “medio módulo”)
+     */
     @Column(nullable = false)
     private int orden;
 

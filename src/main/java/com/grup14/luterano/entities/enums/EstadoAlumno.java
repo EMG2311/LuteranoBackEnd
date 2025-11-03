@@ -1,5 +1,5 @@
 package com.grup14.luterano.entities.enums;
 
 public enum EstadoAlumno {
-    REGULAR,LIBRE,EGRESADO,BORRADO,EXCLUIDO_POR_REPETICION
+    REGULAR, LIBRE, EGRESADO, BORRADO, EXCLUIDO_POR_REPETICION
 }

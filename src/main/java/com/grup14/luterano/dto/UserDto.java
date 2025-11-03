@@ -1,7 +1,6 @@
 package com.grup14.luterano.dto;
 
 import com.grup14.luterano.entities.Role;
-import com.grup14.luterano.entities.enums.Rol;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

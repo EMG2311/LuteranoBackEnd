@@ -9,15 +9,22 @@ import java.time.LocalDate;
 
 public interface ActaExamenService {
     ActaExamenResponse generar(ActaCreateRequest req);          // genera o devuelve existente (idempotente)
+
     ActaExamenResponse actualizar(ActaUpdateRequest req);
+
     ActaExamenResponse eliminar(Long id);
 
     ActaExamenResponse obtenerPorId(Long id);
+
     ActaExamenResponse obtenerPorMesa(Long mesaId);
+
     ActaExamenResponse obtenerPorNumero(String numeroActa);
 
     ActaExamenListResponse buscarPorNumeroLike(String q);
+
     ActaExamenListResponse listarPorTurno(Long turnoId);
+
     ActaExamenListResponse listarPorCurso(Long cursoId);
+
     ActaExamenListResponse listarEntreFechas(LocalDate desde, LocalDate hasta);
 }

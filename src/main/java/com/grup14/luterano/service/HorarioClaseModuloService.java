@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface HorarioClaseModuloService {
     HorarioClaseModuloResponse asignarHorariosAMateriaDeCurso(Long cursoId, Long materiaId, List<SlotHorarioRequest> slots);
+
     HorarioClaseModuloResponse desasignarHorariosAMateriaDeCurso(Long cursoId, Long materiaId, List<SlotHorarioRequest> slots);
 }

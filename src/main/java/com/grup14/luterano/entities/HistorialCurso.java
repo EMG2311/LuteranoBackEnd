@@ -11,7 +11,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity@Data@AllArgsConstructor@NoArgsConstructor@Builder
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class HistorialCurso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

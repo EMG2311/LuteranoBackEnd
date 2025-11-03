@@ -9,7 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 public class ReservaEspacioSpecification {
 
 
-     // Filtra las reservas por el ID del usuario solicitante.
+    // Filtra las reservas por el ID del usuario solicitante.
     public static Specification<ReservaEspacio> usuarioIdEquals(Long userId) {
         if (userId == null) {
             return null; // No aplica filtro si el ID es nulo

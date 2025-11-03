@@ -6,7 +6,12 @@ import com.grup14.luterano.dto.ReporteRindeDto;
 import lombok.*;
 
 import java.util.List;
-@Getter@Setter@AllArgsConstructor@NoArgsConstructor@Builder
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ReporteRindenResponse {
     private CursoDto curso;
     private MateriaDto materia;

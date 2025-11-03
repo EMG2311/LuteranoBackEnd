@@ -4,5 +4,6 @@ import com.grup14.luterano.response.reporteAnual.ReporteAnualAlumnoResponse;
 
 public interface ReporteAnualService {
     ReporteAnualAlumnoResponse informeAnualAlumno(Long alumnoId, int anio);
+
     ReporteAnualAlumnoResponse informeAnualAlumnoPorDni(String dni, int anio);
 }

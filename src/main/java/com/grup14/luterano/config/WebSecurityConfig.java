@@ -27,17 +27,21 @@ public class WebSecurityConfig {
     private AuthenticationProvider AuthenticationProvider;
     @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
+
     @Bean
-    public JwtAuthFilter jwtAuthFilter(){return new JwtAuthFilter(handlerExceptionResolver);}
+    public JwtAuthFilter jwtAuthFilter() {
+        return new JwtAuthFilter(handlerExceptionResolver);
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // << AGREGAR ESTA LÍNEA
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("api/auth/**"
-                                ,"/swagger-ui/**"
-                                ,"/swagger-ui.html"
-                                ,"/v3/api-docs/**").permitAll()
+                                , "/swagger-ui/**"
+                                , "/swagger-ui.html"
+                                , "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -54,7 +58,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("*")); // 👈 o ["http://localhost:5175"]
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         //configuration.setAllowCredentials(true); // 👈 solo funciona si NO usás "*"
 

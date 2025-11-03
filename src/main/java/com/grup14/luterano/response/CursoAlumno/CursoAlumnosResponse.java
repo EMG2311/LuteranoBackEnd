@@ -8,7 +8,9 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder@NoArgsConstructor@AllArgsConstructor
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CursoAlumnosResponse {
     private CursoDto curso;
     private List<AlumnoDto> alumnos;

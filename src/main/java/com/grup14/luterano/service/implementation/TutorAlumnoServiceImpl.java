@@ -1,6 +1,5 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.dto.AlumnoDto;
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.Tutor;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
@@ -22,16 +21,18 @@ import java.util.Objects;
 public class TutorAlumnoServiceImpl implements TutorAlumnoService {
     private final AlumnoRepository alumnoRepository;
     private final TutorRepository tutorRepository;
-    public TutorAlumnoServiceImpl(AlumnoRepository alumnoRepository,TutorRepository tutorRepository){
-        this.alumnoRepository=alumnoRepository;
-        this.tutorRepository=tutorRepository;
+
+    public TutorAlumnoServiceImpl(AlumnoRepository alumnoRepository, TutorRepository tutorRepository) {
+        this.alumnoRepository = alumnoRepository;
+        this.tutorRepository = tutorRepository;
     }
+
     @Override
     public AlumnoResponse asignarTutorAAlumno(Long idTutor, Long idAlumno) {
         Tutor tutor = tutorRepository.findById(idTutor)
-                .orElseThrow(()-> new TutorAlumnoException("No existe el tutor con id " + idTutor));
+                .orElseThrow(() -> new TutorAlumnoException("No existe el tutor con id " + idTutor));
         Alumno alumno = alumnoRepository.findById(idAlumno)
-                .orElseThrow(()-> new TutorAlumnoException("No existe el alumno con id "+ idAlumno));
+                .orElseThrow(() -> new TutorAlumnoException("No existe el alumno con id " + idAlumno));
 
         if (alumno.getTutor() != null && Objects.equals(alumno.getTutor().getId(), idTutor)) {
             throw new TutorAlumnoException("El alumno ya tiene este tutor asignado");
@@ -48,11 +49,11 @@ public class TutorAlumnoServiceImpl implements TutorAlumnoService {
     @Override
     public AlumnoResponse desasignarTutorAlumno(Long idTutor, Long idAlumno) {
         Tutor tutor = tutorRepository.findById(idTutor)
-                .orElseThrow(()-> new TutorAlumnoException("No existe el tutor con id " + idTutor));
+                .orElseThrow(() -> new TutorAlumnoException("No existe el tutor con id " + idTutor));
         Alumno alumno = alumnoRepository.findById(idAlumno)
-                .orElseThrow(()-> new TutorAlumnoException("No existe el alumno con id "+ idAlumno));
+                .orElseThrow(() -> new TutorAlumnoException("No existe el alumno con id " + idAlumno));
 
-        if(!Objects.equals(alumno.getTutor().getId(), idTutor)){
+        if (!Objects.equals(alumno.getTutor().getId(), idTutor)) {
             throw new TutorAlumnoException("El tutor no esta asignado a este alumno");
         }
         alumno.setTutor(null);

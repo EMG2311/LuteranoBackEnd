@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PromocionMasivaResponse {
-    
+
     private Integer procesados;
     private Integer promocionados;
     private Integer repitentes;
@@ -21,9 +21,9 @@ public class PromocionMasivaResponse {
     private Integer excluidos; // Nuevos excluidos por repetición
     private Integer noProcesados;
     private Boolean dryRun;
-    
+
     private List<AlumnoPromocionDto> resumen;
-    
+
     private Integer code;
     private String mensaje;
 }

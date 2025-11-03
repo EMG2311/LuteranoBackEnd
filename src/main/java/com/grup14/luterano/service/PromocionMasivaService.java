@@ -4,7 +4,7 @@ import com.grup14.luterano.request.promocion.PromocionMasivaRequest;
 import com.grup14.luterano.response.promocion.PromocionMasivaResponse;
 
 public interface PromocionMasivaService {
-    
+
     /**
      * Ejecuta la promoción masiva de alumnos según las reglas definidas:
      * - Menos de 3 materias desaprobadas: promociona al curso siguiente

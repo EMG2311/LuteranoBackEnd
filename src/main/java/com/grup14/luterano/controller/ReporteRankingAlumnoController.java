@@ -1,7 +1,7 @@
 package com.grup14.luterano.controller;
 
-import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosColegioResponse;
+import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingTodosCursosResponse;
 import com.grup14.luterano.service.ReporteRankingAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;

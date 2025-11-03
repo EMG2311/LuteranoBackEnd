@@ -6,7 +6,6 @@ import com.grup14.luterano.repository.AsistenciaAlumnoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.response.reporteTardanza.ReporteTardanzasResponseList;
 import com.grup14.luterano.service.ReporteTardanzaService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -21,6 +20,7 @@ public class ReporteTardanzaServiceImpl implements ReporteTardanzaService {
 
     private final AsistenciaAlumnoRepository repo;
     private final CursoRepository cursoRepository;
+
     @Override
     @Transactional(readOnly = true)
     public ReporteTardanzasResponseList listarPorCurso(Long cursoId, LocalDate desde, LocalDate hasta, Integer limit) {
@@ -28,8 +28,8 @@ public class ReporteTardanzaServiceImpl implements ReporteTardanzaService {
             return ReporteTardanzasResponseList.builder()
                     .items(List.of()).code(422).mensaje("Debe indicar cursoId").build();
         }
-        cursoRepository.findById(cursoId).orElseThrow(()->
-                new ReporteTardanzaException("No existe el curso con id "+ cursoId));
+        cursoRepository.findById(cursoId).orElseThrow(() ->
+                new ReporteTardanzaException("No existe el curso con id " + cursoId));
 
         List<TardanzaRowDto> items = (limit == null || limit <= 0)
                 ? repo.tardanzasPorCurso(cursoId, desde, hasta)

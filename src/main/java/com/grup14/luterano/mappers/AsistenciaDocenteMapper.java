@@ -9,7 +9,8 @@ import java.util.List;
 
 public class AsistenciaDocenteMapper {
 
-    private AsistenciaDocenteMapper() {}
+    private AsistenciaDocenteMapper() {
+    }
 
     public static AsistenciaDocenteDto toDto(AsistenciaDocente a) {
         if (a == null) return null;

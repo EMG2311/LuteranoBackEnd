@@ -131,7 +131,7 @@ public class CalificacionController {
     @Operation(summary = "Listar todas las calificaciones por materia (sin filtros)",
             description = "Equivalente a listar por materia sin parámetros, expuesto como ruta explícita.")
     public ResponseEntity<CalificacionListResponse> listPorMateria(@PathVariable Long alumnoId,
-                                                              @PathVariable Long materiaId) {
+                                                                   @PathVariable Long materiaId) {
         try {
             return ResponseEntity.ok(calificacionService.listarPorMateria(alumnoId, materiaId));
         } catch (CalificacionException e) {

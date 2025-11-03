@@ -148,11 +148,11 @@ public class ReservaEspacioServiceImpl implements ReservaEspacioService {
 
     @Override
     public ReservaEspacioResponseList obtenerReservas(ReservaEspacioFiltroRequest request) {
-    // Filtro por ID de Espacio Aúlico,Usuario y Estado de Reserva
+        // Filtro por ID de Espacio Aúlico,Usuario y Estado de Reserva
         Specification<ReservaEspacio> spec = Specification.where(
-            ReservaEspacioSpecification.espacioAulicoIdEquals(request.getEspacioAulicoId()))
-            .and(ReservaEspacioSpecification.usuarioIdEquals(request.getUsuarioId()))
-            .and(ReservaEspacioSpecification.estadoEquals(request.getEstado()));
+                        ReservaEspacioSpecification.espacioAulicoIdEquals(request.getEspacioAulicoId()))
+                .and(ReservaEspacioSpecification.usuarioIdEquals(request.getUsuarioId()))
+                .and(ReservaEspacioSpecification.estadoEquals(request.getEstado()));
 
 
         List<ReservaEspacioDto> reservas = reservaRepository.findAll(spec).stream()
@@ -227,7 +227,8 @@ public class ReservaEspacioServiceImpl implements ReservaEspacioService {
                     .build();
 
         } catch (IllegalStateException e) {
-            throw new ReservaEspacioException("Error al denegar: " + e.getMessage());        }
+            throw new ReservaEspacioException("Error al denegar: " + e.getMessage());
+        }
     }
 
 }

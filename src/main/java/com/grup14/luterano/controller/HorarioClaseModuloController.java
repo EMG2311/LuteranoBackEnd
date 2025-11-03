@@ -6,7 +6,6 @@ import com.grup14.luterano.request.horarioClaseModulo.SlotHorarioRequest;
 import com.grup14.luterano.response.horarioClaseModulo.HorarioClaseModuloResponse;
 import com.grup14.luterano.service.HorarioClaseModuloService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +61,7 @@ public class HorarioClaseModuloController {
             @RequestBody List<SlotHorarioRequest> slots) {
         try {
             var resp = horarioClaseModuloService.desasignarHorariosAMateriaDeCurso(
-                    cursoId, materiaId,slots);
+                    cursoId, materiaId, slots);
             return ResponseEntity.ok(resp);
         } catch (HorarioClaseModuloException e) {
             return ResponseEntity.status(422).body(

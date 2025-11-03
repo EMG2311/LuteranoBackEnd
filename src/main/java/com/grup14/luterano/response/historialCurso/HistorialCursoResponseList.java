@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-@Builder@Data@AllArgsConstructor@NoArgsConstructor
+
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class HistorialCursoResponseList {
     private List<HistorialCursoDto> historialCursos;
     private Integer code;

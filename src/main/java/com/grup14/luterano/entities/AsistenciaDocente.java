@@ -15,7 +15,8 @@ import lombok.experimental.SuperBuilder;
         uniqueConstraints = @UniqueConstraint(columnNames = {"docente_id", "fecha"}))
 public class AsistenciaDocente extends AsistenciaBase {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)

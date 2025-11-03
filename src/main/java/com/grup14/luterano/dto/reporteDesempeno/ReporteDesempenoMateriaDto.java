@@ -13,26 +13,26 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReporteDesempenoMateriaDto {
-    
+
     private Long materiaId;
     private String nombreMateria;
-    
+
     // Estadísticas generales de la materia
     private Integer totalDocentes;
     private Integer totalAlumnos;
     private Integer totalCursos;
-    
+
     private BigDecimal promedioAprobacionMateria;
     private BigDecimal promedioReprobacionMateria;
     private BigDecimal promedioGeneralMateria;
-    
+
     // Análisis por docente
     private List<ReporteDesempenoDocenteDto> resultadosPorDocente;
-    
+
     // Docente con mejor y peor desempeño
     private ReporteDesempenoDocenteDto mejorDocente;
     private ReporteDesempenoDocenteDto peorDocente;
-    
+
     // Rango de variación
     private BigDecimal rangoAprobacion; // diferencia entre mejor y peor
     private BigDecimal desviacionEstandar;

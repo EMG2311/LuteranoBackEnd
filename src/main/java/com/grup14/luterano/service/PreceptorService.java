@@ -7,8 +7,12 @@ import com.grup14.luterano.response.Preceptor.PreceptorResponseList;
 
 public interface PreceptorService {
     PreceptorResponse crearPreceptor(PreceptorRequest PreceptorRequest);
+
     PreceptorResponse updatePreceptor(PreceptorUpdateRequest PreceptorRequest);
+
     PreceptorResponse deletePreceptor(Long id);
+
     PreceptorResponseList listPreceptores();
+
     PreceptorResponseList listAllPreceptores();
 }

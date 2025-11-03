@@ -5,7 +5,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-@Data @Builder
+@Data
+@Builder
 public class TurnoDto {
     private Long id;
     private String nombre;      // "FEBRERO 2026" (opcional, lo podemos derivar)

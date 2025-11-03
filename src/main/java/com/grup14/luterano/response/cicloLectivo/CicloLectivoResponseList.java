@@ -1,6 +1,5 @@
 package com.grup14.luterano.response.cicloLectivo;
 
-import com.grup14.luterano.dto.AulaDto;
 import com.grup14.luterano.dto.CicloLectivoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class JwtServiceImpl implements JwtService{
+public class JwtServiceImpl implements JwtService {
 
     private static final String SECRET_KEY = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
     private static final long TOKEN_EXPIRATION = 1000 * 60 * 60 * 24;
@@ -80,7 +80,7 @@ public class JwtServiceImpl implements JwtService{
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public boolean canTokenBeRenewed(String token){
+    public boolean canTokenBeRenewed(String token) {
         try {
             Claims claims = extractAllClaims(token);
             Date expiration = claims.getExpiration();

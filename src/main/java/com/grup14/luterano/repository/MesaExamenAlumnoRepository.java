@@ -9,10 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-public interface MesaExamenAlumnoRepository extends JpaRepository<MesaExamenAlumno,Long> {
+public interface MesaExamenAlumnoRepository extends JpaRepository<MesaExamenAlumno, Long> {
     boolean existsByMesaExamen_IdAndAlumno_Id(Long mesaId, Long alumnoId);
+
     List<MesaExamenAlumno> findByMesaExamen_Id(Long mesaId);
-    @Transactional@Modifying
+
+    @Transactional
+    @Modifying
     void deleteByMesaExamen_IdAndAlumno_Id(Long mesaId, Long alumnoId);
 
     // Para reporte anual: finales del alumno dentro de un rango de fechas

@@ -8,9 +8,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Entity@Builder@Data@AllArgsConstructor@NoArgsConstructor
+@Entity
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ActaExamen {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(optional = false)

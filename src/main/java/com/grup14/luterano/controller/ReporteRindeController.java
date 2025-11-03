@@ -2,7 +2,6 @@ package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.ReporteRindeException;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
-import com.grup14.luterano.service.ReporteNotasService;
 import com.grup14.luterano.service.ReporteRindenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ReporteRindeController {
     private final ReporteRindenService reporteRindenService;
-
 
 
     @GetMapping("/cursos/{cursoId}/rinden")

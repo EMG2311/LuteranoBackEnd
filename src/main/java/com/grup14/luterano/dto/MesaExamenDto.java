@@ -7,7 +7,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
-@Data @Builder
+@Data
+@Builder
 public class MesaExamenDto {
     private Long id;
     private LocalDate fecha;

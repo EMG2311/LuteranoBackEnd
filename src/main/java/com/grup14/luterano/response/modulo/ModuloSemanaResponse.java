@@ -7,7 +7,9 @@ import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
-@Builder@Data
+
+@Builder
+@Data
 public class ModuloSemanaResponse {
     private Integer code;
     private String mensaje;

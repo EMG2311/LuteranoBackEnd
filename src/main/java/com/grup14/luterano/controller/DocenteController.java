@@ -9,9 +9,7 @@ import com.grup14.luterano.service.DocenteService;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.groups.Default;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequestMapping("/docente")
@@ -33,8 +30,8 @@ public class DocenteController {
 
     private final DocenteService docenteService;
 
-    public DocenteController(DocenteService docenteService){
-        this.docenteService=docenteService;
+    public DocenteController(DocenteService docenteService) {
+        this.docenteService = docenteService;
     }
 
 
@@ -55,7 +52,7 @@ public class DocenteController {
     @PutMapping("/update")
     @Operation(summary = "Actualiza un docente", description = "Actualiza un docente con los datos que se envíen")
     public ResponseEntity<DocenteResponse> updateDocente(
-            @RequestBody  @Validated({Default.class, MayorDeEdadGruoup.class}) DocenteUpdateRequest updateRequest) {
+            @RequestBody @Validated({Default.class, MayorDeEdadGruoup.class}) DocenteUpdateRequest updateRequest) {
         try {
             return ResponseEntity.ok(docenteService.updateDocente(updateRequest));
         } catch (DocenteException d) {

@@ -6,8 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder@Data@AllArgsConstructor@NoArgsConstructor
-public class MateriaCursoResponse{
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class MateriaCursoResponse {
     private MateriaCursoDto materiaCursoDto;
     private Integer code;
     private String mensaje;

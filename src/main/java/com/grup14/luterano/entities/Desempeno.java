@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Entity@Builder@AllArgsConstructor@NoArgsConstructor@Data
+@Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class Desempeno {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -34,7 +34,7 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
     public CalificacionesAlumnoAnioResponse listarResumenPorAnio(Long alumnoId, int anio) {
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
-        Alumno alumno= alumnoRepo.findById(alumnoId).orElseThrow(()-> new ReporteNotasException("No existe el alumno con ese id"));
+        Alumno alumno = alumnoRepo.findById(alumnoId).orElseThrow(() -> new ReporteNotasException("No existe el alumno con ese id"));
         List<Calificacion> califs = calificacionRepo.findByAlumnoAndAnio(alumnoId, desde, hasta);
 
         Map<Long, CalificacionesMateriaResumenDto> map = new LinkedHashMap<>();
@@ -70,7 +70,7 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
             r.setEstado(pg != null && (pg >= 6.0) ? "Aprobado" : "Desaprobado");
         }
 
-        var coll = java.text.Collator.getInstance(new java.util.Locale("es","AR"));
+        var coll = java.text.Collator.getInstance(new java.util.Locale("es", "AR"));
         coll.setStrength(java.text.Collator.PRIMARY);
 
         List<CalificacionesMateriaResumenDto> materias = new ArrayList<>(map.values());
@@ -96,7 +96,6 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                 .mensaje("OK")
                 .build();
     }
-
 
 
     @Transactional(readOnly = true)
@@ -147,8 +146,8 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                     CalificacionesMateriaResumenDto.builder()
                             .materiaId(id)
                             .materiaNombre(mNombre)
-                            .e1Notas(new Integer[]{null,null,null,null})
-                            .e2Notas(new Integer[]{null,null,null,null})
+                            .e1Notas(new Integer[]{null, null, null, null})
+                            .e2Notas(new Integer[]{null, null, null, null})
                             .build()
             );
 
@@ -209,16 +208,24 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
 
     private static Double promedio(Integer[] notas) {
         int suma = 0, n = 0;
-        for (Integer v : notas) if (v != null) { suma += v; n++; }
+        for (Integer v : notas)
+            if (v != null) {
+                suma += v;
+                n++;
+            }
         if (n == 0) return null;
         return redondear1((double) suma / n);
     }
+
     private static Double promedioGeneral(Double e1, Double e2) {
         if (e1 == null && e2 == null) return null;
         if (e1 == null) return e2;
         if (e2 == null) return e1;
         return redondear1((e1 + e2) / 2.0);
     }
-    private static Double redondear1(double v) { return Math.round(v * 10.0) / 10.0; }
+
+    private static Double redondear1(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
 
 }

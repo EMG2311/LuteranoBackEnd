@@ -4,7 +4,8 @@ import com.grup14.luterano.dto.modulo.ModuloDto;
 import lombok.Builder;
 import lombok.Data;
 
-@Data@Builder
+@Data
+@Builder
 public class ModuloResponse {
     private ModuloDto modulo;
     private Integer code;

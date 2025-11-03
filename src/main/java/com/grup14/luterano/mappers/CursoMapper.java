@@ -2,7 +2,6 @@ package com.grup14.luterano.mappers;
 
 import com.grup14.luterano.dto.CursoDto;
 import com.grup14.luterano.entities.Curso;
-import com.grup14.luterano.entities.MateriaCurso;
 import com.grup14.luterano.request.curso.CursoRequest;
 
 import java.util.stream.Collectors;
@@ -22,13 +21,12 @@ public class CursoMapper {
                 // Mapea el aula si existe
                 .aula(AulaMapper.toDto(entity.getAula()))
                 // Se mapea la lista de MateriaCurso a una lista de MateriaCursoDto
-                .preceptorId(entity.getPreceptor()!=null?entity.getPreceptor().getId():null)
+                .preceptorId(entity.getPreceptor() != null ? entity.getPreceptor().getId() : null)
                 .dictados(entity.getDictados().stream()
                         .map(MateriaCursoMapper::toDto)
                         .collect(Collectors.toList()))
                 .build();
     }
-
 
 
     // Convierte un objeto CursoRequest a una entidad Curso
@@ -58,7 +56,6 @@ public class CursoMapper {
                 // El aula y los dictados se manejan en el servicio
                 .build();
     }
-
 
 
 }

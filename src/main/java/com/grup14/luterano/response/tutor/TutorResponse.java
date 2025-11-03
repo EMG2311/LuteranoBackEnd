@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder@NoArgsConstructor@AllArgsConstructor@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class TutorResponse {
     private TutorDto tutor;
     private Integer code;

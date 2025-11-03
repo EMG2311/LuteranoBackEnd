@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 
 
-@Data @Builder
+@Data
+@Builder
 public class MesaExamenAlumnoDto {
     private Long id;           // MesaExamenAlumno.id
     private Long alumnoId;

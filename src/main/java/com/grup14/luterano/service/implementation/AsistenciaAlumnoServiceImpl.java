@@ -26,7 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 
-@Service@AllArgsConstructor
+@Service
+@AllArgsConstructor
 public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
 
     private final AsistenciaAlumnoRepository asistenciaAlumnoRepo;

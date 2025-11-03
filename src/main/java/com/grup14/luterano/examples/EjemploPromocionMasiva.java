@@ -3,132 +3,132 @@ package com.grup14.luterano.examples;
 /**
  * SISTEMA DE PROMOCIÓN MASIVA DE ALUMNOS
  * =====================================
- * 
+ * <p>
  * Este sistema permite procesar automáticamente a todos los alumnos del colegio
  * aplicando las reglas de promoción al final del año lectivo.
- * 
+ * <p>
  * 🎯 REGLAS DE PROMOCIÓN:
  * ----------------------
  * 1. MENOS DE 3 MATERIAS DESAPROBADAS: El alumno promociona al curso siguiente
- *    - 4° A → 5° A
- *    - 3° B → 4° B
- * 
+ * - 4° A → 5° A
+ * - 3° B → 4° B
+ * <p>
  * 2. 3 O MÁS MATERIAS DESAPROBADAS: El alumno repite año
- *    - Se incrementa el contador de repeticiones
- *    - Se valida que no exceda el límite máximo
- * 
+ * - Se incrementa el contador de repeticiones
+ * - Se valida que no exceda el límite máximo
+ * <p>
  * 3. 6TO AÑO: El alumno egresa automáticamente
- *    - Estado cambia a EGRESADO
- *    - Se excluye de consultas futuras
- * 
+ * - Estado cambia a EGRESADO
+ * - Se excluye de consultas futuras
+ * <p>
  * 4. LÍMITE DE REPETICIONES EXCEDIDO: El alumno se excluye del sistema
- *    - Estado cambia a EXCLUIDO_POR_REPETICION
- *    - Se quita del curso actual
- *    - Se excluye de todas las consultas como los egresados
- *    - ⚠️ REQUIERE REACTIVACIÓN MANUAL para volver al sistema
- * 
+ * - Estado cambia a EXCLUIDO_POR_REPETICION
+ * - Se quita del curso actual
+ * - Se excluye de todas las consultas como los egresados
+ * - ⚠️ REQUIERE REACTIVACIÓN MANUAL para volver al sistema
+ * <p>
  * 5. LÍMITE DE REPETICIONES: Configurable (default: 2)
- *    - Si excede el límite, se excluye automáticamente
- * 
+ * - Si excede el límite, se excluye automáticamente
+ * <p>
  * 🔧 ENDPOINTS DISPONIBLES:
  * -------------------------
- * 
+ * <p>
  * POST /promocion/masiva
  * ► Ejecuta la promoción masiva real
  * ► Requiere permisos de ADMIN o DIRECTOR
- * 
+ * <p>
  * POST /promocion/masiva/simulacion
  * ► Simula la promoción sin hacer cambios
  * ► Permite ver resultados antes de ejecutar
  * ► Accesible para PRECEPTOR también
- * 
+ * <p>
  * 🔄 ENDPOINTS DE REACTIVACIÓN:
  * -----------------------------
- * 
+ * <p>
  * POST /alumno/{id}/reactivar
  * ► Reactiva un alumno excluido por repetición
  * ► Borra las calificaciones del último curso
  * ► Mantiene historial de materias de otros cursos
  * ► Cambia estado a REGULAR y resetea repeticiones
  * ► Requiere permisos de ADMIN o DIRECTOR
- * 
+ * <p>
  * GET /alumno/excluidos
  * ► Lista alumnos excluidos por repetición
  * ► Para identificar candidatos a reactivación
- * 
+ * <p>
  * 📋 EJEMPLO DE REQUEST:
  * ---------------------
  * {
- *   "anio": 2025,
- *   "cicloLectivoId": 1,
- *   "procesarEgresados": true,
- *   "maxRepeticiones": 2,
- *   "dryRun": false
+ * "anio": 2025,
+ * "cicloLectivoId": 1,
+ * "procesarEgresados": true,
+ * "maxRepeticiones": 2,
+ * "dryRun": false
  * }
- * 
+ * <p>
  * 📊 EJEMPLO DE RESPONSE:
  * ----------------------
  * {
- *   "procesados": 150,
- *   "promocionados": 120,
- *   "repitentes": 25,
- *   "egresados": 5,
- *   "excluidos": 3,
- *   "noProcesados": 0,
- *   "dryRun": false,
- *   "resumen": [
- *     {
- *       "alumnoId": 1,
- *       "dni": "12345678",
- *       "apellido": "Pérez",
- *       "nombre": "Juan",
- *       "cursoAnterior": "4° A",
- *       "cursoNuevo": "5° A",
- *       "accion": "PROMOCIONADO",
- *       "materiasDesaprobadas": 2,
- *       "repeticionesActuales": 0
- *     },
- *     {
- *       "alumnoId": 2,
- *       "dni": "87654321",
- *       "apellido": "González",
- *       "nombre": "María",
- *       "cursoAnterior": "3° B",
- *       "cursoNuevo": "3° B (Repite)",
- *       "accion": "REPITENTE",
- *       "materiasDesaprobadas": 4,
- *       "repeticionesActuales": 1
- *     },
- *     {
- *       "alumnoId": 3,
- *       "dni": "11223344",
- *       "apellido": "Rodríguez",
- *       "nombre": "Carlos",
- *       "cursoAnterior": "2° A",
- *       "cursoNuevo": "EXCLUIDO",
- *       "accion": "EXCLUIDO_POR_REPETICION",
- *       "motivo": "Excede límite de repeticiones (2)",
- *       "materiasDesaprobadas": 5,
- *       "repeticionesActuales": 2
- *     }
- *   ],
- *   "code": 0,
- *   "mensaje": "Promoción masiva ejecutada. Total: 150 alumnos"
+ * "procesados": 150,
+ * "promocionados": 120,
+ * "repitentes": 25,
+ * "egresados": 5,
+ * "excluidos": 3,
+ * "noProcesados": 0,
+ * "dryRun": false,
+ * "resumen": [
+ * {
+ * "alumnoId": 1,
+ * "dni": "12345678",
+ * "apellido": "Pérez",
+ * "nombre": "Juan",
+ * "cursoAnterior": "4° A",
+ * "cursoNuevo": "5° A",
+ * "accion": "PROMOCIONADO",
+ * "materiasDesaprobadas": 2,
+ * "repeticionesActuales": 0
+ * },
+ * {
+ * "alumnoId": 2,
+ * "dni": "87654321",
+ * "apellido": "González",
+ * "nombre": "María",
+ * "cursoAnterior": "3° B",
+ * "cursoNuevo": "3° B (Repite)",
+ * "accion": "REPITENTE",
+ * "materiasDesaprobadas": 4,
+ * "repeticionesActuales": 1
+ * },
+ * {
+ * "alumnoId": 3,
+ * "dni": "11223344",
+ * "apellido": "Rodríguez",
+ * "nombre": "Carlos",
+ * "cursoAnterior": "2° A",
+ * "cursoNuevo": "EXCLUIDO",
+ * "accion": "EXCLUIDO_POR_REPETICION",
+ * "motivo": "Excede límite de repeticiones (2)",
+ * "materiasDesaprobadas": 5,
+ * "repeticionesActuales": 2
  * }
- * 
+ * ],
+ * "code": 0,
+ * "mensaje": "Promoción masiva ejecutada. Total: 150 alumnos"
+ * }
+ * <p>
  * 🚫 ALUMNOS EGRESADOS Y EXCLUIDOS:
  * ----------------------------------
  * - Los alumnos con estado EGRESADO o EXCLUIDO_POR_REPETICION se excluyen automáticamente de:
- *   ✅ Listados de alumnos activos
- *   ✅ Reportes de notas
- *   ✅ Asignación a mesas de examen
- *   ✅ Consultas de asistencia
- *   ✅ Promoción masiva (no se procesan)
- * 
+ * ✅ Listados de alumnos activos
+ * ✅ Reportes de notas
+ * ✅ Asignación a mesas de examen
+ * ✅ Consultas de asistencia
+ * ✅ Promoción masiva (no se procesan)
+ * <p>
  * - Endpoints específicos para consultar excluidos:
- *   📋 GET /alumno/egresados - Solo ADMIN/DIRECTOR
- *   📋 GET /alumno/excluidos - Solo ADMIN/DIRECTOR
- * 
+ * 📋 GET /alumno/egresados - Solo ADMIN/DIRECTOR
+ * 📋 GET /alumno/excluidos - Solo ADMIN/DIRECTOR
+ * <p>
  * 🔄 PROCESO DE REACTIVACIÓN:
  * ---------------------------
  * 1. Identificar alumno excluido: GET /alumno/excluidos
@@ -137,7 +137,7 @@ package com.grup14.luterano.examples;
  * 4. El alumno vuelve al mismo curso sin las calificaciones del período que causó la exclusión
  * 5. Mantiene historial de materias de otros cursos/años
  * 6. Contador de repeticiones se resetea a 0
- * 
+ * <p>
  * 🔄 PROCESO RECOMENDADO:
  * ----------------------
  * 1. Ejecutar simulación primero: POST /promocion/masiva/simulacion
@@ -148,27 +148,27 @@ package com.grup14.luterano.examples;
  * 6. Evaluar casos de reactivación individuales
  * 7. Reactivar si corresponde: POST /alumno/{id}/reactivar
  * 8. Verificar reportes post-promoción
- * 
+ * <p>
  * ⚠️ CONSIDERACIONES IMPORTANTES:
  * ------------------------------
  * - El proceso es irreversible una vez ejecutado (sin dryRun)
  * - Se basa en NotaFinalService para determinar materias aprobadas/desaprobadas
  * - Los historiales de curso se cierran automáticamente
  * - Los alumnos promocionados necesitarán nuevos historiales para el próximo ciclo
- * 
+ * <p>
  * 📝 CAMPOS AGREGADOS A ALUMNO:
  * ----------------------------
  * - cantidadRepeticiones: Integer (default: 0)
  * - maxRepeticionesPermitidas: Integer (default: 2)
- * 
+ * <p>
  * Los filtros de egresados ya están implementados en:
  * - AlumnoService.listAlumnos()
  * - AlumnoSpecification.alumnosActivos()
  * - Reportes principales (por especificación anterior)
  */
 public class EjemploPromocionMasiva {
-    
+
     // Esta clase es solo documentativa
     // Los endpoints están implementados en PromocionMasivaController
-    
+
 }

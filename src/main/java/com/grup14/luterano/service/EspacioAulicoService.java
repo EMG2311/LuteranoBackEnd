@@ -8,8 +8,11 @@ import com.grup14.luterano.response.espacioAulico.EspacioAulicoResponseList;
 public interface EspacioAulicoService {
 
     EspacioAulicoResponse crearEspacioAulico(EspacioAulicoRequest request);
+
     EspacioAulicoResponse updateEspacioAulico(EspacioAulicoUpdateRequest request);
+
     EspacioAulicoResponse deleteEspacioAulico(Long id);
+
     EspacioAulicoResponseList listEspacioAulico();
 
 }

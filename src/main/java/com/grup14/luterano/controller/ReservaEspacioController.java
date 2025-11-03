@@ -1,6 +1,5 @@
 package com.grup14.luterano.controller;
 
-import com.grup14.luterano.entities.enums.EstadoReserva;
 import com.grup14.luterano.exeptions.ReservaEspacioException;
 import com.grup14.luterano.request.espacioAulico.DenegarEspacioAulicoRequest;
 import com.grup14.luterano.request.espacioAulico.ReservaEspacioFiltroRequest;
@@ -8,7 +7,6 @@ import com.grup14.luterano.request.espacioAulico.ReservaEspacioRequest;
 import com.grup14.luterano.response.espacioAulico.ReservaEspacioResponse;
 import com.grup14.luterano.response.espacioAulico.ReservaEspacioResponseList;
 import com.grup14.luterano.service.ReservaEspacioService;
-import com.grup14.luterano.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +45,9 @@ public class ReservaEspacioController {
             // Maneja cualquier otra excepción no esperada (ej: error de base de datos no controlado)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ReservaEspacioResponse.builder()
-                    .code(-2)
-                    .mensaje("Error no controlado: " + e.getMessage())
-                    .build());
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build());
         }
     }
 
@@ -59,7 +57,7 @@ public class ReservaEspacioController {
     @Operation(summary = "Cancelar reserva",
             description = "Permite al usuario cancelar su propia reserva si está PENDIENTE o APROBADA.")
     public ResponseEntity<ReservaEspacioResponse> cancelarReserva(
-            @PathVariable Long id ) { // Este ID debe coincidir con el usuario autenticado
+            @PathVariable Long id) { // Este ID debe coincidir con el usuario autenticado
         try {
             return ResponseEntity.ok(reservaEspacioService.cancelarReserva(id));
 
@@ -97,11 +95,10 @@ public class ReservaEspacioController {
     @GetMapping("/filtros")
     @Operation(summary = "Listar reservas",
             description = "Permite listar reservas por filtro. Si no se especifican filtros, lista todas las reservas.")
-    public ResponseEntity<ReservaEspacioResponseList> obtenerReservas (@RequestBody @Validated ReservaEspacioFiltroRequest filtros)  {
+    public ResponseEntity<ReservaEspacioResponseList> obtenerReservas(@RequestBody @Validated ReservaEspacioFiltroRequest filtros) {
         try {
             return ResponseEntity.ok(reservaEspacioService.obtenerReservas(filtros));
-        }
-        catch (ReservaEspacioException e) {
+        } catch (ReservaEspacioException e) {
             return ResponseEntity.status(422).body(
                     ReservaEspacioResponseList.builder()
                             .reservaEspacioDtos(List.of())
@@ -154,7 +151,6 @@ public class ReservaEspacioController {
                     .body(ReservaEspacioResponse.builder().code(-2).mensaje("Error interno del servidor al denegar la reserva.").build());
         }
     }
-
 
 
 }

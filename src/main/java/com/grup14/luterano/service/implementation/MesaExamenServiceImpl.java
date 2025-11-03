@@ -1,7 +1,6 @@
 // service/implementation/MesaExamenServiceImpl.java
 package com.grup14.luterano.service.implementation;
-import com.grup14.luterano.dto.MesaExamenAlumnoDto;
-import com.grup14.luterano.dto.MesaExamenDto;
+
 import com.grup14.luterano.dto.mesaExamenDocente.DocenteDisponibleDto;
 import com.grup14.luterano.dto.mesaExamenDocente.MesaExamenDocenteDto;
 import com.grup14.luterano.entities.*;
@@ -47,7 +46,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
 
     @Override
     public MesaExamenResponse crear(MesaExamenCreateRequest req) {
-        if (req.getMateriaCursoId()==null || req.getFecha()==null || req.getTurnoId()==null)
+        if (req.getMateriaCursoId() == null || req.getFecha() == null || req.getTurnoId() == null)
             return MesaExamenResponse.builder().code(-1).mensaje("materiaCursoId, turnoId y fecha son obligatorios").build();
 
         MateriaCurso mc = materiaCursoRepo.findById(req.getMateriaCursoId())
@@ -58,15 +57,15 @@ public class MesaExamenServiceImpl implements MesaExamenService {
 
         // Validación: fecha dentro del turno
         if (req.getFecha().isBefore(turno.getFechaInicio()) || req.getFecha().isAfter(turno.getFechaFin())) {
-            throw new MesaExamenException("La fecha de la mesa debe estar dentro del turno ("+
-                    turno.getFechaInicio()+" a "+ turno.getFechaFin()+")");
+            throw new MesaExamenException("La fecha de la mesa debe estar dentro del turno (" +
+                    turno.getFechaInicio() + " a " + turno.getFechaFin() + ")");
         }
 
         MesaExamen m = new MesaExamen();
         m.setMateriaCurso(mc);
         m.setTurno(turno);
         m.setFecha(req.getFecha());
-        if (req.getAulaId()!=null) {
+        if (req.getAulaId() != null) {
             Aula aula = aulaRepo.findById(req.getAulaId())
                     .orElseThrow(() -> new MesaExamenException("Aula no encontrada"));
             m.setAula(aula);
@@ -84,7 +83,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
 
-        if (req.getFecha()!=null) {
+        if (req.getFecha() != null) {
             TurnoExamen t = m.getTurno();
             if (req.getFecha().isBefore(t.getFechaInicio()) || req.getFecha().isAfter(t.getFechaFin())) {
                 throw new MesaExamenException("La nueva fecha no cae dentro del turno: " +
@@ -92,12 +91,12 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
             m.setFecha(req.getFecha());
         }
-        if (req.getMateriaCursoId()!=null) {
+        if (req.getMateriaCursoId() != null) {
             MateriaCurso mc = materiaCursoRepo.findById(req.getMateriaCursoId())
                     .orElseThrow(() -> new MesaExamenException("MateriaCurso no encontrado"));
             m.setMateriaCurso(mc);
         }
-        if (req.getAulaId()!=null) {
+        if (req.getAulaId() != null) {
             Aula aula = aulaRepo.findById(req.getAulaId())
                     .orElseThrow(() -> new MesaExamenException("Aula no encontrada"));
             m.setAula(aula);
@@ -149,7 +148,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
 
-        if (req.getAlumnoIds()==null || req.getAlumnoIds().isEmpty())
+        if (req.getAlumnoIds() == null || req.getAlumnoIds().isEmpty())
             throw new MesaExamenException("Debe enviar alumnoIds");
 
         for (Long aId : req.getAlumnoIds()) {
@@ -176,27 +175,27 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         MesaExamen m = mesaRepo.findByIdWithAlumnos(mesaId)
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
-        
+
         log.info("Antes de quitar: Mesa {} tiene {} alumnos convocados", mesaId, m.getAlumnos().size());
-        
+
         // Buscar y remover el alumno de la colección
-        boolean removed = m.getAlumnos().removeIf(mesaAlumno -> 
-            mesaAlumno.getAlumno().getId().equals(alumnoId));
-        
+        boolean removed = m.getAlumnos().removeIf(mesaAlumno ->
+                mesaAlumno.getAlumno().getId().equals(alumnoId));
+
         if (!removed) {
             throw new MesaExamenException("El alumno no está convocado a esta mesa");
         }
-        
+
         log.info("Después de quitar: Mesa {} tiene {} alumnos convocados", mesaId, m.getAlumnos().size());
-        
+
         // Guardar la mesa actualizada
         mesaRepo.save(m);
-        
+
         return MesaExamenResponse.builder()
-            .code(0)
-            .mensaje("Convocado eliminado")
-            .mesa(MesaExamenMapper.toDto(m, true))
-            .build();
+                .code(0)
+                .mensaje("Convocado eliminado")
+                .mesa(MesaExamenMapper.toDto(m, true))
+                .build();
     }
 
     @Override
@@ -204,7 +203,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         MesaExamen m = mesaRepo.findById(mesaId)
                 .orElseThrow(() -> new MesaExamenException("Mesa no encontrada"));
         assertEditable(m);
-        if (notasPorAlumnoId==null || notasPorAlumnoId.isEmpty())
+        if (notasPorAlumnoId == null || notasPorAlumnoId.isEmpty())
             throw new MesaExamenException("No se enviaron notas");
 
         Map<Long, MesaExamenAlumno> idx = m.getAlumnos().stream()
@@ -238,7 +237,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
     }
 
     // ------ GESTIÓN DE DOCENTES -------
-    
+
     @Override
     public DocentesDisponiblesResponse listarDocentesDisponibles(Long mesaExamenId) {
         MesaExamen mesa = mesaRepo.findById(mesaExamenId)
@@ -268,7 +267,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .map(docente -> {
                     boolean tieneConflicto = docentesConflictSet.contains(docente.getId());
                     String detalleConflicto = null;
-                    
+
                     if (tieneConflicto) {
                         List<MesaExamen> mesasConflicto = mesaRepo.findMesasConflictoParaDocente(
                                 docente.getId(), fechaMesa, mesaExamenId);
@@ -280,7 +279,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                                     primeraConflicto.getMateriaCurso().getCurso().getDivision());
                         }
                     }
-                    
+
                     return DocenteDisponibleDto.builder()
                             .docenteId(docente.getId())
                             .apellido(docente.getApellido())
@@ -343,7 +342,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .anyMatch(docentesQueDALaMateria::contains);
 
         if (!tieneDocenteMateria) {
-            throw new MesaExamenException("Debe asignar al menos un docente que dé la materia: " + 
+            throw new MesaExamenException("Debe asignar al menos un docente que dé la materia: " +
                     mesa.getMateriaCurso().getMateria().getNombre());
         }
 
@@ -361,7 +360,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     nombresConflicto.add(docente.getApellido() + ", " + docente.getNombre());
                 }
             }
-            throw new MesaExamenException("Los siguientes docentes ya están asignados a otra mesa en la fecha " + 
+            throw new MesaExamenException("Los siguientes docentes ya están asignados a otra mesa en la fecha " +
                     fechaMesa + ": " + String.join(", ", nombresConflicto));
         }
 
@@ -447,7 +446,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         boolean tieneConflicto = mesaExamenDocenteRepo.existeDocenteEnOtraMesaEnFecha(
                 nuevoDocenteId, fechaMesa, mesaExamenId);
         if (tieneConflicto) {
-            throw new MesaExamenException("El docente " + nuevoDocente.getApellido() + ", " + 
+            throw new MesaExamenException("El docente " + nuevoDocente.getApellido() + ", " +
                     nuevoDocente.getNombre() + " ya está asignado a otra mesa en la fecha " + fechaMesa);
         }
 

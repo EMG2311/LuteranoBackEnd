@@ -36,7 +36,8 @@ public class AulaController {
             return ResponseEntity.status(422).body(AulaResponse.builder().code(-1).mensaje(e.getMessage()).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(aulaRequest.toResponse(e.getMessage(),-2));        }
+                    .body(aulaRequest.toResponse(e.getMessage(), -2));
+        }
     }
 
     @PutMapping("/update")

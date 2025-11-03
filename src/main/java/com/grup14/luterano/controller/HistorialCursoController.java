@@ -1,18 +1,13 @@
 package com.grup14.luterano.controller;
 
-import com.grup14.luterano.dto.HistorialCursoDto;
 import com.grup14.luterano.exeptions.HistorialCursoException;
-import com.grup14.luterano.repository.HistorialCursoRepository;
-import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.CursoAlumno.CursoAlumnosResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponseList;
 import com.grup14.luterano.service.HistorialCursoService;
 import io.swagger.v3.oas.annotations.Operation;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,8 +17,8 @@ public class HistorialCursoController {
 
     private final HistorialCursoService historialCursoService;
 
-    public HistorialCursoController(HistorialCursoService historialCursoService){
-        this.historialCursoService=historialCursoService;
+    public HistorialCursoController(HistorialCursoService historialCursoService) {
+        this.historialCursoService = historialCursoService;
     }
 
     @GetMapping("/alumno/{alumnoId}/historial-completo")
@@ -57,7 +52,6 @@ public class HistorialCursoController {
     }
 
 
-
     @GetMapping("/alumno/{alumnoId}")
     @Operation(
             summary = "Devuelve el historial Curso abierto",
@@ -85,8 +79,6 @@ public class HistorialCursoController {
             );
         }
     }
-
-
 
 
     @GetMapping("/{cursoId}/alumnos")

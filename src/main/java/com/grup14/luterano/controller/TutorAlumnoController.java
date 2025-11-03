@@ -1,8 +1,6 @@
 package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.MateriaCursoException;
-import com.grup14.luterano.response.MateriaCurso.MateriaCursoListResponse;
-import com.grup14.luterano.response.MateriaCurso.MateriaCursoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.service.TutorAlumnoService;
@@ -12,10 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-    @RequestMapping("/tutorAlumno")
+@RequestMapping("/tutorAlumno")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @Tag(
         name = "TutorAlumno Controller",
@@ -23,8 +19,9 @@ import java.util.List;
 )
 public class TutorAlumnoController {
     private final TutorAlumnoService tutorAlumnoService;
-    public TutorAlumnoController(TutorAlumnoService tutorAlumnoService){
-        this.tutorAlumnoService=tutorAlumnoService;
+
+    public TutorAlumnoController(TutorAlumnoService tutorAlumnoService) {
+        this.tutorAlumnoService = tutorAlumnoService;
     }
 
     @PostMapping("/asignarTutor/{tutorId}/{alumnoId}")
@@ -48,6 +45,7 @@ public class TutorAlumnoController {
                             .build());
         }
     }
+
     @PostMapping("/desasignarTutor/{tutorId}/{alumnoId}")
     @Operation(summary = "Desasigna un tutor de un alumno")
     public ResponseEntity<AlumnoResponse> desasignarDocente(

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 public interface ReporteTardanzaService {
     ReporteTardanzasResponseList listarPorCurso(Long cursoId, LocalDate desde, LocalDate hasta, Integer limit);
+
     ReporteTardanzasResponseList listarTodos(LocalDate desde, LocalDate hasta, Integer limit);
 
 }

@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface AsistenciaDocenteRepository extends JpaRepository<AsistenciaDocente, Long> {
 
     Optional<AsistenciaDocente> findByDocente_IdAndFecha(Long docenteId, LocalDate fecha);
+
     List<AsistenciaDocente> findByFecha(LocalDate fecha);
 }

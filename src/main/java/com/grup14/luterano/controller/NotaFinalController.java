@@ -18,8 +18,8 @@ public class NotaFinalController {
     private final NotaFinalService notaFinalService;
 
     @GetMapping("/alumno/{alumnoId}/materia/{materiaId}")
-    @Operation(summary = "Obtiene la nota final de una materia para un alumno", 
-               description = "Calcula la nota final basándose en mesa de examen (si existe) o PG truncado")
+    @Operation(summary = "Obtiene la nota final de una materia para un alumno",
+            description = "Calcula la nota final basándose en mesa de examen (si existe) o PG truncado")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
     public ResponseEntity<NotaFinalResponse> obtenerNotaFinal(
             @PathVariable Long alumnoId,
@@ -27,7 +27,7 @@ public class NotaFinalController {
             @RequestParam int anio) {
         try {
             NotaFinalDetalleDto detalle = notaFinalService.obtenerNotaFinalDetallada(alumnoId, materiaId, anio);
-            
+
             if (detalle == null) {
                 return ResponseEntity.status(404).body(NotaFinalResponse.builder()
                         .notaFinal(null)
@@ -63,8 +63,8 @@ public class NotaFinalController {
     }
 
     @GetMapping("/simple/alumno/{alumnoId}/materia/{materiaId}")
-    @Operation(summary = "Obtiene solo el valor numérico de la nota final", 
-               description = "Devuelve únicamente la nota final como número entero")
+    @Operation(summary = "Obtiene solo el valor numérico de la nota final",
+            description = "Devuelve únicamente la nota final como número entero")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
     public ResponseEntity<NotaFinalSimpleResponse> obtenerNotaFinalSimple(
             @PathVariable Long alumnoId,
@@ -72,7 +72,7 @@ public class NotaFinalController {
             @RequestParam int anio) {
         try {
             Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, materiaId, anio);
-            
+
             return ResponseEntity.ok(NotaFinalSimpleResponse.builder()
                     .notaFinal(notaFinal)
                     .alumnoId(alumnoId)

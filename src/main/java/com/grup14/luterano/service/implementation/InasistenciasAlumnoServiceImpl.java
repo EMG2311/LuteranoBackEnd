@@ -1,8 +1,8 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.inasistenciasAlumno.InasistenciaAlumnoDto;
-import com.grup14.luterano.entities.AsistenciaAlumno;
 import com.grup14.luterano.entities.Alumno;
+import com.grup14.luterano.entities.AsistenciaAlumno;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import com.grup14.luterano.exeptions.AsistenciaException;
 import com.grup14.luterano.mappers.CursoMapper;
@@ -80,8 +80,8 @@ public class InasistenciasAlumnoServiceImpl implements InasistenciasAlumnoServic
                 .estado(asistencia.getEstado())
                 .justificada(justificada)
                 .observacion(asistencia.getObservacion())
-                .curso(asistencia.getAlumno().getCursoActual() != null ? 
-                       CursoMapper.toDto(asistencia.getAlumno().getCursoActual()) : null)
+                .curso(asistencia.getAlumno().getCursoActual() != null ?
+                        CursoMapper.toDto(asistencia.getAlumno().getCursoActual()) : null)
                 .diaSemana(diaSemana)
                 .build();
     }

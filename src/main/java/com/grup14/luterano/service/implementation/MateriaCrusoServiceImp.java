@@ -69,7 +69,6 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
     }
 
 
-
     @Override
     public MateriaCursoListResponse quitarMateriasDeCurso(List<Long> materiaIds, Long cursoId) {
         Curso curso = cursoRepository.findById(cursoId)
@@ -144,7 +143,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
     @Override
     public MateriaCursoResponse asignarDocente(Long materiaId, Long cursoId, Long docenteId) {
         materiaRepository.findById(materiaId)
-            .orElseThrow(() -> new MateriaCursoException("La materia con id " + materiaId + " no existe"));
+                .orElseThrow(() -> new MateriaCursoException("La materia con id " + materiaId + " no existe"));
 
         cursoRepository.findById(cursoId)
                 .orElseThrow(() -> new MateriaCursoException("El curso con id " + cursoId + " no existe"));

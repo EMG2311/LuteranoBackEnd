@@ -6,7 +6,8 @@ import com.grup14.luterano.entities.enums.DiaSemana;
 import lombok.Builder;
 import lombok.Data;
 
-@Data@Builder
+@Data
+@Builder
 public class HorarioClaseModuloDto {
     private DiaSemana diaSemana;
     private ModuloDto modulo;

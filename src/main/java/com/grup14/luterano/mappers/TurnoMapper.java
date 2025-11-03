@@ -4,7 +4,7 @@ import com.grup14.luterano.dto.TurnoDto;
 import com.grup14.luterano.entities.TurnoExamen;
 
 public class TurnoMapper {
-    public static TurnoDto toDto(TurnoExamen t){
+    public static TurnoDto toDto(TurnoExamen t) {
         return TurnoDto.builder()
                 .id(t.getId())
                 .nombre(t.getNombre())

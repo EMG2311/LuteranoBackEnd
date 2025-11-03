@@ -1,6 +1,5 @@
 package com.grup14.luterano.repository;
 
-import com.grup14.luterano.entities.Docente;
 import com.grup14.luterano.entities.HorarioClaseModulo;
 import com.grup14.luterano.entities.enums.DiaSemana;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,21 +8,23 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 @Repository
-public interface HorarioClaseModuloRepository  extends JpaRepository<HorarioClaseModulo,Long> {
+public interface HorarioClaseModuloRepository extends JpaRepository<HorarioClaseModulo, Long> {
 
 
     List<HorarioClaseModulo> findByMateriaCurso_Curso_IdOrderByDiaSemanaAscModulo_OrdenAsc(Long cursoId);
+
     @Query("""
-        select h
-        from HorarioClaseModulo h
-          join fetch h.materiaCurso mc
-          join fetch mc.curso c
-          join fetch mc.materia m
-        where mc.docente.id = :docenteId
-          and h.diaSemana = :dia
-          and h.modulo.id = :moduloId
-    """)
+                select h
+                from HorarioClaseModulo h
+                  join fetch h.materiaCurso mc
+                  join fetch mc.curso c
+                  join fetch mc.materia m
+                where mc.docente.id = :docenteId
+                  and h.diaSemana = :dia
+                  and h.modulo.id = :moduloId
+            """)
     List<HorarioClaseModulo> findConflictosDocente(
             @Param("docenteId") Long docenteId,
             @Param("dia") DiaSemana dia,
@@ -41,8 +42,9 @@ public interface HorarioClaseModuloRepository  extends JpaRepository<HorarioClas
 
 
     List<HorarioClaseModulo> findByMateriaCurso_Curso_IdAndDiaSemana(Long cursoId, DiaSemana dia);
+
     int deleteByMateriaCurso_IdAndDiaSemanaAndModulo_Id(Long materiaCursoId, DiaSemana dia, Long moduloId);
 
-        // Para disponibilidad docente: obtener todos los bloques asignados a un docente
-        List<HorarioClaseModulo> findByMateriaCurso_Docente_IdOrderByDiaSemanaAscModulo_OrdenAsc(Long docenteId);
+    // Para disponibilidad docente: obtener todos los bloques asignados a un docente
+    List<HorarioClaseModulo> findByMateriaCurso_Docente_IdOrderByDiaSemanaAscModulo_OrdenAsc(Long docenteId);
 }

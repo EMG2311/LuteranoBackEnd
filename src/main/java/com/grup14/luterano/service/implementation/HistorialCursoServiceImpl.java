@@ -2,8 +2,6 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
 import com.grup14.luterano.dto.HistorialCursoDto;
-import com.grup14.luterano.entities.Alumno;
-import com.grup14.luterano.entities.CicloLectivo;
 import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.HistorialCurso;
 import com.grup14.luterano.exeptions.HistorialCursoException;
@@ -14,7 +12,6 @@ import com.grup14.luterano.repository.AlumnoRepository;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
-import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.CursoAlumno.CursoAlumnosResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponseList;
@@ -25,8 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-@AllArgsConstructor@Service
+
+@AllArgsConstructor
+@Service
 public class HistorialCursoServiceImpl implements HistorialCursoService {
 
     private final HistorialCursoRepository historialCursoRepository;
@@ -69,7 +67,6 @@ public class HistorialCursoServiceImpl implements HistorialCursoService {
                 .historialCurso(HistorialCursoMapper.toDto(historial))
                 .build();
     }
-
 
 
     @Transactional(readOnly = true)

@@ -50,7 +50,7 @@ public class TurnoExamenServiceImpl implements TurnoExamenService {
         if (repo.existsOverlappingInYear(dto.getAnio(), desde, hasta)) {
             throw new TurnoExamenException("Ya existe un turno que cubre ese mes del " + dto.getAnio());
         }
-        String nombre = (dto.getNombre()!=null && !dto.getNombre().isBlank())
+        String nombre = (dto.getNombre() != null && !dto.getNombre().isBlank())
                 ? dto.getNombre()
                 : nombreTurno(dto.getMes(), dto.getAnio());
 
@@ -72,13 +72,13 @@ public class TurnoExamenServiceImpl implements TurnoExamenService {
         TurnoExamen t = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Turno no encontrado"));
 
-        if (dto.getNombre()!=null) t.setNombre(dto.getNombre());
-        if (dto.getActivo()!=null) t.setActivo(dto.getActivo());
+        if (dto.getNombre() != null) t.setNombre(dto.getNombre());
+        if (dto.getActivo() != null) t.setActivo(dto.getActivo());
 
-        if (dto.getAnio()!=null || dto.getMes()!=null) {
-            int nuevoAnio = (dto.getAnio()!=null) ? dto.getAnio() : t.getAnio();
-            int mesActual = (t.getFechaInicio()!=null) ? t.getFechaInicio().getMonthValue() : 1;
-            int nuevoMes  = (dto.getMes()!=null) ? dto.getMes() : mesActual;
+        if (dto.getAnio() != null || dto.getMes() != null) {
+            int nuevoAnio = (dto.getAnio() != null) ? dto.getAnio() : t.getAnio();
+            int mesActual = (t.getFechaInicio() != null) ? t.getFechaInicio().getMonthValue() : 1;
+            int nuevoMes = (dto.getMes() != null) ? dto.getMes() : mesActual;
 
             YearMonth ym = YearMonth.of(nuevoAnio, nuevoMes);
             LocalDate desde = ym.atDay(1);
@@ -98,7 +98,7 @@ public class TurnoExamenServiceImpl implements TurnoExamenService {
                         .limit(5) // evita respuestas gigantes
                         .map(m -> "mesaId=" + m.getId() + " fecha=" + m.getFecha())
                         .collect(java.util.stream.Collectors.joining(", "));
-                String extra = (fuera.size() > 5) ? " (+" + (fuera.size()-5) + " más)" : "";
+                String extra = (fuera.size() > 5) ? " (+" + (fuera.size() - 5) + " más)" : "";
                 return TurnoResponse.builder()
                         .code(-1)
                         .mensaje("No se puede cambiar el rango: hay " + fuera.size() +
@@ -123,8 +123,9 @@ public class TurnoExamenServiceImpl implements TurnoExamenService {
         repo.deleteById(id);
         return TurnoResponse.builder().code(0).mensaje("Turno eliminado").build();
     }
+
     private static String nombreTurno(int mes, int anio) {
-        String[] m = {"","ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"};
+        String[] m = {"", "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"};
         return m[mes] + " " + anio;
     }
 }

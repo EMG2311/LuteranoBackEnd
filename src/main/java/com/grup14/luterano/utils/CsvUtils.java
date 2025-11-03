@@ -12,7 +12,8 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 public final class CsvUtils {
-    private CsvUtils() {}
+    private CsvUtils() {
+    }
 
     public static CSVParser createParser(InputStream in, String charsetOrNull) throws IOException {
         Charset cs = (charsetOrNull != null && !charsetOrNull.isBlank())

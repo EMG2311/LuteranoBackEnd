@@ -9,8 +9,8 @@ import java.util.List;
 public class MesaExamenMapper {
     public static MesaExamenDto toDto(MesaExamen m, boolean withAlumnos) {
         var mc = m.getMateriaCurso();
-        var c  = mc.getCurso();
-        var mat= mc.getMateria();
+        var c = mc.getCurso();
+        var mat = mc.getMateria();
 
         List<MesaExamenAlumnoDto> convocados = List.of();
         if (withAlumnos && m.getAlumnos() != null) {
@@ -22,8 +22,8 @@ public class MesaExamenMapper {
                     .nombre(ma.getAlumno().getNombre())
                     .estado(ma.getEstado())
                     .notaFinal(ma.getNotaFinal())
-                    .turnoId(ma.getTurno()!=null? ma.getTurno().getId(): null)
-                    .turnoNombre(ma.getTurno()!=null? ma.getTurno().getNombre(): null)
+                    .turnoId(ma.getTurno() != null ? ma.getTurno().getId() : null)
+                    .turnoNombre(ma.getTurno() != null ? ma.getTurno().getNombre() : null)
                     .build()
             ).toList();
         }
@@ -35,9 +35,9 @@ public class MesaExamenMapper {
                 .materiaNombre(mat.getNombre())
                 .cursoId(c.getId())
                 .cursoAnio(c.getAnio())
-                .cursoNivel(c.getNivel()!=null? c.getNivel().name(): null)
-                .cursoDivision(c.getDivision()!=null? c.getDivision().name(): null)
-                .aulaId(m.getAula()!=null? m.getAula().getId(): null)
+                .cursoNivel(c.getNivel() != null ? c.getNivel().name() : null)
+                .cursoDivision(c.getDivision() != null ? c.getDivision().name() : null)
+                .aulaId(m.getAula() != null ? m.getAula().getId() : null)
                 .estado(m.getEstado())
                 .alumnos(convocados)
                 .build();

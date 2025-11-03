@@ -8,10 +8,15 @@ import com.grup14.luterano.response.aula.AulaResponseList;
 public interface AulaService {
 
     AulaResponse crearAula(AulaRequest aulaRequest);
+
     AulaResponse updateAula(AulaUpdateRequest aulaUpdateRequest);
+
     AulaResponse deleteAula(Long id);
+
     AulaResponse getAulaById(Long id);
+
     AulaResponseList listAulas();
+
     AulaResponseList listarAulasSinCurso();
 
 }

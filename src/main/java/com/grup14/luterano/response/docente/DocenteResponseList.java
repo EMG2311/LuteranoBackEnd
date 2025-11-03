@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Builder
-@AllArgsConstructor@NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class DocenteResponseList {
     private List<DocenteDto> docenteDtos;

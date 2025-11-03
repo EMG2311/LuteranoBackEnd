@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@SuperBuilder@NoArgsConstructor@Data
+@SuperBuilder
+@NoArgsConstructor
+@Data
 public class MateriaRequest extends MateriaDto {
 }

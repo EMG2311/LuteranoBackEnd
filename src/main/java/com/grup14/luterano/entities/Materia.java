@@ -10,7 +10,11 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity@Builder@NoArgsConstructor@AllArgsConstructor@Data
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class Materia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

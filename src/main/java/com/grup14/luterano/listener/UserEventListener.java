@@ -12,12 +12,13 @@ import org.springframework.stereotype.Component;
 public class UserEventListener {
     @Autowired
     private EmailServiceImpl emailService;
+
     @EventListener
     public void handleUserEvent(UserEvent event) throws MessagingException {
         User user = event.getUser();
         switch (event.getTipo()) {
             case CREAR:
-                emailService.sendWelcomeEmail(user.getEmail(),event.getPassword());
+                emailService.sendWelcomeEmail(user.getEmail(), event.getPassword());
                 break;
             case ACTUALIZAR:
                 emailService.sendUserModifiedEmail(user.getEmail());

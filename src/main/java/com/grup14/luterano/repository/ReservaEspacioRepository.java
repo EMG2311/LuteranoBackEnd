@@ -1,7 +1,6 @@
 package com.grup14.luterano.repository;
 
 import com.grup14.luterano.entities.ReservaEspacio;
-import com.grup14.luterano.entities.enums.EstadoReserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ReservaEspacioRepository extends JpaRepository <ReservaEspacio, Long>, JpaSpecificationExecutor<ReservaEspacio> {
+public interface ReservaEspacioRepository extends JpaRepository<ReservaEspacio, Long>, JpaSpecificationExecutor<ReservaEspacio> {
 
     // Metodo CRÍTICO: Valida si ya existe una reserva ACTIVA (PENDIENTE o APROBADA) para el mismo tiempo/espacio
     @Query("SELECT COUNT(r) > 0 FROM ReservaEspacio r " +

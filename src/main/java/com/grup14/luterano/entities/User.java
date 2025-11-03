@@ -2,9 +2,11 @@ package com.grup14.luterano.entities;
 
 import com.grup14.luterano.entities.enums.UserStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +39,7 @@ public class User implements UserDetails {
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id",nullable = false)
+    @JoinColumn(name = "role_id", nullable = false)
     private Role rol;
 
     @Enumerated(EnumType.STRING)
@@ -50,8 +52,12 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getPassword() {return password;}
+    public String getPassword() {
+        return password;
+    }
 
     @Override
-    public String getUsername() {return email;}
+    public String getUsername() {
+        return email;
+    }
 }

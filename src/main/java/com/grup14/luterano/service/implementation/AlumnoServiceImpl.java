@@ -37,20 +37,20 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     private final TutorRepository tutorRepository;
 
-    private final  HistorialMateriaRepository historialMateriaRepository;
+    private final HistorialMateriaRepository historialMateriaRepository;
     private final HistorialCursoRepository historialCursoRepository;
 
     private final CicloLectivoRepository cicloLectivoRepository;
 
     public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,
                              TutorRepository tutorRepository, CicloLectivoRepository cicloLectivoRepository,
-                             HistorialCursoRepository historialCursoRepository,HistorialMateriaRepository historialMateriaRepository){
-        this.alumnoRepository=alumnoRepository;
-        this.cursoRepository=cursoRepository;
-        this.tutorRepository=tutorRepository;
-        this.historialCursoRepository=historialCursoRepository;
-        this.cicloLectivoRepository=cicloLectivoRepository;
-        this.historialMateriaRepository=historialMateriaRepository;
+                             HistorialCursoRepository historialCursoRepository, HistorialMateriaRepository historialMateriaRepository) {
+        this.alumnoRepository = alumnoRepository;
+        this.cursoRepository = cursoRepository;
+        this.tutorRepository = tutorRepository;
+        this.historialCursoRepository = historialCursoRepository;
+        this.cicloLectivoRepository = cicloLectivoRepository;
+        this.historialMateriaRepository = historialMateriaRepository;
     }
 
     @Autowired
@@ -92,7 +92,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         CicloLectivo cicloActivo = cicloLectivoRepository
                 .findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(hoy, hoy)
                 .orElseThrow(() -> new AlumnoException("No hay un ciclo lectivo activo para la fecha actual"));
-        
+
         HistorialCurso historialCurso = HistorialCurso.builder()
                 .alumno(alumno)
                 .curso(curso)
@@ -101,9 +101,9 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .fechaHasta(null) // Se cerrará cuando termine el ciclo lectivo o cambie de curso
                 .build();
         historialCursoRepository.save(historialCurso);
-        
+
         logger.info("Historial de curso creado automáticamente para alumno: DNI={}, Curso={}, Ciclo={}",
-                alumno.getDni(), curso.getAnio() + "°" + curso.getDivision(), cicloActivo.getNombre());
+                alumno.getDni(), curso.getAnio() + "°" + curso.getDivision().toString(), cicloActivo.getNombre());
 
         logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
                 alumno.getDni(), alumno.getNombre(), alumno.getApellido());
@@ -135,8 +135,6 @@ public class AlumnoServiceImpl implements AlumnoService {
         if (updateRequest.getFechaIngreso() != null) alumno.setFechaIngreso(updateRequest.getFechaIngreso());
 
 
-
-
         alumno = alumnoRepository.save(alumno);
 
         logger.info("Alumno actualizado correctamente con ID: {}", alumno.getId());
@@ -165,7 +163,7 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     public AlumnoResponseList listAlumnos() {
         List<AlumnoDto> alumnos = alumnoRepository.findByEstadoNotIn(
-                List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION))
+                        List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION))
                 .stream()
                 .map(AlumnoMapper::toDto)
                 .collect(Collectors.toList());

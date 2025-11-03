@@ -6,22 +6,25 @@ import com.grup14.luterano.dto.reporteAnual.MateriaAnualDetalleDto;
 import com.grup14.luterano.dto.reporteAnual.ReporteAnualAlumnoDto;
 import com.grup14.luterano.dto.reporteNotas.CalificacionesAlumnoResumenDto;
 import com.grup14.luterano.dto.reporteNotas.CalificacionesMateriaResumenDto;
-import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.Alumno;
+import com.grup14.luterano.entities.HistorialCurso;
+import com.grup14.luterano.entities.HistorialMateria;
+import com.grup14.luterano.entities.MesaExamenAlumno;
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.reporteAnual.ReporteAnualAlumnoResponse;
+import com.grup14.luterano.service.NotaFinalService;
 import com.grup14.luterano.service.ReporteAnualService;
 import com.grup14.luterano.service.ReporteNotasService;
-import com.grup14.luterano.service.NotaFinalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,16 +71,16 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
         // Historial del curso vigente en el año
-    HistorialCurso hc = historialCursoRepo.findVigenteEnFecha(alumno.getId(), ciclo.getId(), mid)
-        .orElse(null);
+        HistorialCurso hc = historialCursoRepo.findVigenteEnFecha(alumno.getId(), ciclo.getId(), mid)
+                .orElse(null);
 
-    // Curso del año: priorizar HistorialCurso del ciclo; si no existe, usar cursoActual del alumno
-    CursoDto cursoDto = null;
-    if (hc != null && hc.getCurso() != null) {
-        cursoDto = CursoMapper.toDto(hc.getCurso());
-    } else if (alumno.getCursoActual() != null) {
-        cursoDto = CursoMapper.toDto(alumno.getCursoActual());
-    }
+        // Curso del año: priorizar HistorialCurso del ciclo; si no existe, usar cursoActual del alumno
+        CursoDto cursoDto = null;
+        if (hc != null && hc.getCurso() != null) {
+            cursoDto = CursoMapper.toDto(hc.getCurso());
+        } else if (alumno.getCursoActual() != null) {
+            cursoDto = CursoMapper.toDto(alumno.getCursoActual());
+        }
 
         // 1) Reutilizamos resumen de notas por materia del servicio existente
         CalificacionesAlumnoResumenDto califResumen = Optional.ofNullable(
@@ -145,7 +148,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 case JUSTIFICADO -> justificados += count;
                 case CON_LICENCIA -> conLicencia += count;
                 case RETIRO -> retiros += count;
-                default -> {}
+                default -> {
+                }
             }
         }
 
@@ -224,7 +228,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         }
 
         // Ordenar por nombre de materia
-    var coll = java.text.Collator.getInstance(new java.util.Locale.Builder().setLanguage("es").setRegion("AR").build());
+        var coll = java.text.Collator.getInstance(new java.util.Locale.Builder().setLanguage("es").setRegion("AR").build());
         coll.setStrength(java.text.Collator.PRIMARY);
         List<MateriaAnualDetalleDto> materiasList = new ArrayList<>(materias.values());
         materiasList.sort(java.util.Comparator.comparing(MateriaAnualDetalleDto::getMateriaNombre,
@@ -280,7 +284,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                                                           Map<Long, MesaExamenAlumno> finales,
                                                           Map<Long, CalificacionesMateriaResumenDto> porMateria) {
         if (porMateria == null || porMateria.isEmpty()) return null;
-        double suma = 0.0; int n = 0;
+        double suma = 0.0;
+        int n = 0;
         for (var entry : porMateria.entrySet()) {
             Long mId = entry.getKey();
             // Usar NotaFinalService para calcular la nota final

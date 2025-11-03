@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Data
@@ -17,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class InasistenciaAlumnoDto {
-    
+
     private Long asistenciaId;
     private LocalDate fecha;
     private EstadoAsistencia estado;

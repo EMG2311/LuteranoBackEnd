@@ -55,8 +55,8 @@ public class CidiNotasImportServiceImpl implements CidiNotasImportService {
                     .collect(Collectors.toSet());
 
             List<String> requeridosPretty = List.of(
-                    "Grado/Año","División","Plan de Estu.","N° Documento",
-                    "Apellido","Nombre","Fecha Nacimiento","Espacio Curricular");
+                    "Grado/Año", "División", "Plan de Estu.", "N° Documento",
+                    "Apellido", "Nombre", "Fecha Nacimiento", "Espacio Curricular");
             List<String> faltantes = new ArrayList<>();
             for (String pretty : requeridosPretty) {
                 if (!headersCanon.contains(HeaderAliases.canon(pretty))) faltantes.add(pretty);
@@ -77,13 +77,13 @@ public class CidiNotasImportServiceImpl implements CidiNotasImportService {
             for (CSVRecord rec : parser) {
                 row++;
                 try {
-                    String gradoRaw    = CsvUtils.get(rec, "Grado/Año");
+                    String gradoRaw = CsvUtils.get(rec, "Grado/Año");
                     String divisionRaw = CsvUtils.get(rec, "División");
-                    String planRaw     = CsvUtils.get(rec, "Plan de Estu.");
-                    String dni         = CsvUtils.get(rec, "N° Documento", "Nro. Docum.", "DNI");
-                    String apellido    = CsvUtils.get(rec, "Apellido");
-                    String nombre      = CsvUtils.get(rec, "Nombre");
-                    String materiaNom  = CsvUtils.get(rec, "Espacio Curricular");
+                    String planRaw = CsvUtils.get(rec, "Plan de Estu.");
+                    String dni = CsvUtils.get(rec, "N° Documento", "Nro. Docum.", "DNI");
+                    String apellido = CsvUtils.get(rec, "Apellido");
+                    String nombre = CsvUtils.get(rec, "Nombre");
+                    String materiaNom = CsvUtils.get(rec, "Espacio Curricular");
 
                     if (isBlank(dni) || isBlank(nombre) || isBlank(apellido) || isBlank(materiaNom)) {
                         skipped++;
@@ -92,7 +92,7 @@ public class CidiNotasImportServiceImpl implements CidiNotasImportService {
 
                     Integer anio = CursoResolver.parseAnio(gradoRaw);
                     var division = CursoResolver.parseDivision(divisionRaw);
-                    Nivel nivel  = NivelMapper.fromPlanEstudio(planRaw);
+                    Nivel nivel = NivelMapper.fromPlanEstudio(planRaw);
 
                     if (anio == null || division == null || nivel == null) {
                         throw new IllegalArgumentException("Curso inválido: " + gradoRaw + "/" + divisionRaw + "/" + planRaw);
@@ -130,14 +130,14 @@ public class CidiNotasImportServiceImpl implements CidiNotasImportService {
                     // Etapa 1 y Etapa 2 (4 notas cada una)
                     LocalDate fecha = hoy;
                     UpsertCount c1 = upsertNotasFila(hm, 1, rec,
-                            "Nota 1 Etapa 1","Nota 2 Etapa 1","Nota 3 Etapa 1","Nota 4 Etapa 1",
+                            "Nota 1 Etapa 1", "Nota 2 Etapa 1", "Nota 3 Etapa 1", "Nota 4 Etapa 1",
                             fecha, dryRun);
                     UpsertCount c2 = upsertNotasFila(hm, 2, rec,
-                            "Nota 1 Etapa 2","Nota 2 Etapa 2","Nota 3 Etapa 2","Nota 4 Etapa 2",
+                            "Nota 1 Etapa 2", "Nota 2 Etapa 2", "Nota 3 Etapa 2", "Nota 4 Etapa 2",
                             fecha, dryRun);
 
                     inserted += c1.inserted + c2.inserted;
-                    updated  += c1.updated  + c2.updated;
+                    updated += c1.updated + c2.updated;
 
                 } catch (Exception exRow) {
                     skipped++;
@@ -212,7 +212,10 @@ public class CidiNotasImportServiceImpl implements CidiNotasImportService {
         }
     }
 
-    private static boolean isBlank(String s) { return s == null || s.isBlank(); }
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
 
-    private record UpsertCount(int inserted, int updated) {}
+    private record UpsertCount(int inserted, int updated) {
+    }
 }

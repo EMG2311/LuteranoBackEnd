@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InasistenciasAlumnoResponse {
-    
+
     private List<InasistenciaAlumnoDto> inasistencias;
     private Long alumnoId;
     private String nombreCompleto;

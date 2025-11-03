@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-@Builder@NoArgsConstructor@AllArgsConstructor@Data
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class TutorResponseList {
     private List<TutorDto> tutores;
     private Integer code;

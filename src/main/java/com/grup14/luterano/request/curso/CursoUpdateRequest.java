@@ -19,14 +19,14 @@ public class CursoUpdateRequest {
 
     @NotNull(message = "El ID del curso no puede ser nulo")
     private Long id;
-    @Min(value = 1,message = "El año tiene que ser mayor/igual a 1")
-    @Max(value = 6,message = "El año tiene qeu ser menor/igual a 6")
+    @Min(value = 1, message = "El año tiene que ser mayor/igual a 1")
+    @Max(value = 6, message = "El año tiene qeu ser menor/igual a 6")
     private Integer anio;
     private Division division;
     private Nivel nivel;
     private Long aulaId; // quiero solo el id del aula
 
-   // private AulaDto aula;
+    // private AulaDto aula;
     // private List<MateriaCursoDto> dictados;
 
 

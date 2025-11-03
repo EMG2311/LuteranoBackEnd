@@ -2,7 +2,7 @@ package com.grup14.luterano.examples;
 
 /**
  * EJEMPLO DE INTEGRACIÓN DEL SERVICIO NotaFinalService
- * 
+ * <p>
  * Este archivo muestra cómo integrar el nuevo servicio NotaFinalService
  * en otros servicios existentes para reemplazar la lógica de nota final.
  */
@@ -103,24 +103,24 @@ public class MiNuevoServicio {
 */
 
 public class EjemploIntegracionNotaFinal {
-    
+
     /*
      * LÓGICA IMPLEMENTADA:
-     * 
+     *
      * 1. Si el alumno rindió mesa de examen en el año:
      *    ✅ Usar notaFinal de la mesa más reciente
-     * 
+     *
      * 2. Si NO rindió mesa de examen:
      *    ✅ Calcular PG desde calificaciones E1/E2
      *    ✅ Truncar el PG (Math.floor) para quitar decimales
      *    ✅ Ejemplo: PG = 7.8 → Nota Final = 7
-     * 
+     *
      * ENDPOINTS DISPONIBLES:
-     * 
+     *
      * GET /notas-finales/alumno/{alumnoId}/materia/{materiaId}?anio=2025
      * → Devuelve nota final con detalles del origen
-     * 
-     * GET /notas-finales/simple/alumno/{alumnoId}/materia/{materiaId}?anio=2025  
+     *
+     * GET /notas-finales/simple/alumno/{alumnoId}/materia/{materiaId}?anio=2025
      * → Devuelve solo el número de la nota final
      */
 }

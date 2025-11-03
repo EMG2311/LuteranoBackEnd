@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+
 @RestController
 @RequestMapping("/preceptor")
 @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
@@ -41,13 +42,13 @@ public class PreceptorController {
         } catch (PreceptorException e) {
             return ResponseEntity.status(422).body(PreceptorResponse.builder()
                     .code(-1)
-                    .mensaje("Error al crear preceptor "+e.getMessage())
+                    .mensaje("Error al crear preceptor " + e.getMessage())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(PreceptorResponse.builder()
                             .code(-2)
-                            .mensaje("Error no controlado "+e.getMessage())
+                            .mensaje("Error no controlado " + e.getMessage())
                             .build());
         }
     }

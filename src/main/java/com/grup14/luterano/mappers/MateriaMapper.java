@@ -3,8 +3,6 @@ package com.grup14.luterano.mappers;
 import com.grup14.luterano.dto.MateriaDto;
 import com.grup14.luterano.entities.Materia;
 
-import java.util.stream.Collectors;
-
 public class MateriaMapper {
 
     public static MateriaDto toDto(Materia entity) {
@@ -21,9 +19,9 @@ public class MateriaMapper {
                 // Se mapea la lista de entidades MateriaCurso a una lista de DTOs.
                 // Es crucial usar MateriaCursoMapper aquí, no CursoMapper.
                 //.dictados(entity.getDictados() == null ? null :
-               //         entity.getDictados().stream()
-              //                  .map(MateriaCursoMapper::toDto)
-               //                 .collect(Collectors.toList()))
+                //         entity.getDictados().stream()
+                //                  .map(MateriaCursoMapper::toDto)
+                //                 .collect(Collectors.toList()))
                 .build();
     }
 

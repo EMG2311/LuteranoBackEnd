@@ -5,7 +5,8 @@ import com.grup14.luterano.entities.enums.Nivel;
 import java.util.Locale;
 
 public final class NivelMapper {
-    private NivelMapper(){}
+    private NivelMapper() {
+    }
 
     public static Nivel fromPlanEstudio(String planRaw) {
         if (planRaw == null) return null;

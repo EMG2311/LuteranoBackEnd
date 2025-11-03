@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @NoArgsConstructor
-public class InasistenciaDocenteRequest  {
+public class InasistenciaDocenteRequest {
 
     private Long docenteId;
     private EstadoAsistencia estado;

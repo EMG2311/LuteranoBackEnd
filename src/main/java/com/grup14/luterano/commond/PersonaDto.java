@@ -9,10 +9,12 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
+
 @Getter
 @Setter
 @SuperBuilder(toBuilder = true)
-@AllArgsConstructor@NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class PersonaDto {
     private Long id;

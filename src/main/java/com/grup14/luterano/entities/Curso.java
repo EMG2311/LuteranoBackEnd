@@ -11,16 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter@Setter
-@AllArgsConstructor@NoArgsConstructor@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-  
+
     @Column(nullable = false)
-    @Min(value = 1,message = "El año tiene que ser mayor/igual a 1")
-    @Max(value = 6,message = "El año tiene que ser menor/igual a 6")
+    @Min(value = 1, message = "El año tiene que ser mayor/igual a 1")
+    @Max(value = 6, message = "El año tiene que ser menor/igual a 6")
     private int anio;
     @Enumerated(EnumType.STRING)
     private Division division;

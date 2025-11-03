@@ -1,12 +1,14 @@
 package com.grup14.luterano.service.implementation;
 
-import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.Calificacion;
+import com.grup14.luterano.entities.HistorialMateria;
 import com.grup14.luterano.exeptions.CalificacionException;
 import com.grup14.luterano.mappers.CalificacionMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.calificacion.CalificacionRequest;
 import com.grup14.luterano.request.calificacion.CalificacionUpdateRequest;
-import com.grup14.luterano.response.calificaciones.*;
+import com.grup14.luterano.response.calificaciones.CalificacionListResponse;
+import com.grup14.luterano.response.calificaciones.CalificacionResponse;
 import com.grup14.luterano.service.CalificacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class CalificacionServiceImpl implements CalificacionService {
         var hc = historialCursoRepo.findVigenteEnFecha(alumno.getId(), ciclo.getId(), fechaNota)
                 .orElseThrow(() -> new CalificacionException("El alumno no cursaba en la fecha " + fechaNota));
 
-        var mc = materiaCursoRepo.findByMateriaIdAndCursoId(req.getMateriaId(),hc.getCurso().getId())
+        var mc = materiaCursoRepo.findByMateriaIdAndCursoId(req.getMateriaId(), hc.getCurso().getId())
                 .orElseThrow(() -> new CalificacionException("El curso del alumno no dicta esa materia"));
 
         var hm = historialMateriaRepo.findByHistorialCurso_IdAndMateriaCurso_Id(hc.getId(), mc.getId())
@@ -89,7 +91,7 @@ public class CalificacionServiceImpl implements CalificacionService {
         var cal = calificacionRepo.findOwned(req.getAlumnoId(), req.getMateriaId(), req.getCalifId())
                 .orElseThrow(() -> new CalificacionException(
                         "Calificación no encontrada para ese alumno y materia"));
-        if(req.getNota()!=null){
+        if (req.getNota() != null) {
             cal.setNota(req.getNota());
         }
 

@@ -1,13 +1,11 @@
 package com.grup14.luterano.controller;
 
 
-import com.grup14.luterano.dto.AsistenciaAlumnoDto;
 import com.grup14.luterano.exeptions.AsistenciaException;
 import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoBulkRequest;
 import com.grup14.luterano.request.asistenciaAlumno.AsistenciaAlumnoUpdateRequest;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
-import com.grup14.luterano.response.asistenciaDocente.AsistenciaDocenteResponse;
 import com.grup14.luterano.service.AsistenciaAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -112,8 +110,7 @@ public class AsistenciaAlumnoController {
         try {
             var resp = asistenciaAlumnoService.resetHistorialCompleto(alumnoId);
             return ResponseEntity.ok(resp);
-        }
-         catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L);
         }
     }

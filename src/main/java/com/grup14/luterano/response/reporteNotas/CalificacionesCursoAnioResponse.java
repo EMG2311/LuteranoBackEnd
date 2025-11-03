@@ -8,7 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-@Builder@Data@AllArgsConstructor@NoArgsConstructor
+
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CalificacionesCursoAnioResponse {
     private CursoDto curso;
     private Integer anio;

@@ -17,7 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Service@AllArgsConstructor
+@Service
+@AllArgsConstructor
 public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService {
 
     private final ModuloRepository moduloRepository;
@@ -37,11 +38,11 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
         if (slots == null || slots.isEmpty()) {
             throw new HorarioClaseModuloException("Debe indicar al menos un slot (día + moduloId).");
         }
-        Materia materia= materiaRepository.findById(materiaId).orElseThrow(()->
-                new HorarioClaseModuloException("No existe la materia con id "+materiaId));
+        Materia materia = materiaRepository.findById(materiaId).orElseThrow(() ->
+                new HorarioClaseModuloException("No existe la materia con id " + materiaId));
 
-        Curso curso = cursoRepository.findById(cursoId).orElseThrow(()->
-                new HorarioClaseModuloException("No existe el curso con id "+cursoId));
+        Curso curso = cursoRepository.findById(cursoId).orElseThrow(() ->
+                new HorarioClaseModuloException("No existe el curso con id " + cursoId));
 
         MateriaCurso mc = materiaCursoRepository.findByMateriaIdAndCursoId(materiaId, cursoId)
                 .orElseThrow(() -> new HorarioClaseModuloException(
@@ -123,7 +124,7 @@ public class HorarioClaseModuloServiceImpl implements HorarioClaseModuloService 
     }
 
     private String prettyCurso(Curso c) {
-        return String.format("%s %d %s", c.getNivel(), c.getAnio(), c.getDivision());
+        return String.format("%s %d %s", c.getNivel().toString(), c.getAnio(), c.getDivision().toString());
     }
 
     @Override

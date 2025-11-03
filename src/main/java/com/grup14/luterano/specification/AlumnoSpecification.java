@@ -39,14 +39,14 @@ public class AlumnoSpecification {
         return (root, query, cb) ->
                 division == null ? null : cb.equal(root.get("cursoActual").get("division"), division);
     }
-    
+
     public static Specification<Alumno> estadoNotIn(List<EstadoAlumno> estados) {
         return (root, query, cb) ->
-                (estados == null || estados.isEmpty()) 
-                        ? null 
+                (estados == null || estados.isEmpty())
+                        ? null
                         : cb.not(root.get("estado").in(estados));
     }
-    
+
     public static Specification<Alumno> alumnosActivos() {
         return estadoNotIn(List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION));
     }
