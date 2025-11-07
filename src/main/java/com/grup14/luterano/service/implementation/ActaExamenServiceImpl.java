@@ -95,9 +95,9 @@ public class ActaExamenServiceImpl implements ActaExamenService {
 
     @Override
     public ActaExamenResponse obtenerPorId(Long id) {
-        var acta = actaRepo.findById(id)
+        var acta = actaRepo.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Acta no encontrada"));
-        return ActaExamenResponse.builder().code(0).mensaje("OK").acta(ActaExamenMapper.toDto(acta)).build();
+        return ActaExamenResponse.builder().code(1).mensaje("OK").acta(ActaExamenMapper.toDto(acta)).build();
     }
 
     @Override
