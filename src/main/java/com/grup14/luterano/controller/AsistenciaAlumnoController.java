@@ -8,10 +8,12 @@ import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponse;
 import com.grup14.luterano.response.asistenciaAlumno.AsistenciaAlumnoResponseList;
 import com.grup14.luterano.service.AsistenciaAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/asistencia/alumnos")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@Tag(
+        name = "Asistencia Alumno Controller",
+        description = "Controlador encargado de la gestión de asistencias de alumnos. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 @RequiredArgsConstructor
 public class AsistenciaAlumnoController {
 

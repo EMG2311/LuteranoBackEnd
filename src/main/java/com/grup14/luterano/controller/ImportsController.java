@@ -19,7 +19,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/import")
 @AllArgsConstructor
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ImportsController {
 
     private final CidiAlumnoImportService cidiAlumnoImportService;

@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/mesas")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @Tag(name = "Mesa de Examen Controller", description = "CRUD de Mesas de Examen y convocados")
 @RequiredArgsConstructor
 public class MesaExamenController {

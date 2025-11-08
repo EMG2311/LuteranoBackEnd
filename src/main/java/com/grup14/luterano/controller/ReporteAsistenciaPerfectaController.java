@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/reporteAsistenciaPerfecta")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR') or hasRole('DOCENTE') ")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
 @Tag(name = "Reporte Asistencia Perfecta", description = "Alumnos con asistencia perfecta por año, agrupados por curso")
 @RequiredArgsConstructor
 public class ReporteAsistenciaPerfectaController {

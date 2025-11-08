@@ -34,10 +34,6 @@ public class ActaExamenMapper {
             for (var mesaAlumno : m.getAlumnos()) {
                 var alumno = mesaAlumno.getAlumno();
                 
-                // Determinar condición: buscar en ReporteRinde logic
-                // Por simplicidad, asumimos que si tiene nota final, es la condición
-                String condicion = determinarCondicion(mesaAlumno);
-                
                 // Determinar observación según reglas de negocio
                 String observacion = determinarObservacion(mesaAlumno);
 
@@ -46,7 +42,6 @@ public class ActaExamenMapper {
                         .apellido(alumno.getApellido())
                         .nombre(alumno.getNombre())
                         .dni(alumno.getDni())
-                        .condicion(condicion)
                         .nota(mesaAlumno.getNotaFinal())
                         .observacion(observacion)
                         .build());
@@ -70,19 +65,6 @@ public class ActaExamenMapper {
                 .docentes(docentes)
                 .alumnos(alumnos)
                 .build();
-    }
-
-    private static String determinarCondicion(com.grup14.luterano.entities.MesaExamenAlumno mesaAlumno) {
-        // Lógica simplificada: 
-        // En un sistema real, esto requeriría consultar las calificaciones del alumno
-        // para saber si promocionó una etapa (COLOQUIO) o ninguna (EXAMEN)
-        // Por ahora, asumimos EXAMEN por defecto
-        
-        // TODO: Implementar lógica basada en calificaciones:
-        // - Si promocionó exactamente una etapa (e1 >= 6 XOR e2 >= 6): COLOQUIO
-        // - Si no promocionó ninguna etapa (e1 < 6 AND e2 < 6): EXAMEN
-        
-        return "EXAMEN"; // Valor por defecto
     }
 
     private static String determinarObservacion(com.grup14.luterano.entities.MesaExamenAlumno mesaAlumno) {

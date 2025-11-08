@@ -19,7 +19,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/actas")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
 @Tag(name = "Acta Examen Controller", description = "Generación y consulta de actas de examen")
 @RequiredArgsConstructor
 public class ActaExamenController {

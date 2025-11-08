@@ -15,7 +15,7 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/ciclos-lectivos")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@PreAuthorize("hasRole('ADMIN')")
 public class CicloLectivoController {
 
     @Autowired

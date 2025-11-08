@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/materiasCurso")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@PreAuthorize("hasRole('ADMIN')")
 @Tag(
         name = "MateriaCurso Controller",
         description = "Controlador encargado de la gestión de la relación Materia-Curso y asignación de docentes."

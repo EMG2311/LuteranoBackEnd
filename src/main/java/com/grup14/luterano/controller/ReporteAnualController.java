@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/reporteAnual")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR') or hasRole('DOCENTE') ")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
 @Tag(name = "Reporte Anual", description = "Informe anual por alumno con calificaciones, promedios, inasistencias y previas")
 @RequiredArgsConstructor
 public class ReporteAnualController {

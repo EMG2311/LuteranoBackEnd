@@ -7,9 +7,11 @@ import com.grup14.luterano.response.calificaciones.CalificacionListResponse;
 import com.grup14.luterano.response.calificaciones.CalificacionResponse;
 import com.grup14.luterano.service.CalificacionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +19,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/calificaciones")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR')")
+@Tag(
+        name = "Calificaciones Controller",
+        description = "Controlador encargado de la gestión de calificaciones de alumnos. " +
+                "CRUD (crear/editar/eliminar): ADMIN, DIRECTOR y DOCENTE. " +
+                "Consultar: ADMIN, DIRECTOR, DOCENTE y PRECEPTOR."
+)
 public class CalificacionController {
 
     private final CalificacionService calificacionService;
@@ -26,6 +35,7 @@ public class CalificacionController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE')")
     @Operation(summary = "Crear calificación",
             description = "Crea una calificación validando que el alumno cursa la materia en el ciclo correspondiente a la fecha de la calificación.")
     public ResponseEntity<CalificacionResponse> create(@RequestBody @Validated CalificacionRequest request) {
@@ -44,6 +54,7 @@ public class CalificacionController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE')")
     @Operation(summary = "Actualizar calificación",
             description = "Actualiza la nota y/o fecha de una calificación existente del alumno para la materia.")
     public ResponseEntity<CalificacionResponse> update(@RequestBody @Valid CalificacionUpdateRequest request) {
@@ -82,6 +93,7 @@ public class CalificacionController {
     }
 
     @DeleteMapping("/alumno/{alumnoId}/materia/{materiaId}/{califId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE')")
     @Operation(summary = "Eliminar calificación",
             description = "Elimina una calificación del alumno para la materia indicada.")
     public ResponseEntity<CalificacionResponse> delete(@PathVariable Long alumnoId,

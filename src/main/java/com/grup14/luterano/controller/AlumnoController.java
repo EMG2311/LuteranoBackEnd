@@ -42,8 +42,9 @@ public class AlumnoController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
     @Operation(summary = "Crea un nuevo alumno",
-            description = "Requiere que el usuario tenga un rol de ADMIN O DIRECTOR o PRECEPTOR")
+        description = "Requiere que el usuario tenga un rol de ADMIN o DIRECTOR")
     public ResponseEntity<AlumnoResponse> createAlumno(@RequestBody @Validated AlumnoRequest alumnoRequest) {
         try {
             return ResponseEntity.ok(alumnoService.crearAlumno(alumnoRequest));
@@ -81,8 +82,9 @@ public class AlumnoController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
     @Operation(summary = "Elimina un alumno por ID",
-            description = "Elimina un alumno si existe. Requiere que el usuario tenga rol de ADMIN o DIRECTOR.")
+        description = "Elimina un alumno si existe. Requiere que el usuario tenga rol de ADMIN o DIRECTOR.")
     public ResponseEntity<AlumnoResponse> deleteAlumno(@PathVariable Long id) {
         try {
             // Llama al servicio para eliminar el alumno por su ID

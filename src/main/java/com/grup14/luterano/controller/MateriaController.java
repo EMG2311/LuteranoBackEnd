@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/materias")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@PreAuthorize("hasRole('ADMIN')")
 @Tag(
         name = "Materia Controller",
         description = "Controlador encargado de la gestión de las materias. " +

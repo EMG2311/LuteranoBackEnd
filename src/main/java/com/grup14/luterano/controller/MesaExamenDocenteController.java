@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/mesa-examen/{mesaExamenId}/docentes")
 @RequiredArgsConstructor
-public class MesaExamenDocenteController {
+    public class MesaExamenDocenteController {
 
     private final MesaExamenService mesaExamenService;
 

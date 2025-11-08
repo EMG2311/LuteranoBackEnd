@@ -19,7 +19,6 @@ package com.grup14.luterano.examples;
  * DETALLE DE ALUMNOS:
  * - Array con todos los alumnos convocados
  * - Cada alumno incluye: alumnoId, apellido, nombre, dni
- * - Condición: "EXAMEN" o "COLOQUIO" (basado en promociones de etapas)
  * - Nota final obtenida en la mesa
  * - Observación: "Aprobado" (nota >= 6), "Desaprobado" (nota < 6) o "Ausente"
  * 
@@ -54,7 +53,6 @@ package com.grup14.luterano.examples;
  *         "apellido": "Pérez",
  *         "nombre": "Ana",
  *         "dni": "45.678.901",
- *         "condicion": "EXAMEN",
  *         "nota": 8,
  *         "observacion": "Aprobado"
  *       },
@@ -63,7 +61,6 @@ package com.grup14.luterano.examples;
  *         "apellido": "López",
  *         "nombre": "Juan", 
  *         "dni": "44.112.223",
- *         "condicion": "COLOQUIO",
  *         "nota": 4,
  *         "observacion": "Desaprobado"
  *       },
@@ -72,7 +69,6 @@ package com.grup14.luterano.examples;
  *         "apellido": "Marín",
  *         "nombre": "Sofía",
  *         "dni": "48.111.222", 
- *         "condicion": "EXAMEN",
  *         "nota": null,
  *         "observacion": "Ausente"
  *       }
@@ -88,7 +84,6 @@ package com.grup14.luterano.examples;
  * - El endpoint usa fetch joins para evitar N+1 queries
  * - Los docentes se ordenan automáticamente
  * - Los alumnos incluyen su estado de convocatoria
- * - La condición (EXAMEN/COLOQUIO) se determina según promociones de etapas
  * - La fecha del examen se toma de mesa.fecha, o fechaCierre si no existe
  * 
  * REGLAS DE NEGOCIO PARA OBSERVACIÓN:

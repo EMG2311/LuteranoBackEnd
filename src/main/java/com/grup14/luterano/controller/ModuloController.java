@@ -6,6 +6,7 @@ import com.grup14.luterano.exeptions.ModuloException;
 import com.grup14.luterano.response.modulo.*;
 import com.grup14.luterano.service.ModuloService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/modulos")
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(
+        name = "Módulos Controller",
+        description = "Controlador encargado de la gestión de módulos horarios. " +
+                "Acceso restringido exclusivamente a usuarios con rol ADMIN."
+)
 @RequiredArgsConstructor
 public class ModuloController {
 

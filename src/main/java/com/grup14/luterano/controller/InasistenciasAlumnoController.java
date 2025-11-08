@@ -19,7 +19,7 @@ public class InasistenciasAlumnoController {
     private final InasistenciasAlumnoService inasistenciasService;
 
     @GetMapping("/alumno/{alumnoId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
     public ResponseEntity<InasistenciasAlumnoResponse> listarInasistenciasPorAlumno(
             @PathVariable Long alumnoId) {
         try {
@@ -39,7 +39,7 @@ public class InasistenciasAlumnoController {
     }
 
     @GetMapping("/alumno/dni/{dni}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
     public ResponseEntity<InasistenciasAlumnoResponse> listarInasistenciasPorDni(
             @PathVariable String dni) {
         try {

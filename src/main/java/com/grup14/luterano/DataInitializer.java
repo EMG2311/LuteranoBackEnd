@@ -30,7 +30,8 @@ public class DataInitializer {
                     "ROLE_DOCENTE",
                     "ROLE_ALUMNO",
                     "ROLE_VISITA",
-                    "ROLE_PRECEPTOR"
+                    "ROLE_PRECEPTOR",
+                    "ROLE_AUXILIAR"
             );
 
             for (String roleName : roles) {

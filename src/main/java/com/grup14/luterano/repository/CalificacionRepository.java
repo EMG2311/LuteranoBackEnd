@@ -160,4 +160,33 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
     """)
     List<Calificacion> findCalificacionesParaAnalisisConsecutivoPorCurso(@Param("cicloLectivoAnio") Integer cicloLectivoAnio, 
                                                                          @Param("cursoId") Long cursoId);
+
+    // Consulta para obtener el historial completo de calificaciones de un alumno
+    @Query("""
+        SELECT c FROM Calificacion c
+        JOIN c.historialMateria hm
+        JOIN hm.historiaCurso hc
+        JOIN hc.alumno a
+        JOIN hc.cicloLectivo cl
+        JOIN hm.materiaCurso mc
+        JOIN mc.materia m
+        WHERE a.id = :alumnoId
+        ORDER BY cl.fechaDesde, hc.curso.anio, m.nombre, c.etapa, c.numeroNota
+    """)
+    List<Calificacion> findHistorialCompletoByAlumnoId(@Param("alumnoId") Long alumnoId);
+
+    // Consulta para obtener historial de un alumno en un ciclo específico
+    @Query("""
+        SELECT c FROM Calificacion c
+        JOIN c.historialMateria hm
+        JOIN hm.historiaCurso hc
+        JOIN hc.alumno a
+        JOIN hc.cicloLectivo cl
+        JOIN hm.materiaCurso mc
+        JOIN mc.materia m
+        WHERE a.id = :alumnoId AND cl.id = :cicloLectivoId
+        ORDER BY hc.curso.anio, m.nombre, c.etapa, c.numeroNota
+    """)
+    List<Calificacion> findHistorialByAlumnoAndCiclo(@Param("alumnoId") Long alumnoId, 
+                                                     @Param("cicloLectivoId") Long cicloLectivoId);
 }

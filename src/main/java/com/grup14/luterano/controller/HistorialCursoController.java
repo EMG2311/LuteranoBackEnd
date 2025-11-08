@@ -6,12 +6,20 @@ import com.grup14.luterano.response.historialCurso.HistorialCursoResponse;
 import com.grup14.luterano.response.historialCurso.HistorialCursoResponseList;
 import com.grup14.luterano.service.HistorialCursoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/historial-curso")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@Tag(
+        name = "Historial Curso Controller",
+        description = "Controlador encargado de la gestión del historial de cursos de alumnos. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 
 public class HistorialCursoController {
 

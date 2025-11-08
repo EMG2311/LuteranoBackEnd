@@ -202,12 +202,14 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
             historial.setFechaHasta(LocalDate.now());
             historialCursoRepository.save(historial);
 
+            // Obtener o crear el ciclo lectivo del año siguiente
+            CicloLectivo cicloSiguiente = obtenerOcrearCicloLectivoSiguiente(historial.getCicloLectivo());
+
             // Crear nuevo historial para el curso siguiente
-            // Usar el mismo ciclo lectivo que el historial actual (la promoción normalmente se hace al final del ciclo)
             HistorialCurso nuevoHistorial = HistorialCurso.builder()
                     .alumno(alumno)
                     .curso(cursoSiguiente)
-                    .cicloLectivo(historial.getCicloLectivo()) // Usar el mismo ciclo lectivo
+                    .cicloLectivo(cicloSiguiente) // Usar el ciclo lectivo del año siguiente
                     .fechaDesde(LocalDate.now())
                     .fechaHasta(null) // Se cerrará cuando termine el ciclo lectivo
                     .build();
@@ -281,11 +283,23 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
             historial.setFechaHasta(LocalDate.now());
             historialCursoRepository.save(historial);
 
+            // Obtener o crear el ciclo lectivo del año siguiente
+            CicloLectivo cicloSiguiente = obtenerOcrearCicloLectivoSiguiente(historial.getCicloLectivo());
+
             // Incrementar contador de repeticiones
             alumno.setCantidadRepeticiones(repeticionesActuales + 1);
+            
+            // Crear nuevo historial curso para el mismo curso pero en el ciclo siguiente
+            HistorialCurso nuevoHistorial = HistorialCurso.builder()
+                    .alumno(alumno)
+                    .curso(historial.getCurso()) // Mismo curso
+                    .cicloLectivo(cicloSiguiente) // Ciclo lectivo del año siguiente
+                    .fechaDesde(LocalDate.now())
+                    .fechaHasta(null)
+                    .build();
+            historialCursoRepository.save(nuevoHistorial);
+            
             alumnoRepository.save(alumno);
-
-            // El alumno se queda en el mismo curso
         }
 
         return AlumnoPromocionDto.builder()
@@ -304,5 +318,33 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     private String formatearCurso(Curso curso) {
         if (curso == null) return "Sin curso";
         return curso.getAnio() + "° " + curso.getDivision().name();
+    }
+
+    /**
+     * Obtiene o crea el ciclo lectivo del año siguiente al ciclo actual.
+     * Si ya existe, lo devuelve. Si no existe, lo crea automáticamente.
+     */
+    private CicloLectivo obtenerOcrearCicloLectivoSiguiente(CicloLectivo cicloActual) {
+        int anioSiguiente = cicloActual.getFechaDesde().getYear() + 1;
+        
+        // Buscar si ya existe el ciclo del año siguiente
+        Optional<CicloLectivo> cicloSiguienteOpt = cicloLectivoRepository.findByAnio(anioSiguiente);
+        
+        if (cicloSiguienteOpt.isPresent()) {
+            log.debug("Ciclo lectivo {} ya existe", anioSiguiente);
+            return cicloSiguienteOpt.get();
+        }
+        
+        // Crear el ciclo lectivo del año siguiente
+        CicloLectivo nuevoCiclo = CicloLectivo.builder()
+                .nombre("Ciclo Lectivo " + anioSiguiente)
+                .fechaDesde(LocalDate.of(anioSiguiente, 1, 1))
+                .fechaHasta(LocalDate.of(anioSiguiente, 12, 31))
+                .build();
+        
+        CicloLectivo cicloCreado = cicloLectivoRepository.save(nuevoCiclo);
+        log.info("Ciclo lectivo {} creado automáticamente durante la promoción", anioSiguiente);
+        
+        return cicloCreado;
     }
 }

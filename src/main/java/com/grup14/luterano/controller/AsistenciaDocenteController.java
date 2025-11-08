@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,8 +18,13 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/asistencia-docente")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
 @RequiredArgsConstructor
-@Tag(name = "Asistencia Docente")
+@Tag(
+        name = "Asistencia Docente Controller",
+        description = "Controlador encargado de la gestión de asistencias de docentes. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 public class AsistenciaDocenteController {
 
     private final AsistenciaDocenteService asistenciaDocenteService;

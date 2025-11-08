@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Reporte Desempeño Docente", description = "Reportes de análisis de tasas de aprobación/reprobación por docente y materia")
-@PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
+@PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
 public class ReporteDesempenoDocenteController {
 
     private final ReporteDesempenoDocenteService reporteService;

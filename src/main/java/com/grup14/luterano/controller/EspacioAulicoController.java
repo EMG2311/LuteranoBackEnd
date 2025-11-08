@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/espacio-aulico")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('AUXILIAR')")
 
 public class EspacioAulicoController {
 
@@ -29,7 +29,7 @@ public class EspacioAulicoController {
 
 
     @PostMapping("/create")
-    @Operation(summary = "Crea un espacio aulico", description = "Solo roles ADMIN/DIRECTOR. Requiere nombre, ubicación y capacidad.")
+    @Operation(summary = "Crea un espacio aulico", description = "Solo roles ADMIN/DIRECTOR/AUXILIAR. Requiere nombre, ubicación y capacidad.")
     public ResponseEntity<EspacioAulicoResponse> crearEspacioAulico(
             @Valid @RequestBody EspacioAulicoRequest request) {
         try {

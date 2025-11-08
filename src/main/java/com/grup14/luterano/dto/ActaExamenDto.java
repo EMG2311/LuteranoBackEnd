@@ -51,7 +51,6 @@ public class ActaExamenDto {
         private String apellido;
         private String nombre;
         private String dni;
-        private String condicion; // EXAMEN / COLOQUIO
         private Integer nota;
         private String observacion; // Aprobado / Desaprobado / Ausente
     }

@@ -118,7 +118,7 @@ public class ReservaEspacioController {
 
     // ---GESTIÓN: APROBAR (Administrativo) ---
     @PatchMapping("/{id}/aprobar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'AUXULIAR')")
     @Operation(summary = "Aprobar reserva",
             description = "Cambia el estado de una reserva PENDIENTE a APROBADA.")
     public ResponseEntity<ReservaEspacioResponse> aprobarReserva(@PathVariable Long id) {
@@ -135,7 +135,7 @@ public class ReservaEspacioController {
 
     // -- GESTIÓN: DENEGAR (Administrativo) ---
     @PatchMapping("/{id}/denegar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'AUXILIAR')")
     @Operation(summary = "Denegar reserva",
             description = "Cambia el estado de una reserva PENDIENTE a DENEGADA, requiere motivo.")
     public ResponseEntity<ReservaEspacioResponse> denegarReserva(

@@ -124,4 +124,14 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
     List<Long> findAlumnosIdsPorCursoYCiclo(@Param("cursoId") Long cursoId,
                                             @Param("cicloLectivoAnio") Integer cicloLectivoAnio);
 
+    // Consulta para obtener todo el historial curso de un alumno
+    @Query("""
+        SELECT hc FROM HistorialCurso hc
+        JOIN FETCH hc.cicloLectivo cl
+        JOIN FETCH hc.curso c
+        WHERE hc.alumno.id = :alumnoId
+        ORDER BY cl.fechaDesde, c.anio
+    """)
+    List<HistorialCurso> findHistorialCompletoByAlumnoId(@Param("alumnoId") Long alumnoId);
+
 }
