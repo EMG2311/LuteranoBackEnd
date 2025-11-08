@@ -4,6 +4,8 @@ import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +18,9 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long>, JpaSpecif
 
     Optional<Alumno> findByApellido(String apellido);
 
-    List<Alumno> findByTutor_IdAndEstadoNot(Long tutorId, EstadoAlumno estado);
+    // Método actualizado para la relación many-to-many con tutores
+    @Query("SELECT a FROM Alumno a JOIN a.tutores t WHERE t.id = :tutorId AND a.estado != :estado")
+    List<Alumno> findByTutores_IdAndEstadoNot(@Param("tutorId") Long tutorId, @Param("estado") EstadoAlumno estado);
 
     List<Alumno> findByCursoActual_Id(Long cursoId);
 

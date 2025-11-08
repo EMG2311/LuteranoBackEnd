@@ -6,6 +6,7 @@ import com.grup14.luterano.exeptions.HistorialCursoException;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
+import com.grup14.luterano.request.alumno.AsignarTutoresRequest;
 import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
@@ -257,6 +258,60 @@ public class AlumnoController {
                             .alumno(null)
                             .code(-2)
                             .mensaje("Error interno al reactivar el alumno: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    @PostMapping("/asignar-tutores")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Asigna múltiples tutores a un alumno",
+        description = "Permite asignar uno o más tutores a un alumno específico. Requiere rol ADMIN o DIRECTOR.")
+    public ResponseEntity<AlumnoResponse> asignarTutores(@RequestBody @Validated AsignarTutoresRequest request) {
+        try {
+            return ResponseEntity.ok(alumnoService.asignarTutores(request));
+        } catch (AlumnoException e) {
+            return ResponseEntity.badRequest().body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-2)
+                            .mensaje("Error interno al asignar tutores: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    @DeleteMapping("/{alumnoId}/tutores/{tutorId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Remueve un tutor de un alumno",
+        description = "Remueve un tutor específico de la lista de tutores de un alumno. Requiere rol ADMIN o DIRECTOR.")
+    public ResponseEntity<AlumnoResponse> removerTutor(
+            @PathVariable Long alumnoId, 
+            @PathVariable Long tutorId) {
+        try {
+            return ResponseEntity.ok(alumnoService.removerTutor(alumnoId, tutorId));
+        } catch (AlumnoException e) {
+            return ResponseEntity.badRequest().body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    AlumnoResponse.builder()
+                            .alumno(null)
+                            .code(-2)
+                            .mensaje("Error interno al remover tutor: " + e.getMessage())
                             .build()
             );
         }

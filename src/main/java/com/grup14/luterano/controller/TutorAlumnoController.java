@@ -1,11 +1,14 @@
 package com.grup14.luterano.controller;
 
 import com.grup14.luterano.exeptions.MateriaCursoException;
+import com.grup14.luterano.request.tutor.AsignarMultiplesTutoresRequest;
+import com.grup14.luterano.request.tutor.DesasignarMultiplesTutoresRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
 import com.grup14.luterano.service.TutorAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -85,6 +88,42 @@ public class TutorAlumnoController {
                     AlumnoResponseList.builder()
                             .code(-2)
                             .mensaje("Error no controlado: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/asignar-multiples-tutores")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Asigna múltiples tutores a un alumno",
+            description = "Permite asignar varios tutores de una vez a un alumno específico. Requiere rol ADMIN o DIRECTOR.")
+    public ResponseEntity<AlumnoResponse> asignarMultiplesTutores(
+            @RequestBody @Valid AsignarMultiplesTutoresRequest request) {
+        try {
+            return ResponseEntity.ok(tutorAlumnoService.asignarMultiplesTutoresAAlumno(
+                    request.getTutorIds(), request.getAlumnoId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/desasignar-multiples-tutores")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Desasigna múltiples tutores de un alumno",
+            description = "Permite desasignar varios tutores de una vez de un alumno específico. Requiere rol ADMIN o DIRECTOR.")
+    public ResponseEntity<AlumnoResponse> desasignarMultiplesTutores(
+            @RequestBody @Valid DesasignarMultiplesTutoresRequest request) {
+        try {
+            return ResponseEntity.ok(tutorAlumnoService.desasignarMultiplesTutoresDeAlumno(
+                    request.getTutorIds(), request.getAlumnoId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(422).body(
+                    AlumnoResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
                             .build());
         }
     }

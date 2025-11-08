@@ -1,6 +1,7 @@
 package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.AlumnoDto;
+import com.grup14.luterano.dto.TutorDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
@@ -10,6 +11,7 @@ import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.alumno.AlumnoFiltrosRequest;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.request.alumno.AlumnoUpdateRequest;
+import com.grup14.luterano.request.alumno.AsignarTutoresRequest;
 import com.grup14.luterano.request.historialCursoRequest.HistorialCursoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.response.alumno.AlumnoResponseList;
@@ -23,6 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,15 +77,21 @@ public class AlumnoServiceImpl implements AlumnoService {
         Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
                 .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
 
-        Tutor tutor = null;
-        if (alumnoRequest.getTutor() != null && alumnoRequest.getTutor().getId() != null) {
-            tutor = tutorRepository.findById(alumnoRequest.getTutor().getId())
-                    .orElseThrow(() -> new AlumnoException("El tutor especificado no existe"));
+        // Manejar múltiples tutores
+        List<Tutor> tutores = new ArrayList<>();
+        if (alumnoRequest.getTutores() != null && !alumnoRequest.getTutores().isEmpty()) {
+            for (TutorDto tutorDto : alumnoRequest.getTutores()) {
+                if (tutorDto != null && tutorDto.getId() != null) {
+                    Tutor tutor = tutorRepository.findById(tutorDto.getId())
+                            .orElseThrow(() -> new AlumnoException("El tutor con ID " + tutorDto.getId() + " no existe"));
+                    tutores.add(tutor);
+                }
+            }
         }
 
         Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
         alumno.setCursoActual(curso);
-        alumno.setTutor(tutor);
+        alumno.setTutores(tutores);
         alumno.setEstado(EstadoAlumno.REGULAR);
         alumno = alumnoRepository.save(alumno);
 
@@ -295,5 +304,57 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public AlumnoResponse asignarTutores(AsignarTutoresRequest request) {
+        // Validar que el alumno existe
+        Alumno alumno = alumnoRepository.findById(request.getAlumnoId())
+                .orElseThrow(() -> new AlumnoException("No existe el alumno con ID " + request.getAlumnoId()));
+
+        // Validar y obtener todos los tutores
+        List<Tutor> tutores = new ArrayList<>();
+        for (Long tutorId : request.getTutorIds()) {
+            Tutor tutor = tutorRepository.findById(tutorId)
+                    .orElseThrow(() -> new AlumnoException("No existe el tutor con ID " + tutorId));
+            tutores.add(tutor);
+        }
+
+        // Asignar los tutores al alumno
+        alumno.setTutores(tutores);
+        alumno = alumnoRepository.save(alumno);
+
+        return AlumnoResponse.builder()
+                .alumno(AlumnoMapper.toDto(alumno))
+                .code(0)
+                .mensaje("Tutores asignados correctamente")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AlumnoResponse removerTutor(Long alumnoId, Long tutorId) {
+        // Validar que el alumno existe
+        Alumno alumno = alumnoRepository.findById(alumnoId)
+                .orElseThrow(() -> new AlumnoException("No existe el alumno con ID " + alumnoId));
+
+        // Validar que el tutor existe
+        Tutor tutorARemover = tutorRepository.findById(tutorId)
+                .orElseThrow(() -> new AlumnoException("No existe el tutor con ID " + tutorId));
+
+        // Remover el tutor de la lista de tutores del alumno
+        boolean removed = alumno.getTutores().removeIf(tutor -> tutor.getId().equals(tutorId));
+        
+        if (!removed) {
+            throw new AlumnoException("El tutor no estaba asignado al alumno");
+        }
+
+        alumno = alumnoRepository.save(alumno);
+
+        return AlumnoResponse.builder()
+                .alumno(AlumnoMapper.toDto(alumno))
+                .code(0)
+                .mensaje("Tutor removido correctamente")
+                .build();
+    }
 
 }

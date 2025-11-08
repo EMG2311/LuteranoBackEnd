@@ -29,7 +29,12 @@ public class AlumnoMapper {
                 // Campos específicos de AlumnoDto
                 .cursoActual(CursoMapper.toDto(entity.getCursoActual()))
                 .estado(entity.getEstado())
-                .tutor(TutorMapper.toDto(entity.getTutor()))
+                .tutores(entity.getTutores() == null ? null :
+                        entity.getTutores()
+                                .stream()
+                                .map(TutorMapper::toDto)
+                                .collect(Collectors.toList())
+                )
                 .historialCursos(entity.getHistorialCursos() == null ? null :
                         entity.getHistorialCursos()
                                 .stream()

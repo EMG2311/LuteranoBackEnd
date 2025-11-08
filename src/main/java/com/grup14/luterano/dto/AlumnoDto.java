@@ -20,7 +20,7 @@ public class AlumnoDto extends PersonaDto {
     @NotNull(message = "Es obligatorio asignar un curso al alumno")
     private CursoDto cursoActual;
     private EstadoAlumno estado;
-    private TutorDto tutor;
+    private List<TutorDto> tutores;
     private List<HistorialCursoDto> historialCursos;
 
 }
