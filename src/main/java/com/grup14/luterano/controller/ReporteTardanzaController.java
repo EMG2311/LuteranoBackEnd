@@ -3,9 +3,11 @@ package com.grup14.luterano.controller;
 import com.grup14.luterano.response.reporteTardanza.ReporteTardanzasResponseList;
 import com.grup14.luterano.service.ReporteTardanzaService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +15,14 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/reportesTardanza")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
 @RequiredArgsConstructor
 @Validated
+@Tag(
+        name = "Reporte Tardanzas Controller",
+        description = "Controlador para generar reportes de tardanzas de alumnos. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 public class ReporteTardanzaController {
 
     private final ReporteTardanzaService service;

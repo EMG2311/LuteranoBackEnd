@@ -5,6 +5,7 @@ import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResp
 import com.grup14.luterano.response.reporteRankingAlumno.RankingTodosCursosResponse;
 import com.grup14.luterano.service.ReporteRankingAlumnoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,12 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/reportes/ranking-alumnos")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@Tag(
+        name = "Reporte Ranking Alumnos Controller",
+        description = "Controlador para generar rankings de alumnos por rendimiento académico. " +
+                "Acceso restringido a usuarios con rol ADMIN, DIRECTOR o PRECEPTOR."
+)
 @RequiredArgsConstructor
 public class ReporteRankingAlumnoController {
 
@@ -21,7 +28,6 @@ public class ReporteRankingAlumnoController {
 
     @GetMapping("/curso/{cursoId}")
     @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de un curso específico")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
     public ResponseEntity<RankingAlumnosCursoResponse> rankingAlumnosPorCurso(
             @PathVariable Long cursoId,
             @RequestParam int anio) {
@@ -51,7 +57,6 @@ public class ReporteRankingAlumnoController {
 
     @GetMapping("/colegio")
     @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de todo el colegio")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
     public ResponseEntity<RankingAlumnosColegioResponse> rankingAlumnosColegio(
             @RequestParam int anio) {
         try {
@@ -76,7 +81,6 @@ public class ReporteRankingAlumnoController {
 
     @GetMapping("/todos-cursos")
     @Operation(summary = "Obtiene todos los cursos con el ranking de sus mejores alumnos")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
     public ResponseEntity<RankingTodosCursosResponse> rankingTodosCursos(
             @RequestParam int anio) {
         try {

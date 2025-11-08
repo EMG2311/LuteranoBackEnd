@@ -8,6 +8,7 @@ import com.grup14.luterano.response.espacioAulico.ReservaEspacioResponse;
 import com.grup14.luterano.response.espacioAulico.ReservaEspacioResponseList;
 import com.grup14.luterano.service.ReservaEspacioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('AUXILIAR')")
+@Tag(
+        name = "Reserva Espacio Controller",
+        description = "Controlador para gestión de reservas de espacios áulicos. " +
+                "Acceso general: ADMIN, DIRECTOR, DOCENTE, AUXILIAR. " +
+                "Aprobar/Denegar: solo ADMIN, DIRECTOR, AUXILIAR."
+)
 @RequiredArgsConstructor
 public class ReservaEspacioController {
 
@@ -27,7 +35,6 @@ public class ReservaEspacioController {
 
     // --- SOLICITUD DE RESERVA (Usuario Solicitante) ---
     @PostMapping("/solicitar")
-    @PreAuthorize("isAuthenticated()") // Cualquier usuario logueado puede solicitar
     @Operation(summary = "Solicitar nueva reserva",
             description = "Crea una solicitud de reserva en estado PENDIENTE. Valida disponibilidad y capacidad.")
     public ResponseEntity<ReservaEspacioResponse> solicitarReserva(@Valid @RequestBody ReservaEspacioRequest request) {
@@ -53,7 +60,6 @@ public class ReservaEspacioController {
 
     // --- CANCELAR (Usuario Solicitante) ---
     @PatchMapping("/{id}/cancelar")
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cancelar reserva",
             description = "Permite al usuario cancelar su propia reserva si está PENDIENTE o APROBADA.")
     public ResponseEntity<ReservaEspacioResponse> cancelarReserva(
@@ -118,7 +124,7 @@ public class ReservaEspacioController {
 
     // ---GESTIÓN: APROBAR (Administrativo) ---
     @PatchMapping("/{id}/aprobar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'AUXULIAR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'AUXILIAR')")
     @Operation(summary = "Aprobar reserva",
             description = "Cambia el estado de una reserva PENDIENTE a APROBADA.")
     public ResponseEntity<ReservaEspacioResponse> aprobarReserva(@PathVariable Long id) {

@@ -19,8 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/promocion")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
-@Tag(name = "Promoción Masiva", description = "Operaciones para promoción masiva de alumnos")
+@Tag(
+        name = "Promoción Masiva", 
+        description = "Operaciones para promoción masiva de alumnos. " +
+                "Acceso restringido exclusivamente a usuarios con rol ADMIN."
+)
 public class PromocionMasivaController {
 
     private final PromocionMasivaService promocionMasivaService;
@@ -34,7 +39,6 @@ public class PromocionMasivaController {
             @ApiResponse(responseCode = "403", description = "Sin permisos para esta operación"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
     public ResponseEntity<PromocionMasivaResponse> ejecutarPromocionMasiva(@Valid @RequestBody PromocionMasivaRequest request) {
         try {
             PromocionMasivaResponse response = promocionMasivaService.ejecutarPromocionMasiva(request);
@@ -75,7 +79,6 @@ public class PromocionMasivaController {
     @PostMapping("/masiva/simulacion")
     @Operation(summary = "Simular promoción masiva",
             description = "Simula la promoción sin hacer cambios reales en la base de datos")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR')")
     public ResponseEntity<PromocionMasivaResponse> simularPromocionMasiva(@Valid @RequestBody PromocionMasivaRequest request) {
         // Forzar dryRun a true para simulación
         request.setDryRun(true);

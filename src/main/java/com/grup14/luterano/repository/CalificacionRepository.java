@@ -165,7 +165,7 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
     @Query("""
         SELECT c FROM Calificacion c
         JOIN c.historialMateria hm
-        JOIN hm.historiaCurso hc
+        JOIN hm.historialCurso hc
         JOIN hc.alumno a
         JOIN hc.cicloLectivo cl
         JOIN hm.materiaCurso mc
@@ -179,7 +179,7 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
     @Query("""
         SELECT c FROM Calificacion c
         JOIN c.historialMateria hm
-        JOIN hm.historiaCurso hc
+        JOIN hm.historialCurso hc
         JOIN hc.alumno a
         JOIN hc.cicloLectivo cl
         JOIN hm.materiaCurso mc
