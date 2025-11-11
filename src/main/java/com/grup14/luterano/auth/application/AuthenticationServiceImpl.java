@@ -4,11 +4,13 @@ import com.grup14.luterano.auth.infrastructure.AuthenticateException;
 import com.grup14.luterano.auth.infrastructure.AuthenticationRequest;
 import com.grup14.luterano.auth.infrastructure.AuthenticationResponse;
 import com.grup14.luterano.auth.infrastructure.RegisterRequest;
+import com.grup14.luterano.dto.UserDto;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.event.UserEvent;
 import com.grup14.luterano.repository.RoleRepository;
 import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.response.user.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -79,6 +81,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .orElseThrow(() -> new AuthenticateException("Usuario no encontrado"));
             Map<String, Object> extraClaims = new HashMap<>();
             extraClaims.put("role", user.getRol().getName());
+            UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .lastName(user.getLastName())
+                .rol(user.getRol())
+                .name(user.getName())
+            .build();
+            extraClaims.put("user",userDto);
             String jwtToken = jwtService.generateToken(extraClaims, user);
             logger.info("----------Se loggeo " + user.getEmail() + "----------");
             return AuthenticationResponse.builder()
