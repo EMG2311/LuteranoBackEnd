@@ -81,13 +81,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .orElseThrow(() -> new AuthenticateException("Usuario no encontrado"));
             Map<String, Object> extraClaims = new HashMap<>();
             extraClaims.put("role", user.getRol().getName());
-                UserDto userDto = UserDto.builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .lastName(user.getLastName())
-                    .rol(user.getRol())
-                    .name(user.getName())
-                .build();
+            UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .lastName(user.getLastName())
+                .rol(user.getRol())
+                .name(user.getName())
+            .build();
             extraClaims.put("user",userDto);
             String jwtToken = jwtService.generateToken(extraClaims, user);
             logger.info("----------Se loggeo " + user.getEmail() + "----------");
