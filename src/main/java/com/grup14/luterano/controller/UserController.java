@@ -92,6 +92,7 @@ public class UserController {
     }
 
     @PostMapping("/email")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Busca un usuario con mail")
     public ResponseEntity<UserResponse> getUsuarioByEmail(@Valid @RequestBody EmailRequest emailRequest) {
         try {
