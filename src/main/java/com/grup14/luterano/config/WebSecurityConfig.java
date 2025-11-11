@@ -38,7 +38,7 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // << AGREGAR ESTA LÍNEA
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("api/auth/**"
+                        .requestMatchers("/api/auth/**"
                                 , "/swagger-ui/**"
                                 , "/swagger-ui.html"
                                 , "/v3/api-docs/**").permitAll()
