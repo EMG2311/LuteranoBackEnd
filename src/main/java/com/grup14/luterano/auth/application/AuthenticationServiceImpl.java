@@ -8,8 +8,7 @@ import com.grup14.luterano.dto.UserDto;
 import com.grup14.luterano.entities.User;
 import com.grup14.luterano.entities.enums.UserStatus;
 import com.grup14.luterano.event.UserEvent;
-import com.grup14.luterano.repository.RoleRepository;
-import com.grup14.luterano.repository.UserRepository;
+import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.user.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private DocenteRepository docenteRepository;
+    @Autowired
+    private PreceptorRepository preceptorRepository;
+    @Autowired
+    private AlumnoRepository alumnoRepository;
+    @Autowired
+    private TutorRepository tutorRepository;
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
     @Transactional
@@ -79,18 +86,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             );
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new AuthenticateException("Usuario no encontrado"));
+            
             Map<String, Object> extraClaims = new HashMap<>();
             extraClaims.put("role", user.getRol().getName());
-            UserDto userDto = UserDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .lastName(user.getLastName())
-                .rol(user.getRol())
-                .name(user.getName())
-            .build();
-            extraClaims.put("user",userDto);
+            extraClaims.put("userId", user.getId());
+            
+            // Agregar información específica según el rol
+            String roleName = user.getRol().getName();
+            switch (roleName) {
+                case "ROLE_DOCENTE":
+                    docenteRepository.findByEmail(user.getEmail())
+                        .ifPresent(docente -> extraClaims.put("docenteId", docente.getId()));
+                    break;
+                case "ROLE_PRECEPTOR":
+                    preceptorRepository.findByEmail(user.getEmail())
+                        .ifPresent(preceptor -> extraClaims.put("preceptorId", preceptor.getId()));
+                    break;
+                case "ROLE_ALUMNO":
+                    alumnoRepository.findByEmail(user.getEmail())
+                        .ifPresent(alumno -> extraClaims.put("alumnoId", alumno.getId()));
+                    break;
+                case "ROLE_TUTOR":
+                    tutorRepository.findByEmail(user.getEmail())
+                        .ifPresent(tutor -> extraClaims.put("tutorId", tutor.getId()));
+                    break;
+                // Para ADMIN, DIRECTOR, AUXILIAR no hay entidades específicas
+                case "ROLE_ADMIN":
+                case "ROLE_DIRECTOR":
+                case "ROLE_AUXILIAR":
+                default:
+                    // No agregamos IDs adicionales para estos roles
+                    break;
+            }
+            
             String jwtToken = jwtService.generateToken(extraClaims, user);
-            logger.info("----------Se loggeo " + user.getEmail() + "----------");
+            logger.info("----------Se loggeo " + user.getEmail() + " (" + roleName + ")----------");
             return AuthenticationResponse.builder()
                     .token(jwtToken)
                     .mensaje("hola " + user.getName() + " " + user.getLastName())
