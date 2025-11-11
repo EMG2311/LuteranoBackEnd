@@ -22,8 +22,6 @@ public interface ActaExamenRepository extends JpaRepository<ActaExamen, Long> {
               left join fetch m.turno t
               left join fetch m.docentes md
               left join fetch md.docente d
-              left join fetch m.alumnos ma
-              left join fetch ma.alumno al
               where a.id = :id
             """)
     Optional<ActaExamen> findByIdWithDetails(Long id);

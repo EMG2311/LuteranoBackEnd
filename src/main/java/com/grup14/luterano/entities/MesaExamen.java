@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -34,9 +35,11 @@ public class MesaExamen {
     private EstadoMesaExamen estado;
 
     @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 25)
     private List<MesaExamenAlumno> alumnos = new ArrayList<>();
 
     @OneToMany(mappedBy = "mesaExamen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 10)
     @Builder.Default
     private List<MesaExamenDocente> docentes = new ArrayList<>();
 
