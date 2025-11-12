@@ -149,7 +149,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
     }
 
     private boolean esDesaprobada(Integer nota) {
-        return nota != null && nota < 7; // Nota menor a 7 es desaprobada
+        return nota != null && nota < 6; // Nota menor a 6 es desaprobada (6 se aprueba)
     }
 
     private ReporteExamenesConsecutivosDto construirCasoDetectado(Calificacion primera, Calificacion segunda) {
