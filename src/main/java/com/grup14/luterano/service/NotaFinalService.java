@@ -9,7 +9,7 @@ public interface NotaFinalService {
      * <p>
      * Lógica:
      * 1. Si tiene mesa de examen → usar notaFinal de la mesa más reciente
-     * 2. Si no tiene mesa → usar PG truncado (sin decimales)
+     * 2. Si no tiene mesa → usar PG redondeado al entero más cercano
      *
      * @param alumnoId  ID del alumno
      * @param materiaId ID de la materia

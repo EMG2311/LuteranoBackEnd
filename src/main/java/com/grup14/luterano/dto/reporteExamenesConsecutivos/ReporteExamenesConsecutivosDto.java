@@ -33,4 +33,10 @@ public class ReporteExamenesConsecutivosDto {
     
     private String descripcionConsecutivo; // "4ta nota Etapa 1 y 1ra nota Etapa 2"
     private String estadoRiesgo; // "CRÍTICO", "ALTO", "MEDIO"
+    
+    // NUEVOS CAMPOS: información del docente a cargo de la materia/curso
+    private Long docenteId;
+    private String docenteNombre;
+    private String docenteApellido;
+    private String docenteNombreCompleto;
 }

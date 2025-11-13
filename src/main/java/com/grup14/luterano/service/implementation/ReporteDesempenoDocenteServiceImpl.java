@@ -2,6 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.reporteDesempeno.ReporteDesempenoDocenteDto;
 import com.grup14.luterano.dto.reporteDesempeno.ReporteDesempenoMateriaDto;
+import com.grup14.luterano.repository.CalificacionRepository;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
 import com.grup14.luterano.repository.MateriaCursoRepository;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocenteService {
 
+    private final CalificacionRepository calificacionRepository;
     private final MateriaCursoRepository materiaCursoRepository;
     private final HistorialCursoRepository historialCursoRepository;
     private final CicloLectivoRepository cicloLectivoRepository;
@@ -362,5 +364,23 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
         recomendaciones.add("Analizar factores externos que puedan estar afectando el rendimiento estudiantil");
 
         return recomendaciones;
+    }
+
+    @Override
+    public ReporteDesempenoResponse generarReporteNotasIndividuales(int cicloLectivoAnio) {
+        log.info("Generando reporte de notas individuales para año: {}", cicloLectivoAnio);
+        
+        // TODO: Implementar análisis de las 4 notas individuales por etapa
+        // Este método analizará cada nota individual (1-4) de cada etapa (1-2)
+        // calculando porcentajes de notas < 6 por docente y materia
+        
+        return ReporteDesempenoResponse.builder()
+                .code(0)
+                .mensaje("Funcionalidad en desarrollo - análisis de notas individuales")
+                .cicloLectivoAnio(cicloLectivoAnio)
+                .resultadosPorMateria(new ArrayList<>())
+                .hallazgosImportantes(List.of("Funcionalidad en desarrollo"))
+                .recomendaciones(List.of("Se implementará próximamente"))
+                .build();
     }
 }

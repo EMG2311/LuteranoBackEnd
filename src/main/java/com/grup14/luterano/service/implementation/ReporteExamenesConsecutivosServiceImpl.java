@@ -157,15 +157,31 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
             var historialMateria = primera.getHistorialMateria();
             var alumno = historialMateria.getHistorialCurso().getAlumno();
             var materia = historialMateria.getMateriaCurso().getMateria();
-            var curso = historialMateria.getMateriaCurso().getCurso();
+        var curso = historialMateria.getMateriaCurso().getCurso();
 
-            String descripcion = String.format("%dº nota Etapa %d y %dº nota Etapa %d",
-                    primera.getNumeroNota(), primera.getEtapa(),
-                    segunda.getNumeroNota(), segunda.getEtapa());
+        // Obtener información del docente asignado a la materia-curso (si existe)
+        var materiaCurso = historialMateria.getMateriaCurso();
+        var docente = materiaCurso.getDocente(); // puede ser null
 
-            String estadoRiesgo = determinarEstadoRiesgo(primera.getNota(), segunda.getNota());
+        String docenteNombreCompleto = null;
+        Long docenteId = null;
+        String docenteNombre = null;
+        String docenteApellido = null;
 
-            return ReporteExamenesConsecutivosDto.builder()
+        if (docente != null) {
+        docenteId = docente.getId();
+        docenteNombre = docente.getNombre();
+        docenteApellido = docente.getApellido();
+        docenteNombreCompleto = docente.getApellido() + ", " + docente.getNombre();
+        }
+
+        String descripcion = String.format("%dº nota Etapa %d y %dº nota Etapa %d",
+            primera.getNumeroNota(), primera.getEtapa(),
+            segunda.getNumeroNota(), segunda.getEtapa());
+
+        String estadoRiesgo = determinarEstadoRiesgo(primera.getNota(), segunda.getNota());
+
+        return ReporteExamenesConsecutivosDto.builder()
                     .alumnoId(alumno.getId())
                     .alumnoNombre(alumno.getNombre())
                     .alumnoApellido(alumno.getApellido())
@@ -184,6 +200,10 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
                     .numeroSegundaNota(segunda.getNumeroNota())
                     .descripcionConsecutivo(descripcion)
                     .estadoRiesgo(estadoRiesgo)
+                    .docenteId(docenteId)
+                    .docenteNombre(docenteNombre)
+                    .docenteApellido(docenteApellido)
+                    .docenteNombreCompleto(docenteNombreCompleto)
                     .build();
 
         } catch (Exception e) {

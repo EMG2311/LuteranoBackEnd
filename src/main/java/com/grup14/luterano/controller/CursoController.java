@@ -110,6 +110,7 @@ public class CursoController {
     }
 
     @GetMapping("/list/preceptor/{preceptorId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
     @Operation(summary = "lista los cursos de un preceptor")
     public ResponseEntity<CursoResponseList> listarCursosPorPreceptor(@PathVariable Long preceptorId) {
         try {
@@ -132,6 +133,7 @@ public class CursoController {
     }
 
     @GetMapping("/list/docente/{docenteId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE')")
     @Operation(summary = "lista los cursos de un docente")
     public ResponseEntity<CursoResponseList> listarCursosPorDocente(@PathVariable Long docenteId) {
         try {

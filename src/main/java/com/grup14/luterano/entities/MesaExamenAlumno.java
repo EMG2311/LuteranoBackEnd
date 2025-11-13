@@ -1,5 +1,6 @@
 package com.grup14.luterano.entities;
 
+import com.grup14.luterano.entities.enums.CondicionRinde;
 import com.grup14.luterano.entities.enums.EstadoConvocado;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,9 @@ public class MesaExamenAlumno {
 
     @Enumerated(EnumType.STRING)
     private EstadoConvocado estado;  // NEW
+
+    @Enumerated(EnumType.STRING)
+    private CondicionRinde condicionRinde; // COLOQUIO o EXAMEN
 
     private Integer notaFinal;       // rename
     @ManyToOne(optional = false)

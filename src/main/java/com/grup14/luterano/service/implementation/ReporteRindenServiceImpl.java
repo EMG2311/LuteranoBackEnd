@@ -9,6 +9,7 @@ import com.grup14.luterano.repository.CalificacionRepository;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
+import com.grup14.luterano.repository.MesaExamenAlumnoRepository;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
 import com.grup14.luterano.service.ReporteRindenService;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
     private final CicloLectivoRepository cicloLectivoRepository;
     private final HistorialCursoRepository historialCursoRepository;
     private final CalificacionRepository calificacionRepository;
+    private final MesaExamenAlumnoRepository mesaExamenAlumnoRepo;
 
     @Transactional(readOnly = true)
     public ReporteRindenResponse listarRindenPorCurso(Long cursoId, int anio) {
@@ -103,6 +105,48 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 Double e2 = (agg.cnt2 == 0) ? null : round1((double) agg.sum2 / agg.cnt2);
                 Double pg = pg(e1, e2);
 
+                // Buscar nota de mesa de examen para este alumno y materia en el año                
+                List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
+                    .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, ciclo.getFechaDesde(), ciclo.getFechaHasta());
+                
+                // Filtrar por materia y obtener la más reciente
+                MesaExamenAlumno mesaMasReciente = mesas.stream()
+                    .filter(mea -> mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId))
+                    .filter(mea -> mea.getNotaFinal() != null)
+                    .max((mesa1, mesa2) -> {
+                        LocalDate fecha1 = mesa1.getMesaExamen().getFecha();
+                        LocalDate fecha2 = mesa2.getMesaExamen().getFecha();
+                        if (fecha1 == null && fecha2 == null) return 0;
+                        if (fecha1 == null) return -1;
+                        if (fecha2 == null) return 1;
+                        return fecha1.compareTo(fecha2);
+                    })
+                    .orElse(null);
+
+                // Determinar notas de coloquio y examen
+                Integer notaCo = null;
+                Integer notaEx = null;
+                Double notaPf = null;
+
+                if (mesaMasReciente != null) {
+                    boolean apr1 = e1 != null && e1 >= 6.0;
+                    boolean apr2 = e2 != null && e2 >= 6.0;
+                    
+                    // Si aprobó solo una etapa → COLOQUIO
+                    // Si desaprobó ambas etapas → EXAMEN FINAL
+                    if (apr1 ^ apr2) {  // XOR - solo una etapa aprobada
+                        notaCo = mesaMasReciente.getNotaFinal();
+                        notaEx = null;
+                    } else {  // ambas desaprobadas
+                        notaCo = null;
+                        notaEx = mesaMasReciente.getNotaFinal();
+                    }
+                    notaPf = mesaMasReciente.getNotaFinal().doubleValue();
+                } else if (pg != null) {
+                    // Si no hay mesa de examen, PF = PG redondeado
+                    notaPf = (double) Math.round(pg);
+                }
+
                 boolean apr1 = e1 != null && e1 >= 6.0;
                 boolean apr2 = e2 != null && e2 >= 6.0;
 
@@ -120,7 +164,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                         .materiaId(materiaId)
                         .materiaNombre(agg.materiaNombre)
                         .e1(e1).e2(e2).pg(pg)
-                        .co(null).ex(null).pf(null)
+                        .co(notaCo).ex(notaEx).pf(notaPf)
                         .condicion(cond)
                         .build());
             }

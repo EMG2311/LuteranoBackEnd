@@ -44,6 +44,8 @@ public class ActaExamenMapper {
                         .dni(alumno.getDni())
                         .nota(mesaAlumno.getNotaFinal())
                         .observacion(observacion)
+                        .condicionRinde(mesaAlumno.getCondicionRinde() != null ? 
+                            mesaAlumno.getCondicionRinde().name() : null)
                         .build());
             }
         }

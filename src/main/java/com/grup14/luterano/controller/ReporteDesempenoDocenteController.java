@@ -122,4 +122,35 @@ public class ReporteDesempenoDocenteController {
             );
         }
     }
+
+    @GetMapping("/{cicloLectivoAnio}/notas-individuales")
+    @Operation(
+            summary = "Reporte de análisis de notas individuales por docente",
+            description = "Analiza las 4 notas individuales de cada etapa para identificar diferencias de rendimiento " +
+                    "entre docentes de la misma materia. Útil para detectar casos donde un docente puede necesitar apoyo."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reporte de notas individuales generado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Ciclo lectivo no encontrado"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - rol insuficiente")
+    })
+    public ResponseEntity<ReporteDesempenoResponse> generarReporteNotasIndividuales(
+            @Parameter(description = "Año del ciclo lectivo a analizar", example = "2024")
+            @PathVariable Integer cicloLectivoAnio) {
+
+        log.info("Generando reporte de notas individuales para ciclo: {}", cicloLectivoAnio);
+
+        try {
+            ReporteDesempenoResponse response = reporteService.generarReporteNotasIndividuales(cicloLectivoAnio);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error al generar reporte de notas individuales: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    ReporteDesempenoResponse.builder()
+                            .code(-1)
+                            .mensaje("Error al generar reporte: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
 }

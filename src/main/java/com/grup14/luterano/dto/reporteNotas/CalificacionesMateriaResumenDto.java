@@ -18,4 +18,9 @@ public class CalificacionesMateriaResumenDto {
     private Double e2;
     private Double pg;
     private String estado;
+    
+    // NUEVOS CAMPOS: Notas de mesa de examen
+    private Integer co;  // Nota de coloquio (si rindió)
+    private Integer ex;  // Nota de examen final (si rindió)
+    private Double pfa;  // Promedio Final Anual (nota final calculada)
 }

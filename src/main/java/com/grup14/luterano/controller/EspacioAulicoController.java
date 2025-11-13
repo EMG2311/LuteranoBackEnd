@@ -94,6 +94,7 @@ public class EspacioAulicoController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR') or hasRole('AUXILIAR')")
     @Operation(summary = "Lista todos los espacios áulicos", description = "Obtiene una lista de todos los espacios áulicos disponibles.")
     public ResponseEntity<EspacioAulicoResponseList> listEspacios() {
         try {

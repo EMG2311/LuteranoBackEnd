@@ -21,11 +21,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('AUXILIAR')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR') or hasRole('AUXILIAR')")
 @Tag(
         name = "Reserva Espacio Controller",
         description = "Controlador para gestión de reservas de espacios áulicos. " +
-                "Acceso general: ADMIN, DIRECTOR, DOCENTE, AUXILIAR. " +
+                "Acceso general: ADMIN, DIRECTOR, DOCENTE, PRECEPTOR, AUXILIAR. " +
                 "Aprobar/Denegar: solo ADMIN, DIRECTOR, AUXILIAR."
 )
 @RequiredArgsConstructor
@@ -98,8 +98,8 @@ public class ReservaEspacioController {
     }
 
     // --- RESERVAS CON FILTRO ---
-    @GetMapping("/filtros")
-    @Operation(summary = "Listar reservas",
+    @PostMapping("/filtros")
+    @Operation(summary = "Listar reservas con filtros",
             description = "Permite listar reservas por filtro. Si no se especifican filtros, lista todas las reservas.")
     public ResponseEntity<ReservaEspacioResponseList> obtenerReservas(@RequestBody @Validated ReservaEspacioFiltroRequest filtros) {
         try {

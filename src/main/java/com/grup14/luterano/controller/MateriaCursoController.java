@@ -73,6 +73,7 @@ public class MateriaCursoController {
 
 
     @GetMapping("/listarMateriasDeCurso/{cursoId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('PRECEPTOR')")
     @Operation(summary = "Lista todas las materias de un curso")
     public ResponseEntity<MateriaCursoListResponse> listarMateriasDeCurso(
             @PathVariable Long cursoId) {

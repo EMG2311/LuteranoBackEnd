@@ -60,7 +60,7 @@ public class NotaFinalServiceImpl implements NotaFinalService {
             );
         }
 
-        // 3. Si no tiene mesa, calcular desde PG truncado
+        // 3. Si no tiene mesa, calcular desde PG redondeado
         CalificacionesAlumnoAnioResponse reporteNotas = reporteNotasService.listarResumenPorAnio(alumnoId, anio);
 
         if (reporteNotas == null || reporteNotas.getCalificacionesAlumnoResumenDto() == null) {
@@ -77,9 +77,9 @@ public class NotaFinalServiceImpl implements NotaFinalService {
             return null;
         }
 
-        // Truncar el PG (quitar decimales)
-        Integer notaFinalTruncada = (int) Math.floor(materia.getPg());
+        // Redondear el PG al entero más cercano (no truncar hacia abajo)
+        Integer notaFinalRedondeada = (int) Math.round(materia.getPg());
 
-        return NotaFinalDetalleDto.desdePromedio(notaFinalTruncada, materia.getPg());
+        return NotaFinalDetalleDto.desdePromedio(notaFinalRedondeada, materia.getPg());
     }
 }
