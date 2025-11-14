@@ -28,6 +28,9 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long>, JpaSpecif
 
     List<Alumno> findByCursoActual_IdAndEstadoNot(Long cursoId, EstadoAlumno estado);
 
+    // Método para obtener alumnos activos de un curso (excluye borrados, egresados, excluidos)
+    List<Alumno> findByCursoActual_IdAndEstadoNotIn(Long cursoId, List<EstadoAlumno> estados);
+
     List<Alumno> findByEstadoNotIn(List<EstadoAlumno> estados);
 
     List<Alumno> findByEstado(EstadoAlumno estado); // Para consultar egresados específicamente

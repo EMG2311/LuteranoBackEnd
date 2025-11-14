@@ -88,7 +88,7 @@ public class HistorialCursoServiceImpl implements HistorialCursoService {
                     .getId();
         }
 
-        List<HistorialCurso> historiales = historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, cicloId);
+        List<HistorialCurso> historiales = historialCursoRepository.findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, cicloId);
 
         List<AlumnoDto> alumnos = historiales.stream()
                 .map(HistorialCurso::getAlumno)

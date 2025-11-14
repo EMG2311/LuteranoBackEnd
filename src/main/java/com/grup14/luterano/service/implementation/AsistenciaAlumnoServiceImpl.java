@@ -49,9 +49,8 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
         Curso curso = cursoRepo.findById(req.getCursoId())
                 .orElseThrow(() -> new AsistenciaException("Curso no encontrado"));
 
-        var alumnos = alumnoRepo.findByCursoActual_Id(curso.getId()).stream()
-                .filter(a -> a.getEstado() != EstadoAlumno.BORRADO)
-                .toList();
+        var alumnos = alumnoRepo.findByCursoActual_IdAndEstadoNotIn(curso.getId(), 
+                List.of(EstadoAlumno.BORRADO, EstadoAlumno.EGRESADO, EstadoAlumno.EXCLUIDO_POR_REPETICION));
 
         var presentes = new HashSet<>(Optional.ofNullable(req.getPresentesIds()).orElseGet(List::of));
         var overrides = Optional.ofNullable(req.getOverridesPorAlumnoId()).orElseGet(Map::of);

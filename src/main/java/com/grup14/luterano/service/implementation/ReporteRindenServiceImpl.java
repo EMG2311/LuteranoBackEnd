@@ -44,7 +44,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 .findByFechaDesdeBeforeAndFechaHastaAfter(pivote, pivote)
                 .orElseThrow(() -> new ReporteRindeException("No hay ciclo lectivo para el año " + anio));
 
-        List<HistorialCurso> hcs = historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, ciclo.getId());
+        List<HistorialCurso> hcs = historialCursoRepository.findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId());
         List<Alumno> alumnos = hcs.stream().map(HistorialCurso::getAlumno).toList();
         if (alumnos.isEmpty()) {
             return ReporteRindenResponse.builder()
@@ -217,7 +217,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 .orElseThrow(() -> new ReporteRindeException("No hay ciclo lectivo para el año " + anio));
 
         // Obtener TODOS los alumnos del curso (incluyendo promovidos)
-        List<HistorialCurso> historiales = historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, ciclo.getId());
+        List<HistorialCurso> historiales = historialCursoRepository.findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId());
         List<Alumno> alumnos = historiales.stream().map(HistorialCurso::getAlumno).toList();
         if (alumnos.isEmpty()) {
             return ReporteRindenResponse.builder()

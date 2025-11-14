@@ -42,7 +42,7 @@ public class ReporteLibreServiceImpl implements ReporteLibreService {
 
         // historiales abiertos: por curso o todos
         List<HistorialCurso> hcs = (cursoId != null)
-                ? historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, ciclo.getId())
+                ? historialCursoRepository.findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId())
                 : historialCursoRepository.findAbiertosByCiclo(ciclo.getId());
 
         if (hcs.isEmpty()) {

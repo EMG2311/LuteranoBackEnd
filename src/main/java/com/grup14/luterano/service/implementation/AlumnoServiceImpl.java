@@ -64,10 +64,17 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Transactional
     public AlumnoResponse crearAlumno(AlumnoRequest alumnoRequest) {  // 1. Validar si ya existe un alumno con el mismo DNI.
 
-        alumnoRepository.findByDni(alumnoRequest.getDni())
-                .ifPresent(a -> {
-                    throw new AlumnoException("Ya existe un alumno registrado con ese DNI");
-                });
+        // Buscar alumno existente por DNI (incluyendo borrados)
+        Alumno alumnoExistente = alumnoRepository.findByDni(alumnoRequest.getDni()).orElse(null);
+        
+        if (alumnoExistente != null) {
+            if (alumnoExistente.getEstado() == EstadoAlumno.BORRADO) {
+                // Reactivar alumno borrado con nuevos datos
+                return reactivarAlumno(alumnoExistente, alumnoRequest);
+            } else {
+                throw new AlumnoException("Ya existe un alumno activo registrado con ese DNI");
+            }
+        }
 
         // Validación obligatoria: el curso debe estar especificado
         if (alumnoRequest.getCursoActual() == null || alumnoRequest.getCursoActual().getId() == null) {
@@ -92,6 +99,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         Alumno alumno = AlumnoMapper.toEntity(alumnoRequest);
         alumno.setCursoActual(curso);
         alumno.setTutores(tutores);
+        alumno.setEstado(EstadoAlumno.REGULAR); // Establecer estado inicial
         alumno.setEstado(EstadoAlumno.REGULAR);
         alumno = alumnoRepository.save(alumno);
 
@@ -160,8 +168,12 @@ public class AlumnoServiceImpl implements AlumnoService {
     @Override
     public AlumnoResponse deleteAlumno(Long id) {
         Alumno alumno = alumnoRepository.findById(id).orElseThrow(() -> new AlumnoException("No existe el alumno id " + id));
-        alumnoRepository.deleteById(id);
-        logger.info("Se elimino correctamente el alumno " + id);
+        
+        // Soft delete: cambiar estado a BORRADO
+        alumno.setEstado(EstadoAlumno.BORRADO);
+        alumnoRepository.save(alumno);
+        
+        logger.info("Se marco como borrado el alumno " + id);
         return AlumnoResponse.builder()
                 .alumno(new AlumnoDto())
                 .code(0)
@@ -354,6 +366,81 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .alumno(AlumnoMapper.toDto(alumno))
                 .code(0)
                 .mensaje("Tutor removido correctamente")
+                .build();
+    }
+
+    /**
+     * Reactiva un alumno borrado actualizando sus datos con la información nueva
+     */
+    private AlumnoResponse reactivarAlumno(Alumno alumnoExistente, AlumnoRequest alumnoRequest) {
+        logger.info("Reactivando alumno borrado con DNI: " + alumnoRequest.getDni());
+        
+        // Validar curso
+        Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
+                .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
+
+        // Actualizar datos del alumno
+        alumnoExistente.setNombre(alumnoRequest.getNombre());
+        alumnoExistente.setApellido(alumnoRequest.getApellido());
+        alumnoExistente.setTelefono(alumnoRequest.getTelefono());
+        alumnoExistente.setDireccion(alumnoRequest.getDireccion());
+        alumnoExistente.setEmail(alumnoRequest.getEmail());
+        alumnoExistente.setCursoActual(curso);
+        alumnoExistente.setEstado(EstadoAlumno.REGULAR); // Reactivar como REGULAR
+        
+        // Resetear contadores de repeticiones si es necesario
+        alumnoExistente.setCantidadRepeticiones(0);
+        
+        // Manejar tutores (limpiar y agregar nuevos)
+        alumnoExistente.getTutores().clear();
+        if (alumnoRequest.getTutores() != null && !alumnoRequest.getTutores().isEmpty()) {
+            List<Tutor> tutores = new ArrayList<>();
+            for (TutorDto tutorDto : alumnoRequest.getTutores()) {
+                if (tutorDto != null && tutorDto.getId() != null) {
+                    Tutor tutor = tutorRepository.findById(tutorDto.getId())
+                            .orElseThrow(() -> new AlumnoException("No existe el tutor con ID " + tutorDto.getId()));
+                    tutores.add(tutor);
+                }
+            }
+            alumnoExistente.setTutores(tutores);
+        }
+        
+        alumnoExistente = alumnoRepository.save(alumnoExistente);
+        
+        // Crear o reactivar historial de curso para la reactivación
+        CicloLectivo cicloActual = cicloLectivoRepository.findTopByOrderByFechaHastaDesc()
+                .orElseThrow(() -> new AlumnoException("No hay un ciclo lectivo disponible"));
+        
+        // Buscar si ya existe un historial para este ciclo lectivo
+        List<HistorialCurso> historialesExistentes = historialCursoRepository
+                .findByAlumno_IdAndCicloLectivo_Id(alumnoExistente.getId(), cicloActual.getId());
+                
+        if (!historialesExistentes.isEmpty()) {
+            // El alumno se fue y vuelve en el mismo ciclo lectivo
+            logger.info("Alumno vuelve en el mismo ciclo lectivo, reactivando historial existente");
+            HistorialCurso historialExistente = historialesExistentes.get(0); // Tomar el primero
+            historialExistente.setCurso(curso);
+            historialExistente.setFechaHasta(null); // Quitar fecha de finalización si la tenía
+            historialCursoRepository.save(historialExistente);
+        } else {
+            // Crear nuevo historial para un ciclo lectivo diferente
+            logger.info("Creando nuevo historial de curso para el alumno reactivado");
+            HistorialCurso historialCurso = HistorialCurso.builder()
+                    .alumno(alumnoExistente)
+                    .curso(curso)
+                    .cicloLectivo(cicloActual)
+                    .fechaDesde(LocalDate.now())
+                    .build();
+                    
+            historialCursoRepository.save(historialCurso);
+        }
+
+        logger.info("Alumno reactivado exitosamente con ID: " + alumnoExistente.getId());
+        
+        return AlumnoResponse.builder()
+                .alumno(AlumnoMapper.toDto(alumnoExistente))
+                .code(0)
+                .mensaje("Alumno reactivado correctamente")
                 .build();
     }
 

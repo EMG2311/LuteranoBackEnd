@@ -61,6 +61,22 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
             @Param("cicloId") Long cicloId
     );
 
+    // Método para obtener historiales activos excluyendo alumnos borrados, egresados y excluidos
+    @Query("""
+               select hc
+               from HistorialCurso hc
+               join fetch hc.alumno a
+               where hc.curso.id = :cursoId
+                 and hc.cicloLectivo.id = :cicloId
+                 and hc.fechaHasta is null
+                 and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+               order by a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findAbiertosByCursoAndCicloExcluyendoInactivos(
+            @Param("cursoId") Long cursoId,
+            @Param("cicloId") Long cicloId
+    );
+
 
     @Query("""
                select hc
@@ -92,6 +108,23 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
             @Param("cicloId") Long cicloId
     );
 
+    // Métodos para ranking por promedio excluyendo alumnos inactivos
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
+                where hc.curso.id = :cursoId
+                  and hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                  and hc.promedio is not null
+                  and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+                order by hc.promedio desc, a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findRankingByCursoAndCicloExcluyendoInactivos(
+            @Param("cursoId") Long cursoId,
+            @Param("cicloId") Long cicloId
+    );
+
     @Query("""
                 select hc
                 from HistorialCurso hc
@@ -103,6 +136,19 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
                 order by hc.promedio desc, a.apellido asc, a.nombre asc
             """)
     List<HistorialCurso> findRankingByCiclo(@Param("cicloId") Long cicloId);
+
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
+                join fetch hc.curso c
+                where hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                  and hc.promedio is not null
+                  and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+                order by hc.promedio desc, a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findRankingByCicloExcluyendoInactivos(@Param("cicloId") Long cicloId);
 
     // Método para obtener historiales activos sin filtrar por promedio (para ranking dinámico)
     @Query("""
@@ -123,12 +169,39 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
                 select hc
                 from HistorialCurso hc
                 join fetch hc.alumno a
+                where hc.curso.id = :cursoId
+                  and hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                  and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+                order by a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findHistorialesActivosParaRankingExcluyendoInactivos(
+            @Param("cursoId") Long cursoId,
+            @Param("cicloId") Long cicloId
+    );
+
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
                 join fetch hc.curso c
                 where hc.cicloLectivo.id = :cicloId
                   and hc.fechaHasta is null
                 order by a.apellido asc, a.nombre asc
             """)
     List<HistorialCurso> findHistorialesActivosParaRankingTodos(@Param("cicloId") Long cicloId);
+
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
+                join fetch hc.curso c
+                where hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                  and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+                order by a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findHistorialesActivosParaRankingTodosExcluyendoInactivos(@Param("cicloId") Long cicloId);
 
     @Query("""
                 select distinct c

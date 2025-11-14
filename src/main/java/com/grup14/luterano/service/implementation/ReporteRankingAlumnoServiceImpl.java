@@ -56,7 +56,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
         // Obtener ranking del curso usando solo promedios ya calculados
-        List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCiclo(cursoId, ciclo.getId());
+        List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId());
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
         String cursoNombre = curso.getAnio() + "° " + curso.getDivision().toString() + " - " + curso.getNivel().toString();
@@ -80,7 +80,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
         // Obtener ranking de todo el colegio usando solo promedios ya calculados
-        List<HistorialCurso> historiales = historialCursoRepo.findRankingByCiclo(ciclo.getId());
+        List<HistorialCurso> historiales = historialCursoRepo.findRankingByCicloExcluyendoInactivos(ciclo.getId());
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
         return RankingAlumnosColegioResponse.builder()
@@ -105,7 +105,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         List<CursoRankingDto> cursosRanking = cursos.stream()
                 .map(curso -> {
                     // Obtener ranking del curso usando solo promedios ya calculados
-                    List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCiclo(curso.getId(), ciclo.getId());
+                    List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCicloExcluyendoInactivos(curso.getId(), ciclo.getId());
                     List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
                     return CursoRankingDto.builder()
