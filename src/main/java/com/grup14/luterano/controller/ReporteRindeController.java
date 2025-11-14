@@ -54,4 +54,35 @@ public class ReporteRindeController {
             );
         }
     }
+
+    @GetMapping("/cursos/{cursoId}/todos")
+    @Operation(
+            summary = "TODOS los alumnos del curso (incluye aprobados)",
+            description = "Devuelve todos los alumnos del curso incluyendo los promocionados y aprobados por mesa. " +
+                    "Útil para mostrar el estado académico completo."
+    )
+    public ResponseEntity<ReporteRindenResponse> todosLosAlumnosPorCurso(
+            @PathVariable Long cursoId,
+            @RequestParam int anio
+    ) {
+        try {
+            var res = reporteRindenService.listarTodosLosAlumnosPorCurso(cursoId, anio);
+            return ResponseEntity.ok(res);
+
+        } catch (ReporteRindeException e) {
+            return ResponseEntity.status(422).body(
+                    ReporteRindenResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ReporteRindenResponse.builder()
+                            .code(-2)
+                            .mensaje("Error inesperado: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
 }

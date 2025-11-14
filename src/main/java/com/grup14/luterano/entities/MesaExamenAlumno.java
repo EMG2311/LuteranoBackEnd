@@ -3,16 +3,15 @@ package com.grup14.luterano.entities;
 import com.grup14.luterano.entities.enums.CondicionRinde;
 import com.grup14.luterano.entities.enums.EstadoConvocado;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class MesaExamenAlumno {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

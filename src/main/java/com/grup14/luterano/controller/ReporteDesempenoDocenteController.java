@@ -123,6 +123,39 @@ public class ReporteDesempenoDocenteController {
         }
     }
 
+    @GetMapping("/{cicloLectivoAnio}/curso/{cursoId}")
+    @Operation(
+            summary = "Reporte de desempeño por curso específico",
+            description = "Analiza el desempeño de todos los docentes que dictaron clases en un curso específico durante un ciclo lectivo. " +
+                    "Útil para evaluar el rendimiento académico general de un curso y identificar materias o docentes que requieran atención."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reporte por curso generado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Curso o ciclo lectivo no encontrado"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - rol insuficiente")
+    })
+    public ResponseEntity<ReporteDesempenoResponse> generarReportePorCurso(
+            @Parameter(description = "Año del ciclo lectivo a analizar", example = "2024")
+            @PathVariable Integer cicloLectivoAnio,
+            @Parameter(description = "ID del curso a analizar", example = "3")
+            @PathVariable Long cursoId) {
+
+        log.info("Generando reporte de desempeño para curso {} en ciclo: {}", cursoId, cicloLectivoAnio);
+
+        try {
+            ReporteDesempenoResponse response = reporteService.generarReportePorCurso(cicloLectivoAnio, cursoId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error al generar reporte por curso: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(
+                    ReporteDesempenoResponse.builder()
+                            .code(-1)
+                            .mensaje("Error al generar reporte: " + e.getMessage())
+                            .build()
+            );
+        }
+    }
+
     @GetMapping("/{cicloLectivoAnio}/notas-individuales")
     @Operation(
             summary = "Reporte de análisis de notas individuales por docente",

@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class AgregarConvocadosRequest {
-    private List<Long> alumnoIds;   // REQUERIDO
+    private List<Long> alumnoIds;
 }

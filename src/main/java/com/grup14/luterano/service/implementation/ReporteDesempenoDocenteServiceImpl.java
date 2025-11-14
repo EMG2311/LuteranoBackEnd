@@ -367,6 +367,58 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
     }
 
     @Override
+    public ReporteDesempenoResponse generarReportePorCurso(int cicloLectivoAnio, Long cursoId) {
+        log.info("Generando reporte de desempeño para curso {} en año: {}", cursoId, cicloLectivoAnio);
+
+        List<Object[]> materiasConDocente = materiaCursoRepository.findMateriasConDocentePorCicloYCurso(cicloLectivoAnio, cursoId);
+
+        Map<Long, List<ReporteDesempenoDocenteDto>> resultadosPorMateria = new HashMap<>();
+
+        for (Object[] row : materiasConDocente) {
+            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivoAnio);
+
+            Long materiaId = resultado.getMateriaId();
+            resultadosPorMateria.computeIfAbsent(materiaId, k -> new ArrayList<>()).add(resultado);
+        }
+
+        if (resultadosPorMateria.isEmpty()) {
+            return ReporteDesempenoResponse.builder()
+                    .code(-1)
+                    .mensaje("No se encontraron datos para el curso en el año especificado")
+                    .build();
+        }
+
+        List<ReporteDesempenoMateriaDto> reportesMaterias = new ArrayList<>();
+        for (List<ReporteDesempenoDocenteDto> resultados : resultadosPorMateria.values()) {
+            reportesMaterias.add(construirReporteMateria(resultados));
+        }
+
+        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
+                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
+
+        // Obtener información del curso para el resumen
+        String infoCurso = String.format("%s %s %s", 
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getAnio(),
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getNivel(),
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getDivision());
+
+        return ReporteDesempenoResponse.builder()
+                .code(0)
+                .mensaje("Reporte por curso generado exitosamente")
+                .cicloLectivoAnio(cicloLectivoAnio)
+                .nombreCicloLectivo(cicloLectivo.getNombre())
+                .totalMaterias(reportesMaterias.size())
+                .totalDocentes(calcularTotalDocentes(reportesMaterias))
+                .totalAlumnos(calcularTotalAlumnos(reportesMaterias))
+                .totalCursos(1) // Solo un curso
+                .resultadosPorMateria(reportesMaterias)
+                .resumenEjecutivo("Análisis específico del curso " + infoCurso)
+                .hallazgosImportantes(generarHallazgos(reportesMaterias))
+                .recomendaciones(generarRecomendaciones(reportesMaterias))
+                .build();
+    }
+
+    @Override
     public ReporteDesempenoResponse generarReporteNotasIndividuales(int cicloLectivoAnio) {
         log.info("Generando reporte de notas individuales para año: {}", cicloLectivoAnio);
         

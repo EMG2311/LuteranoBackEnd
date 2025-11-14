@@ -4,6 +4,7 @@ import com.grup14.luterano.dto.reporteNotas.CalificacionesAlumnoResumenDto;
 import com.grup14.luterano.dto.reporteNotas.CalificacionesMateriaResumenDto;
 import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.Calificacion;
+import com.grup14.luterano.entities.CicloLectivo;
 import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.HistorialCurso;
 import com.grup14.luterano.entities.MesaExamenAlumno;
@@ -216,6 +217,18 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
             else if (c.getEtapa() == 2) row.getE2Notas()[idx] = c.getNota();
         }
 
+        // Obtener notas de mesa para todos los alumnos (usar el ciclo lectivo correcto)
+        CicloLectivo cicloLectivo = cicloLectivoRepository
+                .findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
+                .orElse(null);
+        
+        List<MesaExamenAlumno> mesasAlumnos = Collections.emptyList();
+        if (cicloLectivo != null) {
+            mesasAlumnos = mesaExamenAlumnoRepo
+                    .findByAlumno_IdInAndMesaExamen_FechaBetween(alumnoIds, 
+                            cicloLectivo.getFechaDesde(), cicloLectivo.getFechaHasta());
+        }
+
         var coll = java.text.Collator.getInstance(new java.util.Locale("es", "AR"));
         coll.setStrength(java.text.Collator.PRIMARY);
 
@@ -231,7 +244,75 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                 r.setE1(e1);
                 r.setE2(e2);
                 r.setPg(pg);
-                r.setEstado(pg != null && pg >= 6.0 ? "Aprobado" : "Desaprobado");
+                
+                // Buscar notas de mesa para este alumno y materia (TODAS las mesas, no solo la más reciente)
+                List<MesaExamenAlumno> mesasAlumnoMateria = mesasAlumnos.stream()
+                        .filter(mea -> mea.getAlumno().getId().equals(a.getId()) && 
+                               mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(r.getMateriaId()))
+                        .sorted((mea1, mea2) -> {
+                            LocalDate fecha1 = mea1.getMesaExamen().getFecha();
+                            LocalDate fecha2 = mea2.getMesaExamen().getFecha();
+                            if (fecha1 == null) return -1;
+                            if (fecha2 == null) return 1;
+                            return fecha1.compareTo(fecha2);
+                        })
+                        .toList();
+                
+                // Determinar notas CO/EX y estado final
+                boolean apr1 = e1 != null && e1 >= 6.0;
+                boolean apr2 = e2 != null && e2 >= 6.0;
+                String estadoFinal;
+                Double pfa = null;
+                
+                // Procesar cada mesa según su tipo
+                Integer notaColoquio = null;
+                Integer notaExamen = null;
+                Integer notaMasAlta = null;
+                
+                for (MesaExamenAlumno mesa : mesasAlumnoMateria) {
+                    Integer notaMesa = mesa.getNotaFinal();
+                    if (notaMesa == null) continue;
+                    
+                    // Clasificar por tipo de mesa
+                    switch (mesa.getMesaExamen().getTipoMesa()) {
+                        case COLOQUIO -> {
+                            notaColoquio = notaMesa;
+                            r.setCo(notaMesa);
+                        }
+                        case EXAMEN -> {
+                            notaExamen = notaMesa;
+                            r.setEx(notaMesa);
+                        }
+                    }
+                    
+                    // Actualizar nota más alta
+                    if (notaMasAlta == null || notaMesa > notaMasAlta) {
+                        notaMasAlta = notaMesa;
+                    }
+                }
+                
+                // Determinar estado final y PFA
+                if (apr1 && apr2) {
+                    // PROMOCIONADO
+                    estadoFinal = "Aprobado";
+                    pfa = pg;
+                } else if (notaMasAlta != null) {
+                    // Tiene al menos una mesa rendida
+                    if (notaMasAlta >= 6) {
+                        estadoFinal = "Aprobado";
+                        pfa = notaMasAlta.doubleValue();
+                    } else {
+                        estadoFinal = "Desaprobado";
+                        pfa = notaMasAlta.doubleValue();
+                    }
+                } else {
+                    // No hay mesa o sin nota
+                    estadoFinal = pg != null && pg >= 6.0 ? "Aprobado" : "Desaprobado";
+                    pfa = pg;
+                }
+                
+                r.setEstado(estadoFinal);
+                r.setPfa(pfa);
             }
 
 

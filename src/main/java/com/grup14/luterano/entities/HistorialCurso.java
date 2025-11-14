@@ -1,10 +1,7 @@
 package com.grup14.luterano.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,10 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class HistorialCurso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,5 +35,7 @@ public class HistorialCurso {
     private BigDecimal promedio;
 
     @OneToMany(mappedBy = "historialCurso", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
     private List<HistorialMateria> historialMaterias = new ArrayList<>();
 }

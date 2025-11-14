@@ -9,6 +9,7 @@ import com.grup14.luterano.repository.CalificacionRepository;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
+import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.repository.MesaExamenAlumnoRepository;
 import com.grup14.luterano.response.reporteRinden.ReporteRindenResponse;
 import com.grup14.luterano.service.ReporteRindenService;
@@ -29,6 +30,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
     private final HistorialCursoRepository historialCursoRepository;
     private final CalificacionRepository calificacionRepository;
     private final MesaExamenAlumnoRepository mesaExamenAlumnoRepo;
+    private final MateriaCursoRepository materiaCursoRepo;
 
     @Transactional(readOnly = true)
     public ReporteRindenResponse listarRindenPorCurso(Long cursoId, int anio) {
@@ -150,7 +152,14 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 boolean apr1 = e1 != null && e1 >= 6.0;
                 boolean apr2 = e2 != null && e2 >= 6.0;
 
+                // Si promocionó (ambas etapas >= 6), no rinde
                 if (apr1 && apr2) continue;
+
+                // Si ya aprobó en mesa (nota >= 6), tampoco debe aparecer como elegible
+                if (mesaMasReciente != null && mesaMasReciente.getNotaFinal() != null && 
+                    mesaMasReciente.getNotaFinal() >= 6) {
+                    continue; // Ya aprobó la materia por mesa, no necesita rendir más
+                }
 
                 CondicionRinde cond = (apr1 ^ apr2)
                         ? CondicionRinde.COLOQUIO
@@ -166,6 +175,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                         .e1(e1).e2(e2).pg(pg)
                         .co(notaCo).ex(notaEx).pf(notaPf)
                         .condicion(cond)
+                        .estadoAcademico("DEBE_RENDIR") // Los que aparecen aquí siempre deben rendir
                         .build());
             }
         }
@@ -190,6 +200,191 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 .totalExamen(totalExamen)
                 .code(0)
                 .mensaje("OK")
+                .build();
+    }
+
+    @Override
+    public ReporteRindenResponse listarTodosLosAlumnosPorCurso(Long cursoId, int anio) {
+        if (cursoId == null) throw new ReporteRindeException("cursoId es requerido");
+        
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new ReporteRindeException("Curso no encontrado (id=" + cursoId + ")"));
+
+        // Usar lógica similar pero incluir TODOS los alumnos
+        LocalDate pivote = LocalDate.of(anio, 7, 1);
+        CicloLectivo ciclo = cicloLectivoRepository
+                .findByFechaDesdeBeforeAndFechaHastaAfter(pivote, pivote)
+                .orElseThrow(() -> new ReporteRindeException("No hay ciclo lectivo para el año " + anio));
+
+        // Obtener TODOS los alumnos del curso (incluyendo promovidos)
+        List<HistorialCurso> historiales = historialCursoRepository.findAbiertosByCursoAndCiclo(cursoId, ciclo.getId());
+        List<Alumno> alumnos = historiales.stream().map(HistorialCurso::getAlumno).toList();
+        if (alumnos.isEmpty()) {
+            return ReporteRindenResponse.builder()
+                    .curso(CursoMapper.toDto(curso))
+                    .anio(anio)
+                    .filas(List.of())
+                    .total(0)
+                    .totalColoquio(0)
+                    .totalExamen(0)
+                    .code(0)
+                    .mensaje("No hay alumnos registrados en este curso para el año " + anio)
+                    .build();
+        }
+
+        List<ReporteRindeDto> filas = new ArrayList<>();
+
+        // Usar la misma lógica que el método original pero sin filtros de promoción
+        LocalDate desde = LocalDate.of(anio, 1, 1);
+        LocalDate hasta = LocalDate.of(anio, 12, 31);
+        List<Long> alumnoIds = alumnos.stream().map(Alumno::getId).toList();
+        List<Calificacion> califs = calificacionRepository
+                .findByAlumnosCursoCicloAndAnio(alumnoIds, cursoId, ciclo.getId(), desde, hasta);
+
+        class Agg {
+            int sum1 = 0, cnt1 = 0, sum2 = 0, cnt2 = 0;
+            String materiaNombre;
+        }
+        Map<Long, Map<Long, Agg>> map = new LinkedHashMap<>();
+
+        for (Calificacion c : califs) {
+            var hm = c.getHistorialMateria();
+            var hc = hm.getHistorialCurso();
+            Long aId = hc.getAlumno().getId();
+            Long mId = hm.getMateriaCurso().getMateria().getId();
+            String mNombre = hm.getMateriaCurso().getMateria().getNombre();
+
+            var porMateria = map.computeIfAbsent(aId, k -> new LinkedHashMap<>());
+            var agg = porMateria.computeIfAbsent(mId, k -> new Agg());
+            agg.materiaNombre = mNombre;
+
+            Integer nota = c.getNota();
+            if (nota == null) continue;
+            if (c.getEtapa() == 1) {
+                agg.sum1 += nota;
+                agg.cnt1++;
+            } else if (c.getEtapa() == 2) {
+                agg.sum2 += nota;
+                agg.cnt2++;
+            }
+        }
+
+        Map<Long, Alumno> idxAlumno = alumnos.stream()
+                .collect(Collectors.toMap(Alumno::getId, a -> a));
+
+        for (var eAlu : map.entrySet()) {
+            Long alumnoId = eAlu.getKey();
+            Alumno a = idxAlumno.get(alumnoId);
+            if (a == null) continue;
+
+            for (var eMat : eAlu.getValue().entrySet()) {
+                Long materiaId = eMat.getKey();
+                Agg agg = eMat.getValue();
+
+                Double e1 = (agg.cnt1 == 0) ? null : round1((double) agg.sum1 / agg.cnt1);
+                Double e2 = (agg.cnt2 == 0) ? null : round1((double) agg.sum2 / agg.cnt2);
+                Double pg = pg(e1, e2);
+
+                // Buscar nota de mesa de examen para este alumno y materia en el año                
+                List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
+                    .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, ciclo.getFechaDesde(), ciclo.getFechaHasta());
+                
+                // Filtrar por materia y obtener la más reciente
+                MesaExamenAlumno mesaMasReciente = mesas.stream()
+                    .filter(mea -> mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId))
+                    .max((ma1, ma2) -> {
+                        LocalDate fecha1 = ma1.getMesaExamen().getFecha();
+                        LocalDate fecha2 = ma2.getMesaExamen().getFecha();
+                        if (fecha1 == null) return -1;
+                        if (fecha2 == null) return 1;
+                        return fecha1.compareTo(fecha2);
+                    })
+                    .orElse(null);
+
+                // Determinar notas de coloquio y examen
+                Integer notaCo = null;
+                Integer notaEx = null;
+                Double notaPf = null;
+
+                boolean apr1 = e1 != null && e1 >= 6.0;
+                boolean apr2 = e2 != null && e2 >= 6.0;
+
+                String estadoAcademico;
+                CondicionRinde condicion = null;
+
+                if (apr1 && apr2) {
+                    // PROMOCIONADO - ambas etapas >= 6
+                    estadoAcademico = "PROMOCIONADO";
+                    notaPf = pg;
+                } else if (mesaMasReciente != null && mesaMasReciente.getNotaFinal() != null && 
+                          mesaMasReciente.getNotaFinal() >= 6) {
+                    // APROBADO POR MESA
+                    estadoAcademico = "APROBADO_MESA";
+                    notaPf = mesaMasReciente.getNotaFinal().doubleValue();
+                    
+                    // Determinar si fue coloquio o examen final
+                    if (apr1 ^ apr2) {
+                        notaCo = mesaMasReciente.getNotaFinal();
+                        condicion = CondicionRinde.COLOQUIO;
+                    } else {
+                        notaEx = mesaMasReciente.getNotaFinal();
+                        condicion = CondicionRinde.EXAMEN;
+                    }
+                } else {
+                    // DEBE RENDIR
+                    estadoAcademico = "DEBE_RENDIR";
+                    condicion = (apr1 ^ apr2) ? CondicionRinde.COLOQUIO : CondicionRinde.EXAMEN;
+                    
+                    if (mesaMasReciente != null) {
+                        if (condicion == CondicionRinde.COLOQUIO) {
+                            notaCo = mesaMasReciente.getNotaFinal();
+                        } else {
+                            notaEx = mesaMasReciente.getNotaFinal();
+                        }
+                        notaPf = mesaMasReciente.getNotaFinal() != null ? mesaMasReciente.getNotaFinal().doubleValue() : null;
+                    } else if (pg != null) {
+                        notaPf = (double) Math.round(pg);
+                    }
+                }
+
+                filas.add(ReporteRindeDto.builder()
+                        .alumnoId(a.getId())
+                        .dni(a.getDni())
+                        .apellido(a.getApellido())
+                        .nombre(a.getNombre())
+                        .materiaId(materiaId)
+                        .materiaNombre(agg.materiaNombre)
+                        .e1(e1).e2(e2).pg(pg)
+                        .co(notaCo).ex(notaEx).pf(notaPf)
+                        .condicion(condicion)
+                        .estadoAcademico(estadoAcademico)
+                        .build());
+            }
+        }
+
+        // Ordenar por apellido, nombre, materia
+        var coll = java.text.Collator.getInstance(new java.util.Locale("es", "AR"));
+        coll.setStrength(java.text.Collator.PRIMARY);
+        filas.sort(Comparator
+                .comparing(ReporteRindeDto::getApellido, coll)
+                .thenComparing(ReporteRindeDto::getNombre, coll)
+                .thenComparing(ReporteRindeDto::getMateriaNombre, coll));
+
+        int totalColoquio = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.COLOQUIO).count();
+        int totalExamen = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.EXAMEN).count();
+        int totalAprobados = (int) filas.stream().filter(f -> 
+            "PROMOCIONADO".equals(f.getEstadoAcademico()) || "APROBADO_MESA".equals(f.getEstadoAcademico())
+        ).count();
+
+        return ReporteRindenResponse.builder()
+                .curso(CursoMapper.toDto(curso))
+                .anio(anio)
+                .filas(filas)
+                .total(filas.size())
+                .totalColoquio(totalColoquio)
+                .totalExamen(totalExamen)
+                .code(0)
+                .mensaje("OK - Total aprobados: " + totalAprobados)
                 .build();
     }
 

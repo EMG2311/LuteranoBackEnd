@@ -31,6 +31,8 @@ public class MesaExamenMapper {
         return MesaExamenDto.builder()
                 .id(m.getId())
                 .fecha(m.getFecha())
+                .turnoId(m.getTurno() != null ? m.getTurno().getId() : null)
+                .turnoNombre(m.getTurno() != null ? m.getTurno().getNombre() : null)
                 .materiaCursoId(mc.getId())
                 .materiaNombre(mat.getNombre())
                 .cursoId(c.getId())
@@ -39,6 +41,7 @@ public class MesaExamenMapper {
                 .cursoDivision(c.getDivision() != null ? c.getDivision().name() : null)
                 .aulaId(m.getAula() != null ? m.getAula().getId() : null)
                 .estado(m.getEstado())
+                .tipoMesa(m.getTipoMesa())
                 .alumnos(convocados)
                 .build();
     }

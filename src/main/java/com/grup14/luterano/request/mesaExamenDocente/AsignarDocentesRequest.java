@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 public class AsignarDocentesRequest {
 
-    @NotEmpty(message = "Debe asignar exactamente 3 docentes")
-    @Size(min = 3, max = 3, message = "Debe asignar exactamente 3 docentes")
+    @NotEmpty(message = "Debe asignar al menos 1 docente")
     private List<Long> docenteIds;
 }

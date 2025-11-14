@@ -1,5 +1,6 @@
 package com.grup14.luterano.request.mesaExamen;
 
+import com.grup14.luterano.entities.enums.TipoMesa;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,4 +11,5 @@ public class MesaExamenCreateRequest {
     private Long materiaCursoId;
     private Long aulaId;   // opcional
     private Long turnoId;  // NEW: obligatorio ahora
+    private TipoMesa tipoMesa = TipoMesa.EXAMEN;  // Por defecto examen final
 }

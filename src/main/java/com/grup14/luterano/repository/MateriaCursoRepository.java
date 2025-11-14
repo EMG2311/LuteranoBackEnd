@@ -117,4 +117,30 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso, Long
             """)
     List<Object[]> findMateriasConDocentePorCicloYDocente(@Param("cicloLectivoAnio") Integer cicloLectivoAnio,
                                                           @Param("docenteId") Long docenteId);
+
+    @Query("""
+              SELECT mc.id as materiaCursoId,
+                     m.id as materiaId,
+                     m.nombre as nombreMateria,
+                     d.id as docenteId,
+                     d.apellido as apellidoDocente,
+                     d.nombre as nombreDocente,
+                     c.id as cursoId,
+                     c.anio as anio,
+                     CAST(c.nivel AS string) as nivel,
+                     CAST(c.division AS string) as division
+              FROM MateriaCurso mc
+              JOIN mc.materia m
+              JOIN mc.curso c
+              JOIN mc.docente d
+              WHERE c.id = :cursoId
+              AND EXISTS (
+                  SELECT 1 FROM HistorialCurso hc
+                  WHERE hc.curso.id = c.id
+                  AND YEAR(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
+              )
+              ORDER BY m.nombre, d.apellido
+            """)
+    List<Object[]> findMateriasConDocentePorCicloYCurso(@Param("cicloLectivoAnio") Integer cicloLectivoAnio,
+                                                        @Param("cursoId") Long cursoId);
 }

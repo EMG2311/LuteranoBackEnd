@@ -1,6 +1,7 @@
 package com.grup14.luterano.dto;
 
 import com.grup14.luterano.entities.enums.EstadoMesaExamen;
+import com.grup14.luterano.entities.enums.TipoMesa;
 import lombok.Builder;
 import lombok.Data;
 
@@ -26,6 +27,7 @@ public class MesaExamenDto {
 
     private Long aulaId;
     private EstadoMesaExamen estado;
+    private TipoMesa tipoMesa;
 
     private List<MesaExamenAlumnoDto> alumnos;
 }

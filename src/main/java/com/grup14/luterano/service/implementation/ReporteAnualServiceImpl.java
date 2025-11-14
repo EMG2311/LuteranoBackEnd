@@ -93,21 +93,48 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                     .collect(Collectors.toMap(CalificacionesMateriaResumenDto::getMateriaId, x -> x));
         }
 
-        // 2) Notas finales de mesa en el año (tomamos la más reciente por materia)
+        // 2) Notas finales de mesa en el año (separamos por tipo: coloquio y examen)
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
         List<MesaExamenAlumno> finales = mesaExamenAlumnoRepo
                 .findByAlumno_IdAndMesaExamen_FechaBetween(alumno.getId(), desde, hasta);
 
         Map<Long, MesaExamenAlumno> ultimoFinalPorMateria = new HashMap<>();
+        Map<Long, MesaExamenAlumno> ultimoColoquisPorMateria = new HashMap<>();
+        Map<Long, MesaExamenAlumno> ultimoExamenPorMateria = new HashMap<>();
+        
         for (MesaExamenAlumno mea : finales) {
             var materia = mea.getMesaExamen().getMateriaCurso().getMateria();
             Long mId = materia.getId();
+            
+            // Mantener el comportamiento anterior para notaFinal general
             MesaExamenAlumno current = ultimoFinalPorMateria.get(mId);
             if (current == null || (current.getMesaExamen().getFecha() != null &&
                     mea.getMesaExamen().getFecha() != null &&
                     mea.getMesaExamen().getFecha().isAfter(current.getMesaExamen().getFecha()))) {
                 ultimoFinalPorMateria.put(mId, mea);
+            }
+            
+            // Separar por tipo de condición
+            if (mea.getCondicionRinde() != null) {
+                switch (mea.getCondicionRinde()) {
+                    case COLOQUIO -> {
+                        MesaExamenAlumno currentCo = ultimoColoquisPorMateria.get(mId);
+                        if (currentCo == null || (currentCo.getMesaExamen().getFecha() != null &&
+                                mea.getMesaExamen().getFecha() != null &&
+                                mea.getMesaExamen().getFecha().isAfter(currentCo.getMesaExamen().getFecha()))) {
+                            ultimoColoquisPorMateria.put(mId, mea);
+                        }
+                    }
+                    case EXAMEN -> {
+                        MesaExamenAlumno currentEx = ultimoExamenPorMateria.get(mId);
+                        if (currentEx == null || (currentEx.getMesaExamen().getFecha() != null &&
+                                mea.getMesaExamen().getFecha() != null &&
+                                mea.getMesaExamen().getFecha().isAfter(currentEx.getMesaExamen().getFecha()))) {
+                            ultimoExamenPorMateria.put(mId, mea);
+                        }
+                    }
+                }
             }
         }
 
@@ -183,7 +210,12 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 Long mId = entry.getKey();
                 CalificacionesMateriaResumenDto r = entry.getValue();
                 MesaExamenAlumno mea = ultimoFinalPorMateria.get(mId);
+                MesaExamenAlumno meaColoquio = ultimoColoquisPorMateria.get(mId);
+                MesaExamenAlumno meaExamen = ultimoExamenPorMateria.get(mId);
+                
                 String estadoFinal = mea == null ? null : (mea.getNotaFinal() != null && mea.getNotaFinal() >= 6 ? "APROBADO" : "DESAPROBADO");
+                Integer notaColoquio = meaColoquio != null ? meaColoquio.getNotaFinal() : null;
+                Integer notaExamen = meaExamen != null ? meaExamen.getNotaFinal() : null;
 
                 String estadoMateria = null;
                 if (!hms.isEmpty()) {
@@ -203,6 +235,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                         .e2(r.getE2())
                         .pg(r.getPg())
                         .estado(r.getEstado())
+                        .co(notaColoquio)
+                        .ex(notaExamen)
                         .notaFinal(notaFinalService.calcularNotaFinal(alumno.getId(), mId, anio))
                         .estadoFinal(estadoFinal)
                         .estadoMateria(estadoMateria)
@@ -215,8 +249,13 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             Long mId = entry.getKey();
             if (materias.containsKey(mId)) continue;
             MesaExamenAlumno mea = entry.getValue();
+            MesaExamenAlumno meaColoquio = ultimoColoquisPorMateria.get(mId);
+            MesaExamenAlumno meaExamen = ultimoExamenPorMateria.get(mId);
+            
             String nombre = mea.getMesaExamen().getMateriaCurso().getMateria().getNombre();
             String estadoFinal = mea.getNotaFinal() != null && mea.getNotaFinal() >= 6 ? "APROBADO" : "DESAPROBADO";
+            Integer notaColoquio = meaColoquio != null ? meaColoquio.getNotaFinal() : null;
+            Integer notaExamen = meaExamen != null ? meaExamen.getNotaFinal() : null;
 
             String estadoMateria = null;
             if (!hms.isEmpty()) {
@@ -234,6 +273,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                     .e2Notas(new Integer[]{null, null, null, null})
                     .e1(null).e2(null).pg(null)
                     .estado(null)
+                    .co(notaColoquio)
+                    .ex(notaExamen)
                     .notaFinal(notaFinalService.calcularNotaFinal(alumno.getId(), mId, anio))
                     .estadoFinal(estadoFinal)
                     .estadoMateria(estadoMateria)

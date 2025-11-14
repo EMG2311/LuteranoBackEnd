@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class Alumno extends Persona {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,9 +45,11 @@ public class Alumno extends Persona {
     
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL)
     @Builder.Default
+    @ToString.Exclude
     private List<HistorialCurso> historialCursos = new ArrayList<>();
 
     @OneToMany(mappedBy = "alumno")
     @Builder.Default
+    @ToString.Exclude
     private List<MesaExamenAlumno> mesasExamen = new ArrayList<>();
 }

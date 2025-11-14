@@ -37,6 +37,15 @@ public interface ReporteDesempenoDocenteService {
     ReporteDesempenoResponse generarReportePorDocente(int cicloLectivoAnio, Long docenteId);
 
     /**
+     * Genera reporte filtrado por curso específico
+     *
+     * @param cicloLectivoAnio Año del ciclo lectivo
+     * @param cursoId          ID del curso a analizar
+     * @return Reporte filtrado por curso
+     */
+    ReporteDesempenoResponse generarReportePorCurso(int cicloLectivoAnio, Long cursoId);
+
+    /**
      * Genera un reporte detallado basado en las 4 notas individuales de cada etapa.
      * Analiza el porcentaje de notas desaprobadas (< 6) por docente y materia,
      * comparando el rendimiento entre divisiones para identificar casos que requieren atención.

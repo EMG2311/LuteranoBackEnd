@@ -36,6 +36,7 @@ public class Curso {
 
     @OneToMany(mappedBy = "curso")
     @Builder.Default
+    @ToString.Exclude
     private List<MateriaCurso> dictados = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "preceptor_id")

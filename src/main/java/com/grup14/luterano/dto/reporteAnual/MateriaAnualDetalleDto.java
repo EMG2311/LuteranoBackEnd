@@ -21,6 +21,9 @@ public class MateriaAnualDetalleDto {
     private Double pg;         // promedio general
     private String estado;     // Aprobado/Desaprobado por promedio
 
+    // Notas de mesa de examen por tipo
+    private Integer co;            // Nota de coloquio (si rindió)
+    private Integer ex;            // Nota de examen final (si rindió)
 
     private Integer notaFinal;     // última nota final de mesa en el año (si existe)
     private String estadoFinal;    // APROBADO/DESAPROBADO (según notaFinal)

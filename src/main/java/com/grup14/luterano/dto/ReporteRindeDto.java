@@ -28,4 +28,5 @@ public class ReporteRindeDto {
     private Double pf;
 
     private CondicionRinde condicion;
+    private String estadoAcademico; // PROMOCIONADO, APROBADO_MESA, DEBE_RENDIR
 }

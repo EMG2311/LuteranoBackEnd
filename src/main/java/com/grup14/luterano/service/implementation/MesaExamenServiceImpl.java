@@ -18,6 +18,9 @@ import com.grup14.luterano.response.mesaExamen.MesaExamenResponse;
 import com.grup14.luterano.response.mesaExamenDocente.DocentesDisponiblesResponse;
 import com.grup14.luterano.response.mesaExamenDocente.MesaExamenDocentesResponse;
 import com.grup14.luterano.service.MesaExamenService;
+import com.grup14.luterano.service.MesaExamenValidacionService;
+import com.grup14.luterano.service.ReporteRindenService;
+import com.grup14.luterano.service.ReporteRindenService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -43,6 +46,8 @@ public class MesaExamenServiceImpl implements MesaExamenService {
     private final AulaRepository aulaRepo;
     private final DocenteRepository docenteRepo;
     private final MesaExamenDocenteRepository mesaExamenDocenteRepo;
+    private final MesaExamenValidacionService validacionService;
+    private final ReporteRindenService reporteRindenService;
 
     @Override
     public MesaExamenResponse crear(MesaExamenCreateRequest req) {
@@ -65,12 +70,18 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         m.setMateriaCurso(mc);
         m.setTurno(turno);
         m.setFecha(req.getFecha());
+        m.setTipoMesa(req.getTipoMesa()); // Establecer tipo de mesa
+        
         if (req.getAulaId() != null) {
             Aula aula = aulaRepo.findById(req.getAulaId())
                     .orElseThrow(() -> new MesaExamenException("Aula no encontrada"));
             m.setAula(aula);
         }
         m.setEstado(EstadoMesaExamen.CREADA);
+        
+        // Validar configuración antes de guardar
+        validacionService.validarConfiguracionMesa(m);
+        
         mesaRepo.save(m);
 
         log.info("Mesa creada id={} mc={} turno={} fecha={}", m.getId(), mc.getId(), turno.getId(), m.getFecha());
@@ -101,6 +112,19 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     .orElseThrow(() -> new MesaExamenException("Aula no encontrada"));
             m.setAula(aula);
         }
+        if (req.getTipoMesa() != null) {
+            // Validar que se pueda cambiar el tipo de mesa
+            try {
+                validacionService.validarCambioTipoMesa(m, req.getTipoMesa());
+            } catch (IllegalArgumentException e) {
+                throw new MesaExamenException(e.getMessage());
+            }
+            m.setTipoMesa(req.getTipoMesa());
+        }
+        
+        // Validar configuración antes de guardar
+        validacionService.validarConfiguracionMesa(m);
+        
         mesaRepo.save(m);
         return MesaExamenResponse.builder().code(0).mensaje("Mesa actualizada").mesa(MesaExamenMapper.toDto(m, true)).build();
     }
@@ -151,21 +175,44 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         if (req.getAlumnoIds() == null || req.getAlumnoIds().isEmpty())
             throw new MesaExamenException("Debe enviar alumnoIds");
 
+        // Obtener condiciones de los alumnos desde el reporte (mismo cálculo que el frontend)
+        int anio = m.getFecha() != null ? m.getFecha().getYear() : LocalDate.now().getYear();
+        var reporteRinden = reporteRindenService.listarRindenPorCurso(m.getMateriaCurso().getCurso().getId(), anio);
+        
         for (Long aId : req.getAlumnoIds()) {
             if (mesaAluRepo.existsByMesaExamen_IdAndAlumno_Id(mesaId, aId)) continue;
 
             Alumno a = alumnoRepo.findById(aId)
                     .orElseThrow(() -> new MesaExamenException("Alumno no encontrado: " + aId));
 
+            // Buscar la condición del alumno en el reporte
+            var filaAlumno = reporteRinden.getFilas().stream()
+                    .filter(f -> f.getAlumnoId().equals(aId) && f.getMateriaId().equals(m.getMateriaCurso().getMateria().getId()))
+                    .findFirst();
+            
+            if (filaAlumno.isEmpty()) {
+                throw new MesaExamenException("No se encontró información de rendimiento para el alumno " + a.getApellido() + ", " + a.getNombre());
+            }
+
             MesaExamenAlumno link = MesaExamenAlumno.builder()
                     .alumno(a)
                     .mesaExamen(m)
                     .estado(EstadoConvocado.CONVOCADO)
+                    .condicionRinde(filaAlumno.get().getCondicion()) // Usar condición calculada por el backend
                     .notaFinal(null)
-                    .turno(m.getTurno()) // sincronizado con la mesa
+                    .turno(m.getTurno())
                     .build();
+            
+            // Validar que el alumno puede inscribirse según el tipo de mesa
+            try {
+                validacionService.validarInscribirAlumno(m, link);
+            } catch (IllegalArgumentException e) {
+                throw new MesaExamenException("No se puede agregar el alumno " + a.getApellido() + ", " + a.getNombre() + ": " + e.getMessage());
+            }
+            
             m.getAlumnos().add(link);
         }
+        
         mesaRepo.save(m);
         return MesaExamenResponse.builder().code(0).mensaje("Convocados agregados").mesa(MesaExamenMapper.toDto(m, true)).build();
     }
@@ -313,40 +360,19 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         MesaExamen mesa = mesaRepo.findById(mesaExamenId)
                 .orElseThrow(() -> new MesaExamenException("Mesa de examen no encontrada con ID: " + mesaExamenId));
 
-        // Validar que sean exactamente 3 docentes
-        if (request.getDocenteIds().size() != 3) {
-            throw new MesaExamenException("Debe asignar exactamente 3 docentes");
+        // Validar que todos los docentes existan
+        List<Docente> docentes = docenteRepo.findAllById(request.getDocenteIds());
+        if (docentes.size() != request.getDocenteIds().size()) {
+            throw new MesaExamenException("Uno o más docentes no existen");
         }
 
         // Validar que no haya docentes duplicados
         Set<Long> uniqueDocentes = new HashSet<>(request.getDocenteIds());
-        if (uniqueDocentes.size() != 3) {
+        if (uniqueDocentes.size() != request.getDocenteIds().size()) {
             throw new MesaExamenException("No se pueden asignar docentes duplicados");
         }
 
-        // Validar que todos los docentes existan
-        List<Docente> docentes = docenteRepo.findAllById(request.getDocenteIds());
-        if (docentes.size() != 3) {
-            throw new MesaExamenException("Uno o más docentes no existen");
-        }
-
-        // Verificar que al menos uno dé la materia
-        Long materiaId = mesa.getMateriaCurso().getMateria().getId();
-        Set<Long> docentesQueDALaMateria = materiaCursoRepo.findByMateriaId(materiaId)
-                .stream()
-                .filter(mc -> mc.getDocente() != null) // Solo los que tienen docente asignado
-                .map(mc -> mc.getDocente().getId())
-                .collect(Collectors.toSet());
-
-        boolean tieneDocenteMateria = request.getDocenteIds().stream()
-                .anyMatch(docentesQueDALaMateria::contains);
-
-        if (!tieneDocenteMateria) {
-            throw new MesaExamenException("Debe asignar al menos un docente que dé la materia: " +
-                    mesa.getMateriaCurso().getMateria().getNombre());
-        }
-
-        // Verificar conflictos horarios
+        // Verificar conflictos horarios para todos los docentes
         LocalDate fechaMesa = mesa.getFecha();
         List<Long> docentesConConflicto = mesaExamenDocenteRepo.findDocentesConflictoEnFecha(fechaMesa, request.getDocenteIds());
         if (!docentesConConflicto.isEmpty()) {
@@ -362,6 +388,21 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
             throw new MesaExamenException("Los siguientes docentes ya están asignados a otra mesa en la fecha " +
                     fechaMesa + ": " + String.join(", ", nombresConflicto));
+        }
+
+        // Verificar que al menos uno dé la materia
+        Long materiaId = mesa.getMateriaCurso().getMateria().getId();
+        Set<Long> docentesQueDALaMateria = materiaCursoRepo.findByMateriaId(materiaId)
+                .stream()
+                .filter(mc -> mc.getDocente() != null) // Solo los que tienen docente asignado
+                .map(mc -> mc.getDocente().getId())
+                .collect(Collectors.toSet());
+
+        // Validar asignación según tipo de mesa (cantidad y requisitos específicos)
+        try {
+            validacionService.validarAsignacionDocentes(mesa, request.getDocenteIds(), docentesQueDALaMateria);
+        } catch (IllegalArgumentException e) {
+            throw new MesaExamenException(e.getMessage());
         }
 
         // Eliminar asignaciones previas
@@ -469,7 +510,26 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
         }
 
-        // Actualizar la asignación
+        // Crear una asignación temporal para validar con el servicio de validación
+        // Primero removemos la asignación actual de la mesa para la validación
+        mesa.getDocentes().remove(asignacionActual);
+        
+        MesaExamenDocente nuevaAsignacion = MesaExamenDocente.builder()
+                .mesaExamen(mesa)
+                .docente(nuevoDocente)
+                .esDocenteMateria(docentesQueDALaMateria.contains(nuevoDocenteId))
+                .build();
+
+        // Validar que se puede agregar el nuevo docente según las reglas de negocio
+        try {
+            validacionService.validarAgregarDocente(mesa, nuevaAsignacion);
+        } catch (IllegalArgumentException e) {
+            // Restaurar la asignación actual antes de lanzar la excepción
+            mesa.getDocentes().add(asignacionActual);
+            throw new MesaExamenException("No se puede asignar el docente " + nuevoDocente.getApellido() + ", " + nuevoDocente.getNombre() + ": " + e.getMessage());
+        }
+
+        // Si llegamos aquí, la validación pasó. Actualizar la asignación
         asignacionActual.setDocente(nuevoDocente);
         asignacionActual.setEsDocenteMateria(docentesQueDALaMateria.contains(nuevoDocenteId));
         mesaExamenDocenteRepo.save(asignacionActual);

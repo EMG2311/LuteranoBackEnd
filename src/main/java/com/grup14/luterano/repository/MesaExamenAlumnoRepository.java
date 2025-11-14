@@ -20,4 +20,7 @@ public interface MesaExamenAlumnoRepository extends JpaRepository<MesaExamenAlum
 
     // Para reporte anual: finales del alumno dentro de un rango de fechas
     List<MesaExamenAlumno> findByAlumno_IdAndMesaExamen_FechaBetween(Long alumnoId, java.time.LocalDate desde, java.time.LocalDate hasta);
+    
+    // Para reporte de curso: finales de múltiples alumnos dentro de un rango de fechas
+    List<MesaExamenAlumno> findByAlumno_IdInAndMesaExamen_FechaBetween(List<Long> alumnoIds, java.time.LocalDate desde, java.time.LocalDate hasta);
 }
