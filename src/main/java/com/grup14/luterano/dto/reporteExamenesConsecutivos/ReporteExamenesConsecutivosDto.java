@@ -32,7 +32,9 @@ public class ReporteExamenesConsecutivosDto {
     private Integer numeroSegundaNota;
     
     private String descripcionConsecutivo; // "4ta nota Etapa 1 y 1ra nota Etapa 2"
-    private String estadoRiesgo; // "CRÍTICO", "ALTO", "MEDIO"
+    private String estadoRiesgo; // "CRÍTICO", "ALTO", "MEDIO", "EMERGENCIA"
+    private Integer cantidadConsecutivas; // Cantidad total de exámenes consecutivos en la secuencia
+    private String notasSecuencia; // "3,4,2,5" - todas las notas de la secuencia para debugging
     
     // NUEVOS CAMPOS: información del docente a cargo de la materia/curso
     private Long docenteId;

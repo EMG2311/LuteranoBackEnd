@@ -11,9 +11,6 @@ import com.grup14.luterano.service.ReporteExamenesConsecutivosService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,24 +111,70 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
                 continue; // Necesitamos al menos 2 calificaciones
             }
 
-            // Analizar secuencias consecutivas desaprobadas
-            for (int i = 0; i < calificaciones.size() - 1; i++) {
-                Calificacion actual = calificaciones.get(i);
-                Calificacion siguiente = calificaciones.get(i + 1);
-
-                if (sonConsecutivas(actual, siguiente) && 
-                    esDesaprobada(actual.getNota()) && 
-                    esDesaprobada(siguiente.getNota())) {
-                    
-                    ReporteExamenesConsecutivosDto caso = construirCasoDetectado(actual, siguiente);
+            // Detectar todas las secuencias consecutivas desaprobadas
+            List<List<Calificacion>> secuenciasConsecutivas = detectarSecuenciasConsecutivas(calificaciones);
+            
+            // Crear casos individuales para cada secuencia
+            List<ReporteExamenesConsecutivosDto> casosDelAlumnoMateria = new ArrayList<>();
+            for (List<Calificacion> secuencia : secuenciasConsecutivas) {
+                if (secuencia.size() >= 2) {
+                    ReporteExamenesConsecutivosDto caso = construirCasoSecuencia(secuencia);
                     if (caso != null) {
-                        casosDetectados.add(caso);
+                        casosDelAlumnoMateria.add(caso);
                     }
+                }
+            }
+            
+            // Aplicar scoring inteligente por materia a todos los casos
+            if (!casosDelAlumnoMateria.isEmpty()) {
+                String estadoRiesgoMateria = determinarEstadoRiesgoPorMateria(casosDelAlumnoMateria);
+                
+                // Asignar el mismo nivel de riesgo a todos los casos de esta materia
+                for (ReporteExamenesConsecutivosDto caso : casosDelAlumnoMateria) {
+                    caso.setEstadoRiesgo(estadoRiesgoMateria);
+                    casosDetectados.add(caso);
                 }
             }
         }
 
         return casosDetectados;
+    }
+
+    private List<List<Calificacion>> detectarSecuenciasConsecutivas(List<Calificacion> calificaciones) {
+        List<List<Calificacion>> secuencias = new ArrayList<>();
+        List<Calificacion> secuenciaActual = new ArrayList<>();
+
+        for (int i = 0; i < calificaciones.size(); i++) {
+            Calificacion actual = calificaciones.get(i);
+            
+            if (esDesaprobada(actual.getNota())) {
+                // Si es la primera calificación desaprobada o es consecutiva a la anterior
+                if (secuenciaActual.isEmpty() || 
+                    sonConsecutivas(secuenciaActual.get(secuenciaActual.size() - 1), actual)) {
+                    secuenciaActual.add(actual);
+                } else {
+                    // No es consecutiva, terminar secuencia actual y empezar nueva
+                    if (secuenciaActual.size() >= 2) {
+                        secuencias.add(new ArrayList<>(secuenciaActual));
+                    }
+                    secuenciaActual.clear();
+                    secuenciaActual.add(actual);
+                }
+            } else {
+                // Calificación aprobada, terminar secuencia actual
+                if (secuenciaActual.size() >= 2) {
+                    secuencias.add(new ArrayList<>(secuenciaActual));
+                }
+                secuenciaActual.clear();
+            }
+        }
+
+        // Agregar la última secuencia si existe
+        if (secuenciaActual.size() >= 2) {
+            secuencias.add(secuenciaActual);
+        }
+
+        return secuencias;
     }
 
     private boolean sonConsecutivas(Calificacion actual, Calificacion siguiente) {
@@ -152,76 +195,205 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
         return nota != null && nota < 6; // Nota menor a 6 es desaprobada (6 se aprueba)
     }
 
-    private ReporteExamenesConsecutivosDto construirCasoDetectado(Calificacion primera, Calificacion segunda) {
+    private ReporteExamenesConsecutivosDto construirCasoSecuencia(List<Calificacion> secuencia) {
         try {
+            if (secuencia.isEmpty()) return null;
+
+            Calificacion primera = secuencia.get(0);
+            Calificacion ultima = secuencia.get(secuencia.size() - 1);
+            
             var historialMateria = primera.getHistorialMateria();
             var alumno = historialMateria.getHistorialCurso().getAlumno();
             var materia = historialMateria.getMateriaCurso().getMateria();
-        var curso = historialMateria.getMateriaCurso().getCurso();
+            var curso = historialMateria.getMateriaCurso().getCurso();
 
-        // Obtener información del docente asignado a la materia-curso (si existe)
-        var materiaCurso = historialMateria.getMateriaCurso();
-        var docente = materiaCurso.getDocente(); // puede ser null
+            // Obtener información del docente asignado a la materia-curso (si existe)
+            var materiaCurso = historialMateria.getMateriaCurso();
+            var docente = materiaCurso.getDocente(); // puede ser null
 
-        String docenteNombreCompleto = null;
-        Long docenteId = null;
-        String docenteNombre = null;
-        String docenteApellido = null;
+            String docenteNombreCompleto = null;
+            Long docenteId = null;
+            String docenteNombre = null;
+            String docenteApellido = null;
 
-        if (docente != null) {
-        docenteId = docente.getId();
-        docenteNombre = docente.getNombre();
-        docenteApellido = docente.getApellido();
-        docenteNombreCompleto = docente.getApellido() + ", " + docente.getNombre();
-        }
+            if (docente != null) {
+                docenteId = docente.getId();
+                docenteNombre = docente.getNombre();
+                docenteApellido = docente.getApellido();
+                docenteNombreCompleto = docente.getApellido() + ", " + docente.getNombre();
+            }
 
-        String descripcion = String.format("%dº nota Etapa %d y %dº nota Etapa %d",
-            primera.getNumeroNota(), primera.getEtapa(),
-            segunda.getNumeroNota(), segunda.getEtapa());
+            // Crear descripción detallada de la secuencia
+            String descripcion;
+            int cantidadConsecutivas = secuencia.size();
+            
+            if (cantidadConsecutivas == 2) {
+                descripcion = String.format("Etapa %d: Examen %d (nota: %d) y Examen %d (nota: %d)",
+                    primera.getEtapa(),
+                    primera.getNumeroNota(), primera.getNota(),
+                    ultima.getNumeroNota(), ultima.getNota());
+            } else {
+                // Para secuencias de 3+, mostrar todos los exámenes
+                StringBuilder desc = new StringBuilder();
+                desc.append(String.format("Etapa %d: ", primera.getEtapa()));
+                
+                for (int i = 0; i < secuencia.size(); i++) {
+                    Calificacion cal = secuencia.get(i);
+                    if (i > 0) desc.append(", ");
+                    desc.append(String.format("Examen %d (nota: %d)", cal.getNumeroNota(), cal.getNota()));
+                }
+                desc.append(String.format(" - %d consecutivos", cantidadConsecutivas));
+                descripcion = desc.toString();
+            }
 
-        String estadoRiesgo = determinarEstadoRiesgo(primera.getNota(), segunda.getNota());
+            String estadoRiesgo = "MEDIO"; // Valor temporal, será reemplazado por el scoring de materia
+            
+            // Crear secuencia de notas para debugging/análisis
+            String notasSecuencia = secuencia.stream()
+                    .map(cal -> String.valueOf(cal.getNota()))
+                    .collect(java.util.stream.Collectors.joining(","));
 
-        return ReporteExamenesConsecutivosDto.builder()
-                    .alumnoId(alumno.getId())
-                    .alumnoNombre(alumno.getNombre())
-                    .alumnoApellido(alumno.getApellido())
-                    .nombreCompleto(alumno.getApellido() + ", " + alumno.getNombre())
-                    .materiaId(materia.getId())
-                    .materiaNombre(materia.getNombre())
-                    .cursoId(curso.getId())
-                    .cursoNombre(curso.getAnio() + "° " + curso.getNivel().toString() + " " + curso.getDivision().toString())
-                    .anio(curso.getAnio())
-                    .division(curso.getDivision().toString())
-                    .primeraNota(primera.getNota())
-                    .etapaPrimeraNota(primera.getEtapa())
-                    .numeroPrimeraNota(primera.getNumeroNota())
-                    .segundaNota(segunda.getNota())
-                    .etapaSegundaNota(segunda.getEtapa())
-                    .numeroSegundaNota(segunda.getNumeroNota())
-                    .descripcionConsecutivo(descripcion)
-                    .estadoRiesgo(estadoRiesgo)
-                    .docenteId(docenteId)
-                    .docenteNombre(docenteNombre)
-                    .docenteApellido(docenteApellido)
-                    .docenteNombreCompleto(docenteNombreCompleto)
-                    .build();
+            return ReporteExamenesConsecutivosDto.builder()
+                        .alumnoId(alumno.getId())
+                        .alumnoNombre(alumno.getNombre())
+                        .alumnoApellido(alumno.getApellido())
+                        .nombreCompleto(alumno.getApellido() + ", " + alumno.getNombre())
+                        .materiaId(materia.getId())
+                        .materiaNombre(materia.getNombre())
+                        .cursoId(curso.getId())
+                        .cursoNombre(curso.getAnio() + "° " + curso.getNivel().toString() + " " + curso.getDivision().toString())
+                        .anio(curso.getAnio())
+                        .division(curso.getDivision().toString())
+                        .primeraNota(primera.getNota())
+                        .etapaPrimeraNota(primera.getEtapa())
+                        .numeroPrimeraNota(primera.getNumeroNota())
+                        .segundaNota(ultima.getNota())
+                        .etapaSegundaNota(ultima.getEtapa())
+                        .numeroSegundaNota(ultima.getNumeroNota())
+                        .descripcionConsecutivo(descripcion)
+                        .estadoRiesgo(estadoRiesgo)
+                        .cantidadConsecutivas(cantidadConsecutivas)
+                        .notasSecuencia(notasSecuencia)
+                        .docenteId(docenteId)
+                        .docenteNombre(docenteNombre)
+                        .docenteApellido(docenteApellido)
+                        .docenteNombreCompleto(docenteNombreCompleto)
+                        .build();
 
         } catch (Exception e) {
-            log.error("Error construyendo caso detectado", e);
+            log.error("Error construyendo caso de secuencia", e);
             return null;
         }
     }
 
-    private String determinarEstadoRiesgo(Integer nota1, Integer nota2) {
-        double promedio = (nota1 + nota2) / 2.0;
-        
-        if (promedio <= 4.0) {
-            return "CRÍTICO";
-        } else if (promedio <= 5.0) {
-            return "ALTO";
+    private String determinarEstadoRiesgoPorCantidad(int cantidadConsecutivas) {
+        if (cantidadConsecutivas >= 5) {
+            return "EMERGENCIA";     // 5 o más exámenes consecutivos
+        } else if (cantidadConsecutivas >= 4) {
+            return "CRÍTICO";        // 4 exámenes consecutivos
+        } else if (cantidadConsecutivas >= 3) {
+            return "ALTO";           // 3 exámenes consecutivos
         } else {
+            return "MEDIO";          // 2 exámenes consecutivos
+        }
+    }
+
+    private String determinarEstadoRiesgoPorMateria(List<ReporteExamenesConsecutivosDto> casosDeMateria) {
+        if (casosDeMateria.isEmpty()) {
             return "MEDIO";
         }
+
+        int totalSecuencias = casosDeMateria.size();
+        int maxConsecutivas = casosDeMateria.stream()
+            .mapToInt(ReporteExamenesConsecutivosDto::getCantidadConsecutivas)
+            .max()
+            .orElse(0);
+        double promedioNotas = calcularPromedioNotasMateria(casosDeMateria);
+        boolean hayPatronPersistente = verificarPatronPersistente(casosDeMateria);
+        
+        int score = 0;
+        
+        // Factor 1: Secuencia más larga en la materia
+        if (maxConsecutivas >= 5) {
+            score += 50;
+        } else if (maxConsecutivas >= 4) {
+            score += 40;
+        } else if (maxConsecutivas >= 3) {
+            score += 25;
+        } else {
+            score += 15;
+        }
+        
+        // Factor 2: Múltiples secuencias EN LA MISMA MATERIA (persistencia)
+        if (totalSecuencias >= 3) {
+            score += 30;      // 3+ secuencias = patrón sistemático
+        } else if (totalSecuencias >= 2) {
+            score += 20;      // 2 secuencias = persistencia
+        }
+        
+        // Factor 3: Gravedad promedio de notas EN LA MATERIA
+        if (promedioNotas <= 2.5) {
+            score += 20;      // Notas muy bajas
+        } else if (promedioNotas <= 3.5) {
+            score += 15;
+        } else if (promedioNotas <= 4.5) {
+            score += 10;
+        } else {
+            score += 5;
+        }
+        
+        // Factor 4: Patrón persistente entre etapas
+        if (hayPatronPersistente) {
+            score += 15;      // Misma dificultad en diferentes etapas
+        }
+        
+        // Clasificación final POR MATERIA
+        if (score >= 80) {
+            return "EMERGENCIA";       // Falla sistemática en la materia
+        } else if (score >= 60) {
+            return "CRÍTICO";          // Dificultad grave en la materia  
+        } else if (score >= 40) {
+            return "ALTO";             // Problema persistente en la materia
+        } else {
+            return "MEDIO";            // Dificultad puntual en la materia
+        }
+    }
+
+    private double calcularPromedioNotasMateria(List<ReporteExamenesConsecutivosDto> casos) {
+        List<Integer> todasLasNotas = new ArrayList<>();
+        
+        for (ReporteExamenesConsecutivosDto caso : casos) {
+            if (caso.getNotasSecuencia() != null && !caso.getNotasSecuencia().trim().isEmpty()) {
+                // Parsear notas de la secuencia: "3,4,2,5" -> [3,4,2,5]
+                String[] notasStr = caso.getNotasSecuencia().split(",");
+                for (String nota : notasStr) {
+                    try {
+                        todasLasNotas.add(Integer.parseInt(nota.trim()));
+                    } catch (NumberFormatException e) {
+                        // Ignorar notas mal formateadas
+                    }
+                }
+            } else {
+                // Fallback para compatibilidad
+                todasLasNotas.add(caso.getPrimeraNota());
+                todasLasNotas.add(caso.getSegundaNota());
+            }
+        }
+        
+        return todasLasNotas.stream()
+            .mapToDouble(Integer::doubleValue)
+            .average()
+            .orElse(5.0);
+    }
+
+    private boolean verificarPatronPersistente(List<ReporteExamenesConsecutivosDto> casos) {
+        // Verifica si hay secuencias en diferentes etapas de la misma materia
+        Set<Integer> etapasAfectadas = new HashSet<>();
+        for (ReporteExamenesConsecutivosDto caso : casos) {
+            etapasAfectadas.add(caso.getEtapaPrimeraNota());
+            etapasAfectadas.add(caso.getEtapaSegundaNota());
+        }
+        return etapasAfectadas.size() >= 2; // Dificultades en múltiples etapas
     }
 
     private ReporteExamenesConsecutivosResponse construirRespuestaVacia(Integer cicloLectivoAnio, String nombreCiclo) {
@@ -232,6 +404,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
                 .totalMateriasAfectadas(0)
                 .totalCursosAfectados(0)
                 .casosDetectados(new ArrayList<>())
+                .casosEmergencia(0)
                 .casosCriticos(0)
                 .casosAltos(0)
                 .casosMedios(0)
@@ -251,6 +424,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
         int totalCursos = (int) casosDetectados.stream().mapToLong(ReporteExamenesConsecutivosDto::getCursoId).distinct().count();
 
         // Estadísticas por nivel de riesgo
+        int casosEmergencia = (int) casosDetectados.stream().filter(c -> "EMERGENCIA".equals(c.getEstadoRiesgo())).count();
         int casosCriticos = (int) casosDetectados.stream().filter(c -> "CRÍTICO".equals(c.getEstadoRiesgo())).count();
         int casosAltos = (int) casosDetectados.stream().filter(c -> "ALTO".equals(c.getEstadoRiesgo())).count();
         int casosMedios = (int) casosDetectados.stream().filter(c -> "MEDIO".equals(c.getEstadoRiesgo())).count();
@@ -259,7 +433,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
         var resumenPorMateria = construirResumenPorMateria(casosDetectados);
 
         // Recomendaciones
-        var recomendaciones = generarRecomendaciones(casosDetectados, casosCriticos, casosAltos, casosMedios);
+        var recomendaciones = generarRecomendaciones(casosDetectados, casosEmergencia, casosCriticos, casosAltos, casosMedios);
 
         return ReporteExamenesConsecutivosResponse.builder()
                 .cicloLectivoAnio(cicloLectivoAnio)
@@ -268,6 +442,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
                 .totalMateriasAfectadas(totalMaterias)
                 .totalCursosAfectados(totalCursos)
                 .casosDetectados(casosDetectados)
+                .casosEmergencia(casosEmergencia)
                 .casosCriticos(casosCriticos)
                 .casosAltos(casosAltos)
                 .casosMedios(casosMedios)
@@ -306,7 +481,7 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
     }
 
     private List<String> generarRecomendaciones(List<ReporteExamenesConsecutivosDto> casosDetectados, 
-                                               int casosCriticos, int casosAltos, int casosMedios) {
+                                               int casosEmergencia, int casosCriticos, int casosAltos, int casosMedios) {
         List<String> recomendaciones = new ArrayList<>();
 
         if (casosDetectados.isEmpty()) {
@@ -314,17 +489,24 @@ public class ReporteExamenesConsecutivosServiceImpl implements ReporteExamenesCo
             return recomendaciones;
         }
 
+        if (casosEmergencia > 0) {
+            recomendaciones.add(String.format("🚨 EMERGENCIA: %d casos con 4+ exámenes consecutivos desaprobados - INTERVENCIÓN INMEDIATA", casosEmergencia));
+            recomendaciones.add("Reunión urgente con padres, gabinete psicopedagógico y docentes");
+            recomendaciones.add("Considerar cambio de estrategia metodológica o apoyo extracurricular");
+        }
+
         if (casosCriticos > 0) {
-            recomendaciones.add(String.format("URGENTE: %d casos críticos requieren intervención inmediata (promedio ≤ 4)", casosCriticos));
-            recomendaciones.add("Implementar plan de apoyo académico intensivo para casos críticos");
+            recomendaciones.add(String.format("⚠️ CRÍTICO: %d casos con 3 exámenes consecutivos - Plan de apoyo intensivo", casosCriticos));
+            recomendaciones.add("Implementar seguimiento semanal personalizado");
         }
 
         if (casosAltos > 0) {
-            recomendaciones.add(String.format("ATENCIÓN: %d casos de alto riesgo necesitan seguimiento cercano", casosAltos));
+            recomendaciones.add(String.format("🔴 ALTO RIESGO: %d casos con 2 exámenes consecutivos - Seguimiento cercano", casosAltos));
+            recomendaciones.add("Refuerzo académico y comunicación con padres");
         }
 
         if (casosMedios > 0) {
-            recomendaciones.add(String.format("PREVENCIÓN: %d casos de riesgo medio requieren monitoreo", casosMedios));
+            recomendaciones.add(String.format("🟡 PREVENCIÓN: %d casos requieren monitoreo regular", casosMedios));
         }
 
         // Recomendaciones específicas por materia más afectada

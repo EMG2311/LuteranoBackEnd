@@ -24,9 +24,10 @@ public class ReporteExamenesConsecutivosResponse {
     private List<ReporteExamenesConsecutivosDto> casosDetectados;
     
     // Estadísticas por nivel de riesgo
-    private Integer casosCriticos; // Ambas notas <= 4
-    private Integer casosAltos; // Una nota <= 4, otra <= 6
-    private Integer casosMedios; // Ambas notas <= 6
+    private Integer casosEmergencia; // 4+ exámenes consecutivos
+    private Integer casosCriticos; // 3 exámenes consecutivos
+    private Integer casosAltos; // 2 exámenes consecutivos  
+    private Integer casosMedios; // Casos edge
     
     // Resumen por materia
     private List<ResumenPorMateriaDto> resumenPorMateria;
