@@ -5,14 +5,17 @@ import com.grup14.luterano.dto.reporteRankingAlumno.CursoRankingDto;
 import com.grup14.luterano.entities.CicloLectivo;
 import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.HistorialCurso;
+import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.CicloLectivoRepository;
 import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.repository.HistorialCursoRepository;
+import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosColegioResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingAlumnosCursoResponse;
 import com.grup14.luterano.response.reporteRankingAlumno.RankingTodosCursosResponse;
 import com.grup14.luterano.service.ReporteRankingAlumnoService;
+import com.grup14.luterano.service.NotaFinalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +36,8 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
     private final HistorialCursoRepository historialCursoRepo;
     private final CicloLectivoRepository cicloLectivoRepo;
     private final CursoRepository cursoRepo;
+    private final NotaFinalService notaFinalService;
+    private final MateriaCursoRepository materiaCursoRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,7 +55,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         CicloLectivo ciclo = cicloLectivoRepo.findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
-        // Obtener ranking del curso
+        // Obtener ranking del curso usando solo promedios ya calculados
         List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCiclo(cursoId, ciclo.getId());
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
@@ -71,7 +79,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         CicloLectivo ciclo = cicloLectivoRepo.findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
-        // Obtener ranking de todo el colegio
+        // Obtener ranking de todo el colegio usando solo promedios ya calculados
         List<HistorialCurso> historiales = historialCursoRepo.findRankingByCiclo(ciclo.getId());
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
@@ -96,7 +104,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
 
         List<CursoRankingDto> cursosRanking = cursos.stream()
                 .map(curso -> {
-                    // Obtener ranking del curso
+                    // Obtener ranking del curso usando solo promedios ya calculados
                     List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCiclo(curso.getId(), ciclo.getId());
                     List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
@@ -163,6 +171,7 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
                         .nombreCompleto(nombreCompleto)
                         .promedio(promedioActual)
                         .posicion(posicionActual)
+                        .curso(CursoMapper.toDto(hc.getCurso()))
                         .build();
 
                 ranking.add(dto);

@@ -1,5 +1,6 @@
 package com.grup14.luterano.dto.reporteRankingAlumno;
 
+import com.grup14.luterano.dto.CursoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,5 @@ public class AlumnoRankingDto {
     private String nombreCompleto;
     private BigDecimal promedio;
     private Integer posicion;
+    private CursoDto curso;
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -56,7 +57,8 @@ public class ReporteRankingAlumnoController {
     }
 
     @GetMapping("/colegio")
-    @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de todo el colegio")
+    @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de todo el colegio", 
+               description = "Proceso que puede tomar tiempo para cálculos dinámicos")
     public ResponseEntity<RankingAlumnosColegioResponse> rankingAlumnosColegio(
             @RequestParam int anio) {
         try {

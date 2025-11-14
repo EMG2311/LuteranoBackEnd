@@ -104,6 +104,32 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
             """)
     List<HistorialCurso> findRankingByCiclo(@Param("cicloId") Long cicloId);
 
+    // Método para obtener historiales activos sin filtrar por promedio (para ranking dinámico)
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
+                where hc.curso.id = :cursoId
+                  and hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                order by a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findHistorialesActivosParaRanking(
+            @Param("cursoId") Long cursoId,
+            @Param("cicloId") Long cicloId
+    );
+
+    @Query("""
+                select hc
+                from HistorialCurso hc
+                join fetch hc.alumno a
+                join fetch hc.curso c
+                where hc.cicloLectivo.id = :cicloId
+                  and hc.fechaHasta is null
+                order by a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findHistorialesActivosParaRankingTodos(@Param("cicloId") Long cicloId);
+
     @Query("""
                 select distinct c
                 from HistorialCurso hc

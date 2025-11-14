@@ -111,14 +111,20 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             }
         }
 
-        // 3) Previas: materias del historial con estado DESAPROBADA (tratamos "previa" como desaprobada)
+        // 3) Previas: materias del historial con estado DESAPROBADA de años ANTERIORES
         List<Long> materiasPreviasIds = new ArrayList<>();
-        List<HistorialMateria> hms = List.of();
-        if (hc != null) {
-            hms = historialMateriaRepo.findAllByHistorialCursoId(hc.getId());
-            for (HistorialMateria hm : hms) {
-                if (hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA) {
-                    materiasPreviasIds.add(hm.getMateriaCurso().getMateria().getId());
+        
+        // Buscar en TODOS los historiales de cursos de años anteriores al año consultado
+        List<HistorialCurso> historialCursosAnteriores = historialCursoRepo.findHistorialCompletoByAlumnoId(alumno.getId());
+        
+        for (HistorialCurso hcAnterior : historialCursosAnteriores) {
+            // Solo considerar ciclos de años anteriores al año consultado
+            if (hcAnterior.getCicloLectivo().getFechaDesde().getYear() < anio) {
+                List<HistorialMateria> hms = historialMateriaRepo.findAllByHistorialCursoId(hcAnterior.getId());
+                for (HistorialMateria hm : hms) {
+                    if (hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA) {
+                        materiasPreviasIds.add(hm.getMateriaCurso().getMateria().getId());
+                    }
                 }
             }
         }
@@ -164,6 +170,13 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
 
         // 5) Armar lista de materias con mezcla de datos (resumen + finales + estado materia)
         // Si no hubo calificaciones, intentar derivar materias desde historial
+        
+        // Obtener los HistorialMateria del alumno para el año consultado
+        List<HistorialMateria> hms = new ArrayList<>();
+        if (hc != null) {
+            hms = historialMateriaRepo.findAllByHistorialCursoId(hc.getId());
+        }
+        
         Map<Long, MateriaAnualDetalleDto> materias = new LinkedHashMap<>();
         if (porMateria != null) {
             for (var entry : porMateria.entrySet()) {
