@@ -125,6 +125,18 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
             LocalDate desde, LocalDate hasta, List<Long> alumnoIds
     );
 
+    // Método para contar registros de asistencia por alumno
+    @Query("""
+                select aa.alumno.id, count(aa)
+                from AsistenciaAlumno aa
+                where aa.fecha between :desde and :hasta
+                  and aa.alumno.id in :alumnoIds
+                group by aa.alumno.id
+            """)
+    List<Object[]> contarRegistrosPorAlumnoEntreFechas(
+            LocalDate desde, LocalDate hasta, List<Long> alumnoIds
+    );
+
     @Query("""
                     select a.estado, count(a)
                     from AsistenciaAlumno a

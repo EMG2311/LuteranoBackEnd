@@ -89,6 +89,19 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
             """)
     List<HistorialCurso> findAbiertosByCiclo(@Param("cicloId") Long cicloId);
 
+    // Método para obtener historiales abiertos por ciclo excluyendo alumnos borrados, egresados y excluidos
+    @Query("""
+               select hc
+               from HistorialCurso hc
+               join fetch hc.alumno a
+               join fetch hc.curso c
+               where hc.cicloLectivo.id = :cicloId
+                 and hc.fechaHasta is null
+                 and a.estado not in ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+               order by c.anio asc, c.nivel asc, c.division asc, a.apellido asc, a.nombre asc
+            """)
+    List<HistorialCurso> findAbiertosByCicloExcluyendoInactivos(@Param("cicloId") Long cicloId);
+
     // Para reactivación de alumnos: obtener historiales ordenados por fecha
     List<HistorialCurso> findByAlumno_IdOrderByFechaDesdeDesc(Long alumnoId);
 

@@ -20,7 +20,6 @@ import com.grup14.luterano.specification.AlumnoSpecification;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -56,8 +55,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         this.historialMateriaRepository = historialMateriaRepository;
     }
 
-    @Autowired
-    private UserRepository userRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(AlumnoServiceImpl.class);
 
     @Override
@@ -418,7 +416,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         if (!historialesExistentes.isEmpty()) {
             // El alumno se fue y vuelve en el mismo ciclo lectivo
             logger.info("Alumno vuelve en el mismo ciclo lectivo, reactivando historial existente");
-            HistorialCurso historialExistente = historialesExistentes.get(0); // Tomar el primero
+            HistorialCurso historialExistente = historialesExistentes.getFirst(); // Tomar el primero
             historialExistente.setCurso(curso);
             historialExistente.setFechaHasta(null); // Quitar fecha de finalización si la tenía
             historialCursoRepository.save(historialExistente);

@@ -36,8 +36,8 @@ public class ReporteAsistenciaPerfectaServiceImpl implements ReporteAsistenciaPe
         var ciclo = cicloRepo.findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
-        // historiales abiertos del ciclo (con alumno y curso)
-        List<HistorialCurso> hcs = historialCursoRepo.findAbiertosByCiclo(ciclo.getId());
+        // historiales abiertos del ciclo (con alumno y curso) - excluyendo alumnos borrados
+        List<HistorialCurso> hcs = historialCursoRepo.findAbiertosByCicloExcluyendoInactivos(ciclo.getId());
 
         // Agrupar alumnos por curso
         Map<Long, CursoDto> cursoById = new LinkedHashMap<>();
@@ -62,12 +62,23 @@ public class ReporteAsistenciaPerfectaServiceImpl implements ReporteAsistenciaPe
         // Calcular suma ponderada por alumno
         List<Long> allAlumnoIds = hcs.stream().map(h -> h.getAlumno().getId()).distinct().toList();
         Map<Long, Double> ponderadoPorAlumno = new HashMap<>();
+        Map<Long, Long> registrosPorAlumno = new HashMap<>();
+        
         if (!allAlumnoIds.isEmpty()) {
+            // Obtener suma de inasistencias ponderadas
             for (Object[] row : asistenciaRepo.sumarInasistenciasPorAlumnoEntreFechas(desde, hasta, allAlumnoIds)) {
                 if (row == null || row.length < 2) continue;
                 Long aId = (Long) row[0];
                 Double sum = row[1] instanceof Number n ? n.doubleValue() : 0.0;
                 ponderadoPorAlumno.put(aId, sum);
+            }
+            
+            // Obtener cantidad de registros de asistencia
+            for (Object[] row : asistenciaRepo.contarRegistrosPorAlumnoEntreFechas(desde, hasta, allAlumnoIds)) {
+                if (row == null || row.length < 2) continue;
+                Long aId = (Long) row[0];
+                Long count = row[1] instanceof Number n ? n.longValue() : 0L;
+                registrosPorAlumno.put(aId, count);
             }
         }
 
@@ -80,7 +91,14 @@ public class ReporteAsistenciaPerfectaServiceImpl implements ReporteAsistenciaPe
             CursoDto cursoDto = cursoById.get(cId);
 
             List<AlumnoLigeroDto> perfectos = alumnos.stream()
-                    .filter(a -> ponderadoPorAlumno.getOrDefault(a.getId(), 0.0) == 0.0)
+                    .filter(a -> {
+                        Long alumnoId = a.getId();
+                        // Debe tener al menos 1 registro de asistencia
+                        long cantidadRegistros = registrosPorAlumno.getOrDefault(alumnoId, 0L);
+                        // Y la suma ponderada debe ser 0 (sin inasistencias)
+                        double sumaPonderada = ponderadoPorAlumno.getOrDefault(alumnoId, 0.0);
+                        return cantidadRegistros > 0 && sumaPonderada == 0.0;
+                    })
                     .map(a -> AlumnoLigeroDto.builder()
                             .alumnoId(a.getId())
                             .dni(a.getDni())
