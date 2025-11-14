@@ -25,4 +25,5 @@ public class BloqueOcupadoDto {
     private String materiaNombre;
 
     private double horas; // duración en horas del bloque
+    private boolean estaLibre; // true = módulo libre, false = módulo ocupado
 }
