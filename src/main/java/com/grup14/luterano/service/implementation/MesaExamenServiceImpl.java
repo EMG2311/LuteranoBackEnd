@@ -544,6 +544,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .apellidoDocente(asignacion.getDocente().getApellido())
                 .nombreDocente(asignacion.getDocente().getNombre())
                 .nombreCompleto(asignacion.getDocente().getApellido() + ", " + asignacion.getDocente().getNombre())
+                .nombreMateria(asignacion.getMesaExamen().getMateriaCurso().getMateria().getNombre())
                 .esDocenteMateria(asignacion.isEsDocenteMateria())
                 .build();
     }

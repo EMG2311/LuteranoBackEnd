@@ -15,5 +15,6 @@ public class MesaExamenDocenteDto {
     private String apellidoDocente;
     private String nombreDocente;
     private String nombreCompleto;
+    private String nombreMateria;
     private boolean esDocenteMateria;
 }
