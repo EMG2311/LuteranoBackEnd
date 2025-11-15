@@ -161,4 +161,20 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
     long deleteByAlumno_Id(Long alumnoId);
 
     long countByAlumno_Id(Long alumnoId);
+    
+    /**
+     * Obtiene todas las tardanzas de un alumno en un rango de fechas con fecha y observación.
+     */
+    @Query("""
+                select a
+                from AsistenciaAlumno a
+                where a.alumno.id = :alumnoId
+                  and a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+                  and (:desde is null or a.fecha >= :desde)
+                  and (:hasta is null or a.fecha <= :hasta)
+                order by a.fecha desc
+            """)
+    List<AsistenciaAlumno> findTardanzasPorAlumno(@Param("alumnoId") Long alumnoId,
+                                                   @Param("desde") LocalDate desde,
+                                                   @Param("hasta") LocalDate hasta);
 }
