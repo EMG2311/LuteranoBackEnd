@@ -132,18 +132,8 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     }
 
     private int contarMateriasDesaprobadas(Long alumnoId, Long cursoId, int anio) {
-        // Obtener todas las materias del curso
-        List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(cursoId);
-
-        int desaprobadas = 0;
-        for (MateriaCurso mc : materiasCurso) {
-            Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, mc.getMateria().getId(), anio);
-            if (notaFinal == null || notaFinal < 6) {
-                desaprobadas++;
-            }
-        }
-
-        return desaprobadas;
+        // Obtener materias desaprobadas en una sola consulta optimizada
+        return notaFinalService.contarMateriasDesaprobadasPorAlumno(alumnoId, cursoId, anio);
     }
 
     private AlumnoPromocionDto procesarEgreso(Alumno alumno, HistorialCurso historial,

@@ -27,4 +27,15 @@ public interface NotaFinalService {
      * @return DTO con nota final y detalles del origen
      */
     NotaFinalDetalleDto obtenerNotaFinalDetallada(Long alumnoId, Long materiaId, int anio);
+
+    /**
+     * Cuenta la cantidad de materias desaprobadas (nota < 6 o null) para un alumno en un curso y año específico.
+     * Método optimizado para promoción masiva.
+     *
+     * @param alumnoId ID del alumno
+     * @param cursoId  ID del curso
+     * @param anio     Año a evaluar
+     * @return Cantidad de materias desaprobadas
+     */
+    int contarMateriasDesaprobadasPorAlumno(Long alumnoId, Long cursoId, int anio);
 }
