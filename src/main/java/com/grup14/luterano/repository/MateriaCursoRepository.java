@@ -143,4 +143,21 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso, Long
             """)
     List<Object[]> findMateriasConDocentePorCicloYCurso(@Param("cicloLectivoAnio") Integer cicloLectivoAnio,
                                                         @Param("cursoId") Long cursoId);
+
+    /**
+     * Obtiene los IDs de todas las materias de un alumno en un ciclo lectivo específico.
+     * Útil para cálculo de promedios en ranking.
+     */
+    @Query("""
+              SELECT DISTINCT m.id
+              FROM MateriaCurso mc
+              JOIN mc.materia m
+              JOIN mc.curso c
+              JOIN HistorialCurso hc ON hc.curso.id = c.id
+              WHERE hc.alumno.id = :alumnoId
+              AND hc.cicloLectivo.id = :cicloLectivoId
+              AND hc.fechaHasta IS NULL
+            """)
+    List<Long> findMateriasIdsPorAlumnoCiclo(@Param("alumnoId") Long alumnoId,
+                                             @Param("cicloLectivoId") Long cicloLectivoId);
 }

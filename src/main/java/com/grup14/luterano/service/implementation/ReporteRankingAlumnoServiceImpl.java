@@ -55,8 +55,29 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         CicloLectivo ciclo = cicloLectivoRepo.findByFechaDesdeBeforeAndFechaHastaAfter(mid, mid)
                 .orElseThrow(() -> new IllegalArgumentException("No hay ciclo lectivo que contenga el año " + anio));
 
-        // Obtener ranking del curso usando solo promedios ya calculados
-        List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId());
+        // Obtener historiales activos - NO requiere promedio pre-calculado
+        List<HistorialCurso> historiales = historialCursoRepo.findHistorialesActivosParaRankingExcluyendoInactivos(cursoId, ciclo.getId());
+        
+        int cicloAnio = ciclo.getFechaDesde().getYear();
+        
+        // Calcular promedios dinámicamente
+        for (HistorialCurso hc : historiales) {
+            BigDecimal promedio = calcularPromedioParaRanking(hc.getAlumno().getId(), ciclo.getId(), cicloAnio);
+            hc.setPromedio(promedio);
+        }
+        
+        // Filtrar solo los que tienen promedio y ordenar
+        historiales = historiales.stream()
+                .filter(hc -> hc.getPromedio() != null)
+                .sorted((h1, h2) -> {
+                    int cmp = h2.getPromedio().compareTo(h1.getPromedio());
+                    if (cmp != 0) return cmp;
+                    cmp = h1.getAlumno().getApellido().compareToIgnoreCase(h2.getAlumno().getApellido());
+                    if (cmp != 0) return cmp;
+                    return h1.getAlumno().getNombre().compareToIgnoreCase(h2.getAlumno().getNombre());
+                })
+                .collect(Collectors.toList());
+        
         List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
         String cursoNombre = curso.getAnio() + "° " + curso.getDivision().toString() + " - " + curso.getNivel().toString();
@@ -102,10 +123,30 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
         // Obtener todos los cursos activos
         List<Curso> cursos = historialCursoRepo.findCursosActivosByCiclo(ciclo.getId());
 
+        int cicloAnio = ciclo.getFechaDesde().getYear();
         List<CursoRankingDto> cursosRanking = cursos.stream()
                 .map(curso -> {
-                    // Obtener ranking del curso usando solo promedios ya calculados
-                    List<HistorialCurso> historiales = historialCursoRepo.findRankingByCursoAndCicloExcluyendoInactivos(curso.getId(), ciclo.getId());
+                    // Obtener historiales activos - NO requiere promedio pre-calculado
+                    List<HistorialCurso> historiales = historialCursoRepo.findHistorialesActivosParaRankingExcluyendoInactivos(curso.getId(), ciclo.getId());
+                    
+                    // Calcular promedios dinámicamente
+                    for (HistorialCurso hc : historiales) {
+                        BigDecimal promedio = calcularPromedioParaRanking(hc.getAlumno().getId(), ciclo.getId(), cicloAnio);
+                        hc.setPromedio(promedio);
+                    }
+                    
+                    // Filtrar solo los que tienen promedio y ordenar
+                    historiales = historiales.stream()
+                            .filter(hc -> hc.getPromedio() != null)
+                            .sorted((h1, h2) -> {
+                                int cmp = h2.getPromedio().compareTo(h1.getPromedio());
+                                if (cmp != 0) return cmp;
+                                cmp = h1.getAlumno().getApellido().compareToIgnoreCase(h2.getAlumno().getApellido());
+                                if (cmp != 0) return cmp;
+                                return h1.getAlumno().getNombre().compareToIgnoreCase(h2.getAlumno().getNombre());
+                            })
+                            .collect(Collectors.toList());
+                    
                     List<AlumnoRankingDto> ranking = calcularRankingConEmpates(historiales);
 
                     return CursoRankingDto.builder()
@@ -122,6 +163,49 @@ public class ReporteRankingAlumnoServiceImpl implements ReporteRankingAlumnoServ
                 .code(0)
                 .mensaje("OK")
                 .build();
+    }
+
+    /**
+     * Calcula el promedio de un alumno para el ranking en un ciclo lectivo específico.
+     * Obtiene todas las materias del curso actual del alumno y calcula el promedio de las notas finales.
+     */
+    private BigDecimal calcularPromedioParaRanking(Long alumnoId, Long cicloLectivoId, int anio) {
+        // Obtener el historial curso del alumno en este ciclo
+        List<HistorialCurso> historiales = historialCursoRepo.findByAlumno_IdAndCicloLectivo_Id(alumnoId, cicloLectivoId);
+        
+        if (historiales.isEmpty()) {
+            return null;
+        }
+        
+        HistorialCurso historial = historiales.get(0);
+        Long cursoId = historial.getCurso().getId();
+        
+        // Obtener todas las materias del curso
+        List<Long> materiasIds = materiaCursoRepository.findMateriasIdsPorAlumnoCiclo(alumnoId, cicloLectivoId);
+        
+        if (materiasIds.isEmpty()) {
+            return null;
+        }
+        
+        // Calcular promedio de notas finales
+        List<Integer> notasFinales = new ArrayList<>();
+        for (Long materiaId : materiasIds) {
+            Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, materiaId, anio);
+            if (notaFinal != null) {
+                notasFinales.add(notaFinal);
+            }
+        }
+        
+        if (notasFinales.isEmpty()) {
+            return null;
+        }
+        
+        double promedio = notasFinales.stream()
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+        
+        return BigDecimal.valueOf(promedio);
     }
 
     /**
