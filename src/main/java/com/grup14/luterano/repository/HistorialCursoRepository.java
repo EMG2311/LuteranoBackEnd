@@ -246,4 +246,20 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
     """)
     List<HistorialCurso> findHistorialCompletoByAlumnoId(@Param("alumnoId") Long alumnoId);
 
+    /**
+     * Cuenta la cantidad de alumnos activos (con historial abierto) en un curso y ciclo lectivo específico.
+     * Excluye alumnos con estados BORRADO, EGRESADO y EXCLUIDO_POR_REPETICION.
+     */
+    @Query("""
+        SELECT COUNT(hc)
+        FROM HistorialCurso hc
+        JOIN hc.alumno a
+        WHERE hc.curso.id = :cursoId
+        AND hc.cicloLectivo.id = :cicloLectivoId
+        AND hc.fechaHasta IS NULL
+        AND a.estado NOT IN ('BORRADO', 'EGRESADO', 'EXCLUIDO_POR_REPETICION')
+    """)
+    long countAlumnosActivosEnCurso(@Param("cursoId") Long cursoId,
+                                    @Param("cicloLectivoId") Long cicloLectivoId);
+
 }

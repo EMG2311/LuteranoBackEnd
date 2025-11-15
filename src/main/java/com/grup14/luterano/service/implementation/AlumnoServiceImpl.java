@@ -82,6 +82,30 @@ public class AlumnoServiceImpl implements AlumnoService {
         Curso curso = cursoRepository.findById(alumnoRequest.getCursoActual().getId())
                 .orElseThrow(() -> new AlumnoException("El curso especificado no existe"));
 
+        // Obtener el ciclo lectivo activo (se usará para validar capacidad y crear historial)
+        LocalDate hoy = LocalDate.now();
+        CicloLectivo cicloActivo = cicloLectivoRepository
+                .findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(hoy, hoy)
+                .orElseThrow(() -> new AlumnoException("No hay un ciclo lectivo activo para la fecha actual"));
+
+        // Validar capacidad del aula
+        if (curso.getAula() != null && curso.getAula().getCapacidad() != null) {
+            long alumnosActuales = historialCursoRepository.countAlumnosActivosEnCurso(curso.getId(), cicloActivo.getId());
+            int capacidadAula = curso.getAula().getCapacidad();
+            
+            if (alumnosActuales >= capacidadAula) {
+                throw new AlumnoException(
+                    String.format("No se puede asignar el alumno: el aula '%s' del curso %d° %s ya está llena. Capacidad: %d, Alumnos actuales: %d",
+                        curso.getAula().getNombre(),
+                        curso.getAnio(),
+                        curso.getDivision(),
+                        capacidadAula,
+                        alumnosActuales
+                    )
+                );
+            }
+        }
+
         // Manejar múltiples tutores
         List<Tutor> tutores = new ArrayList<>();
         if (alumnoRequest.getTutores() != null && !alumnoRequest.getTutores().isEmpty()) {
@@ -101,13 +125,7 @@ public class AlumnoServiceImpl implements AlumnoService {
         alumno.setEstado(EstadoAlumno.REGULAR);
         alumno = alumnoRepository.save(alumno);
 
-        // Crear el historial de curso automáticamente (ahora siempre se ejecuta)
-        // Obtener el ciclo lectivo activo
-        LocalDate hoy = LocalDate.now();
-        CicloLectivo cicloActivo = cicloLectivoRepository
-                .findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(hoy, hoy)
-                .orElseThrow(() -> new AlumnoException("No hay un ciclo lectivo activo para la fecha actual"));
-
+        // Crear el historial de curso automáticamente (usa cicloActivo ya obtenido)
         HistorialCurso historialCurso = HistorialCurso.builder()
                 .alumno(alumno)
                 .curso(curso)
