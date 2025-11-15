@@ -34,6 +34,12 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
 
     @Transactional(readOnly = true)
     public ReporteRindenResponse listarRindenPorCurso(Long cursoId, int anio) {
+        return listarRindenPorCurso(cursoId, anio, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReporteRindenResponse listarRindenPorCurso(Long cursoId, int anio, boolean incluirPrevias) {
         if (cursoId == null) throw new ReporteRindeException("cursoId es requerido");
 
         Curso curso = cursoRepository.findById(cursoId)
@@ -187,6 +193,18 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 .comparing(ReporteRindeDto::getApellido, coll)
                 .thenComparing(ReporteRindeDto::getNombre, coll)
                 .thenComparing(ReporteRindeDto::getMateriaNombre, coll));
+
+        // Si se solicita incluir previas, agregar alumnos de otros cursos que deben materias de este curso
+        if (incluirPrevias) {
+            List<ReporteRindeDto> filasPrevias = obtenerAlumnosConPrevias(cursoId, ciclo, alumnoIds);
+            filas.addAll(filasPrevias);
+            
+            // Reordenar con las previas incluidas
+            filas.sort(Comparator
+                    .comparing(ReporteRindeDto::getApellido, coll)
+                    .thenComparing(ReporteRindeDto::getNombre, coll)
+                    .thenComparing(ReporteRindeDto::getMateriaNombre, coll));
+        }
 
         int totalColoquio = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.COLOQUIO).count();
         int totalExamen = (int) filas.stream().filter(f -> f.getCondicion() == CondicionRinde.EXAMEN).count();
@@ -398,5 +416,98 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
 
     private static Double round1(double v) {
         return Math.round(v * 10.0) / 10.0;
+    }
+    
+    /**
+     * Obtiene alumnos de otros cursos que tienen materias desaprobadas (previas) del curso consultado
+     */
+    private List<ReporteRindeDto> obtenerAlumnosConPrevias(Long cursoId, CicloLectivo cicloActual, List<Long> alumnosDelCursoActual) {
+        List<ReporteRindeDto> resultado = new ArrayList<>();
+        
+        // Obtener todas las materias del curso consultado
+        List<MateriaCurso> materiasCurso = materiaCursoRepo.findByCursoId(cursoId);
+        if (materiasCurso.isEmpty()) {
+            return resultado;
+        }
+        
+        Set<Long> materiasIds = materiasCurso.stream()
+                .map(mc -> mc.getMateria().getId())
+                .collect(Collectors.toSet());
+        
+        // Buscar alumnos activos que NO estén en el curso actual
+        List<HistorialCurso> todosHistoriales = historialCursoRepository
+                .findAbiertosByCicloExcluyendoInactivos(cicloActual.getId());
+        
+        List<Alumno> alumnosOtrosCursos = todosHistoriales.stream()
+                .map(HistorialCurso::getAlumno)
+                .filter(a -> !alumnosDelCursoActual.contains(a.getId()))
+                .distinct()
+                .toList();
+        
+        if (alumnosOtrosCursos.isEmpty()) {
+            return resultado;
+        }
+        
+        // Para cada alumno de otros cursos, buscar si tiene previas de las materias de este curso
+        for (Alumno alumno : alumnosOtrosCursos) {
+            // Buscar historiales de años anteriores
+            List<HistorialCurso> historialesAnteriores = historialCursoRepository
+                    .findByAlumno_IdOrderByCicloLectivo_FechaDesdeDesc(alumno.getId());
+            
+            for (HistorialCurso hc : historialesAnteriores) {
+                // Solo buscar en ciclos anteriores al actual
+                if (hc.getCicloLectivo().getFechaDesde().isAfter(cicloActual.getFechaDesde()) ||
+                    hc.getCicloLectivo().getFechaDesde().isEqual(cicloActual.getFechaDesde())) {
+                    continue;
+                }
+                
+                // Buscar materias desaprobadas del historial
+                for (HistorialMateria hm : hc.getMateriasHistorial()) {
+                    Long materiaId = hm.getMateriaCurso().getMateria().getId();
+                    
+                    // Verificar si esta materia pertenece al curso consultado y está desaprobada
+                    if (materiasIds.contains(materiaId) && 
+                        hm.getEstado() == com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA) {
+                        
+                        // Verificar si ya aprobó la materia en una mesa posterior
+                        List<MesaExamenAlumno> mesasPosteriores = mesaExamenAlumnoRepo
+                                .findByAlumno_IdAndMesaExamen_MateriaCurso_Materia_Id(alumno.getId(), materiaId);
+                        
+                        boolean yaAprobo = mesasPosteriores.stream()
+                                .anyMatch(mea -> mea.getNotaFinal() != null && mea.getNotaFinal() >= 6);
+                        
+                        if (!yaAprobo) {
+                            // Buscar la última nota de mesa para esta materia
+                            MesaExamenAlumno ultimaMesa = mesasPosteriores.stream()
+                                    .filter(mea -> mea.getNotaFinal() != null)
+                                    .max(Comparator.comparing(mea -> mea.getMesaExamen().getFecha()))
+                                    .orElse(null);
+                            
+                            Integer notaEx = ultimaMesa != null ? ultimaMesa.getNotaFinal() : null;
+                            
+                            // Agregar como fila de previa (siempre rinde EXAMEN porque es previa)
+                            resultado.add(ReporteRindeDto.builder()
+                                    .alumnoId(alumno.getId())
+                                    .dni(alumno.getDni())
+                                    .apellido(alumno.getApellido())
+                                    .nombre(alumno.getNombre())
+                                    .materiaId(materiaId)
+                                    .materiaNombre(hm.getMateriaCurso().getMateria().getNombre())
+                                    .e1(null)  // No tiene etapas del año actual
+                                    .e2(null)
+                                    .pg(null)
+                                    .co(null)  // Previas siempre rinden examen
+                                    .ex(notaEx)
+                                    .pf(notaEx != null ? notaEx.doubleValue() : null)
+                                    .condicion(CondicionRinde.EXAMEN)  // Previas siempre rinden EXAMEN
+                                    .estadoAcademico("PREVIA")  // Indicador de que es una previa
+                                    .build());
+                        }
+                    }
+                }
+            }
+        }
+        
+        return resultado;
     }
 }

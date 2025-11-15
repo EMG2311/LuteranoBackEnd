@@ -28,14 +28,16 @@ public class ReporteRindeController {
     @Operation(
             summary = "Alumnos que rinden (Dic/Feb) por curso",
             description = "Devuelve sólo los alumnos del curso que deben rendir COLOQUIO (si aprueban sólo una etapa) " +
-                    "o EXAMEN (si no aprueban ninguna), por cada materia del curso. Incluye E1, E2 y PG."
+                    "o EXAMEN (si no aprueban ninguna), por cada materia del curso. Incluye E1, E2 y PG. " +
+                    "Si incluirPrevias=true, también incluye alumnos de otros cursos con materias desaprobadas (previas)."
     )
     public ResponseEntity<ReporteRindenResponse> rindenPorCurso(
             @PathVariable Long cursoId,
-            @RequestParam int anio
+            @RequestParam int anio,
+            @RequestParam(required = false, defaultValue = "false") boolean incluirPrevias
     ) {
         try {
-            var res = reporteRindenService.listarRindenPorCurso(cursoId, anio);
+            var res = reporteRindenService.listarRindenPorCurso(cursoId, anio, incluirPrevias);
             return ResponseEntity.ok(res);
 
         } catch (ReporteRindeException e) {
