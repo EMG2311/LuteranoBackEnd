@@ -462,7 +462,7 @@ public class ReporteRindenServiceImpl implements ReporteRindenService {
                 }
                 
                 // Buscar materias desaprobadas del historial
-                for (HistorialMateria hm : hc.getMateriasHistorial()) {
+                for (HistorialMateria hm : hc.getHistorialMaterias()) {
                     Long materiaId = hm.getMateriaCurso().getMateria().getId();
                     
                     // Verificar si esta materia pertenece al curso consultado y está desaprobada
