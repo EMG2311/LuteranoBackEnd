@@ -22,6 +22,10 @@ public interface HistorialCursoRepository extends JpaRepository<HistorialCurso, 
 
     List<HistorialCurso> findByAlumno_Id(Long alumnoId);
 
+    // Devuelve los historiales de un alumno ordenados por fecha de inicio del ciclo lectivo descendente
+    @Query("SELECT hc FROM HistorialCurso hc WHERE hc.alumno.id = :alumnoId ORDER BY hc.cicloLectivo.fechaDesde DESC")
+    List<HistorialCurso> findByAlumno_IdOrderByCicloLectivo_FechaDesdeDesc(@Param("alumnoId") Long alumnoId);
+
     Optional<HistorialCurso> findByAlumno_IdAndFechaHastaIsNull(Long alumnoId);
 
     @Query("""
