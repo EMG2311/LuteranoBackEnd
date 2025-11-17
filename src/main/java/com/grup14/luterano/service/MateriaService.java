@@ -11,8 +11,10 @@ public interface MateriaService {
 
     MateriaResponse updateMateria(MateriaUpdateRequest materiaUpdateRequest);
 
+    // Devuelve solo materias activas
     MateriaResponseList listarMaterias();
 
+    // Borrado lógico
     MateriaResponse borrarMateria(Long id);
 
 }

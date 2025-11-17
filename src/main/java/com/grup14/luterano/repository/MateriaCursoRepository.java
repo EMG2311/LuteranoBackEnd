@@ -1,3 +1,6 @@
+
+
+
 package com.grup14.luterano.repository;
 
 import com.grup14.luterano.entities.MateriaCurso;
@@ -12,6 +15,11 @@ import java.util.Optional;
 
 @Repository
 public interface MateriaCursoRepository extends JpaRepository<MateriaCurso, Long> {
+      @Modifying(clearAutomatically = true, flushAutomatically = true)
+      @Query("""
+        update MateriaCurso mc set mc.docente = null where mc.materia.id = :materiaId
+      """)
+      int cerrarInscripcionesPorMateria(@Param("materiaId") Long materiaId);
     List<MateriaCurso> findByMateriaId(Long idMateria);
 
     boolean existsByMateriaIdAndCursoId(Long materiaId, Long cursoId);

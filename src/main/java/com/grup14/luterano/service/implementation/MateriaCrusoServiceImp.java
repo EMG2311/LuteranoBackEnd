@@ -24,10 +24,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MateriaCrusoServiceImp implements MateriaCursoService {
-    private final MateriaRepository materiaRepository;
-    private final CursoRepository cursoRepository;
-    private final MateriaCursoRepository materiaCursoRepository;
-    private final DocenteRepository docenteRepository;
+        private final MateriaRepository materiaRepository;
+        private final CursoRepository cursoRepository;
+        private final MateriaCursoRepository materiaCursoRepository;
+        private final DocenteRepository docenteRepository;
+        private final com.grup14.luterano.repository.HorarioClaseModuloRepository horarioClaseModuloRepository;
 
     @Override
     public MateriaCursoResponse asignarMateriasACurso(List<Long> materiaIds, Long cursoId) {
@@ -183,10 +184,16 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
         materiaCurso.setDocente(null);
         materiaCursoRepository.save(materiaCurso);
 
+        // Desasignar docente en todos los horarios de ese MateriaCurso
+        var horarios = horarioClaseModuloRepository.findAllByMateriaCurso_Id(materiaCurso.getId());
+        for (var h : horarios) {
+            horarioClaseModuloRepository.delete(h);
+        }
+
         return MateriaCursoResponse.builder()
                 .materiaCursoDto(MateriaCursoMapper.toDto(materiaCurso))
                 .code(0)
-                .mensaje("Docente desasignado correctamente")
+                .mensaje("Docente y horarios desasignados correctamente")
                 .build();
     }
 }

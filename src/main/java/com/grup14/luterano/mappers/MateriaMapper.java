@@ -12,17 +12,12 @@ public class MateriaMapper {
 
         // Se crea el DTO usando el Builder para un código más limpio y legible.
         return MateriaDto.builder()
-                .id(entity.getId())
-                .nombreMateria(entity.getNombre())
-                .descripcion(entity.getDescripcion())
-                .nivel(entity.getNivel())
-                // Se mapea la lista de entidades MateriaCurso a una lista de DTOs.
-                // Es crucial usar MateriaCursoMapper aquí, no CursoMapper.
-                //.dictados(entity.getDictados() == null ? null :
-                //         entity.getDictados().stream()
-                //                  .map(MateriaCursoMapper::toDto)
-                //                 .collect(Collectors.toList()))
-                .build();
+            .id(entity.getId())
+            .nombreMateria(entity.getNombre())
+            .descripcion(entity.getDescripcion())
+            .nivel(entity.getNivel())
+            // .activa(entity.isActiva()) // Si se agrega en el DTO
+            .build();
     }
 
     public static Materia toEntity(MateriaDto dto) {

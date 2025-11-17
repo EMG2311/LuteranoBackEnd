@@ -31,6 +31,9 @@ public class Materia {
     @Column(nullable = false)
     private Nivel nivel;
 
+    @Column(nullable = false)
+    private boolean activa = true;
+
     @OneToMany(mappedBy = "materia")
     @ToString.Exclude
     @Builder.Default

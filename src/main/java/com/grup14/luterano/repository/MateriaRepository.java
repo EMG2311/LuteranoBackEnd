@@ -6,5 +6,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MateriaRepository extends JpaRepository<Materia, Long> {
+    boolean existsByNombreAndActivaTrue(String nombre);
     boolean existsByNombre(String nombre);
+    Materia findByNombre(String nombre);
+    Materia findByNombreAndActivaFalse(String nombre);
+    java.util.List<Materia> findAllByActivaTrue();
 }

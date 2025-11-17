@@ -14,6 +14,7 @@ public interface HorarioClaseModuloRepository extends JpaRepository<HorarioClase
 
 
     List<HorarioClaseModulo> findByMateriaCurso_Curso_IdOrderByDiaSemanaAscModulo_OrdenAsc(Long cursoId);
+    List<HorarioClaseModulo> findAllByMateriaCurso_Id(Long materiaCursoId);
 
     @Query("""
                 select h
