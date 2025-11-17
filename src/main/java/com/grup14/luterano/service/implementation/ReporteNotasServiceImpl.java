@@ -70,62 +70,59 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
             r.setE1(e1);
             r.setE2(e2);
             r.setPg(pg);
-            
-            // NUEVA LÓGICA: Buscar nota de mesa de examen (coloquio/examen final)
+
+            // Buscar notas de mesa de examen (coloquio/examen final) para la materia
             List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
                 .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, desde, hasta);
-            
-            // Filtrar por materia y obtener la más reciente
-            MesaExamenAlumno mesaMasReciente = mesas.stream()
+            List<MesaExamenAlumno> mesasMateria = mesas.stream()
                 .filter(mea -> mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(r.getMateriaId()))
                 .filter(mea -> mea.getNotaFinal() != null)
-                .max((a, b) -> {
-                    LocalDate fechaA = a.getMesaExamen().getFecha();
-                    LocalDate fechaB = b.getMesaExamen().getFecha();
-                    if (fechaA == null && fechaB == null) return 0;
-                    if (fechaA == null) return -1;
-                    if (fechaB == null) return 1;
-                    return fechaA.compareTo(fechaB);
-                })
-                .orElse(null);
-                
-            // Determinar si es coloquio o examen final
-            if (mesaMasReciente != null) {
-                boolean apr1 = e1 != null && e1 >= 6.0;
-                boolean apr2 = e2 != null && e2 >= 6.0;
-                
-                // Si aprobó solo una etapa → COLOQUIO
-                // Si desaprobó ambas etapas → EXAMEN FINAL
-                if (apr1 ^ apr2) {  // XOR - solo una etapa aprobada
-                    r.setCo(mesaMasReciente.getNotaFinal());
-                    r.setEx(null);
-                } else {  // ambas desaprobadas
-                    r.setCo(null);
-                    r.setEx(mesaMasReciente.getNotaFinal());
+                .sorted(Comparator.comparing(mea -> mea.getMesaExamen().getFecha(), Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+
+            Integer notaColoquio = null;
+            Integer notaExamen = null;
+            Integer notaMasAlta = null;
+            for (MesaExamenAlumno mesa : mesasMateria) {
+                Integer notaMesa = mesa.getNotaFinal();
+                if (notaMesa == null) continue;
+                switch (mesa.getMesaExamen().getTipoMesa()) {
+                    case COLOQUIO -> {
+                        notaColoquio = notaMesa;
+                        r.setCo(notaMesa);
+                    }
+                    case EXAMEN -> {
+                        notaExamen = notaMesa;
+                        r.setEx(notaMesa);
+                    }
                 }
-            } else {
-                r.setCo(null);
-                r.setEx(null);
+                if (notaMasAlta == null || notaMesa > notaMasAlta) {
+                    notaMasAlta = notaMesa;
+                }
             }
-            
-            // Calcular PFA (Promedio Final Anual = Nota Final)
-            // Si tiene mesa de examen, usar esa nota; si no, usar PG redondeado
-            Double pfa;
-            if (mesaMasReciente != null) {
-                pfa = mesaMasReciente.getNotaFinal().doubleValue();
-            } else if (pg != null) {
-                pfa = (double) Math.round(pg);
+
+            boolean apr1 = e1 != null && e1 >= 6.0;
+            boolean apr2 = e2 != null && e2 >= 6.0;
+            String estadoFinal;
+            Double pfa = null;
+
+            if (notaMasAlta != null) {
+                if (notaMasAlta >= 6) {
+                    estadoFinal = "Aprobado";
+                    pfa = notaMasAlta.doubleValue();
+                } else {
+                    estadoFinal = "Desaprobado";
+                    pfa = notaMasAlta.doubleValue();
+                }
+            } else if (apr1 && apr2) {
+                estadoFinal = "Aprobado";
+                pfa = pg;
             } else {
-                pfa = null;
+                estadoFinal = "Desaprobado";
+                pfa = pg;
             }
+            r.setEstado(estadoFinal);
             r.setPfa(pfa);
-            
-            // Calcular ESTADO basado en la nota final (PFA), no en el PG
-            if (pfa != null && pfa >= 6.0) {
-                r.setEstado("Aprobado");
-            } else {
-                r.setEstado("Desaprobado");
-            }
         }
 
         var coll = java.text.Collator.getInstance(new java.util.Locale("es", "AR"));
@@ -292,12 +289,8 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                 }
                 
                 // Determinar estado final y PFA
-                if (apr1 && apr2) {
-                    // PROMOCIONADO
-                    estadoFinal = "Aprobado";
-                    pfa = pg;
-                } else if (notaMasAlta != null) {
-                    // Tiene al menos una mesa rendida
+                if (notaMasAlta != null) {
+                    // Tiene al menos una mesa rendida (coloquio o examen final)
                     if (notaMasAlta >= 6) {
                         estadoFinal = "Aprobado";
                         pfa = notaMasAlta.doubleValue();
@@ -305,9 +298,13 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                         estadoFinal = "Desaprobado";
                         pfa = notaMasAlta.doubleValue();
                     }
+                } else if (apr1 && apr2) {
+                    // Ambas etapas aprobadas
+                    estadoFinal = "Aprobado";
+                    pfa = pg;
                 } else {
-                    // No hay mesa o sin nota
-                    estadoFinal = pg != null && pg >= 6.0 ? "Aprobado" : "Desaprobado";
+                    // No hay mesa y no aprobó ambas etapas
+                    estadoFinal = "Desaprobado";
                     pfa = pg;
                 }
                 

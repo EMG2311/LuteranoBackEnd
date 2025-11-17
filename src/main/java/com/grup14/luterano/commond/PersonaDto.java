@@ -3,8 +3,7 @@ package com.grup14.luterano.commond;
 import com.grup14.luterano.entities.enums.TipoDoc;
 import com.grup14.luterano.validation.MayorDeEdad;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -31,6 +30,10 @@ public class PersonaDto {
     private TipoDoc tipoDoc;
 
     @NotBlank(message = "El DNI no puede estar vacío")
+    @Pattern(
+            regexp = "^[0-9]{7,8}$",
+            message = "El DNI debe tener 7 u 8 dígitos numéricos"
+    )
     private String dni;
 
     @NotBlank(message = "El correo electrónico es obligatorio")
@@ -40,11 +43,17 @@ public class PersonaDto {
     private String direccion;
 
     @NotBlank(message = "El teléfono es obligatorio")
+    @Pattern(
+            regexp = "^[0-9]{6,15}$",
+            message = "El teléfono debe contener solo números y tener entre 6 y 15 dígitos"
+    )
     private String telefono;
     @NotNull(message = "La fecha de nacimiento es obligatoria")
     @MayorDeEdad(groups = {MayorDeEdadGruoup.class})
+    @Past(message = "La fecha de nacimiento debe ser anterior a la fecha actual")
     private Date fechaNacimiento;
 
     @NotNull(message = "La fecha de ingreso es obligatoria")
+    @Past(message = "La fecha de ingreso debe ser anterior a la fecha actual")
     private Date fechaIngreso;
 }

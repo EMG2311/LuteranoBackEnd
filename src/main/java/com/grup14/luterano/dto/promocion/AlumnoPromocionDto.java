@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,4 +23,7 @@ public class AlumnoPromocionDto {
     private Integer materiasDesaprobadas;
     private String motivo; // Razón si no se procesó
     private Integer repeticionesActuales;
+
+    // Nuevo: lista de estados finales de materias
+    private List<MateriaEstadoFinalDto> materiasEstadoFinal;
 }

@@ -29,6 +29,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     private final HistorialCursoRepository historialCursoRepository;
     private final MateriaCursoRepository materiaCursoRepository;
     private final NotaFinalService notaFinalService;
+    private final com.grup14.luterano.repository.HistorialMateriaRepository historialMateriaRepository;
 
     @Override
     @Transactional
@@ -115,19 +116,54 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
         HistorialCurso historial = historialOpt.get();
         Curso cursoActual = historial.getCurso();
 
-        // Contar materias desaprobadas
-        int materiasDesaprobadas = contarMateriasDesaprobadas(alumno.getId(), cursoActual.getId(), request.getAnio());
+        // Obtener todas las materias del curso
+        List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(cursoActual.getId());
+        List<com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto> materiasEstadoFinal = new ArrayList<>();
+        int materiasDesaprobadas = 0;
+        for (MateriaCurso mc : materiasCurso) {
+            Long materiaId = mc.getMateria().getId();
+            String materiaNombre = mc.getMateria().getNombre();
+            Integer notaFinal = notaFinalService.calcularNotaFinal(alumno.getId(), materiaId, request.getAnio());
+            com.grup14.luterano.entities.enums.EstadoMateriaAlumno estadoFinal;
+            if (notaFinal != null && notaFinal >= 6) {
+                estadoFinal = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.APROBADA;
+            } else {
+                estadoFinal = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA;
+                materiasDesaprobadas++;
+            }
+            // Actualizar la entidad HistorialMateria
+            Optional<HistorialMateria> hmOpt = historialMateriaRepository.findByHistorialCurso_IdAndMateriaCurso_Id(historial.getId(), mc.getId());
+            if (hmOpt.isPresent()) {
+                HistorialMateria hm = hmOpt.get();
+                hm.setEstado(estadoFinal);
+                historialMateriaRepository.save(hm);
+            }
+            materiasEstadoFinal.add(
+                com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto.builder()
+                    .materiaId(materiaId)
+                    .materiaNombre(materiaNombre)
+                    .notaFinal(notaFinal)
+                    .estadoFinal(estadoFinal)
+                    .build()
+            );
+        }
 
         // Aplicar reglas de promoción
         if (cursoActual.getAnio() == 6) {
             // 6to año -> Egresado
-            return procesarEgreso(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
+            AlumnoPromocionDto dto = procesarEgreso(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
+            dto.setMateriasEstadoFinal(materiasEstadoFinal);
+            return dto;
         } else if (materiasDesaprobadas < 3) {
             // Menos de 3 materias -> Promociona
-            return procesarPromocion(alumno, cursoActual, historial, request, cursoAnterior, materiasDesaprobadas);
+            AlumnoPromocionDto dto = procesarPromocion(alumno, cursoActual, historial, request, cursoAnterior, materiasDesaprobadas);
+            dto.setMateriasEstadoFinal(materiasEstadoFinal);
+            return dto;
         } else {
             // 3 o más materias -> Repite
-            return procesarRepeticion(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
+            AlumnoPromocionDto dto = procesarRepeticion(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
+            dto.setMateriasEstadoFinal(materiasEstadoFinal);
+            return dto;
         }
     }
 
