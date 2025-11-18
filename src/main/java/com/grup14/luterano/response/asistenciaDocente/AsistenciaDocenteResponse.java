@@ -1,6 +1,6 @@
 package com.grup14.luterano.response.asistenciaDocente;
 
-import com.grup14.luterano.dto.AsistenciaDocenteDto;
+import com.grup14.luterano.dto.asistencia.AsistenciaDocenteDto;
 import lombok.*;
 
 @Builder

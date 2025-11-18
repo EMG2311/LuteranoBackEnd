@@ -20,6 +20,26 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
     List<AsistenciaAlumno> findByAlumno_CursoActual_IdAndFecha(Long cursoId, LocalDate fecha);
 
     @Query("""
+        select aa
+        from AsistenciaAlumno aa
+        join fetch aa.alumno a
+        where a.id = :alumnoId
+          and aa.fecha between :desde and :hasta
+        order by aa.fecha
+        """)
+    List<AsistenciaAlumno> findDetallePorAlumnoEntreFechas(Long alumnoId, LocalDate desde, LocalDate hasta);
+
+    @Query("""
+        select aa
+        from AsistenciaAlumno aa
+        join fetch aa.alumno a
+        join fetch a.cursoActual c
+        where c.id = :cursoId
+          and aa.fecha between :desde and :hasta
+        order by a.apellido, a.nombre, aa.fecha
+        """)
+    List<AsistenciaAlumno> findDetallePorCursoEntreFechas(Long cursoId, LocalDate desde, LocalDate hasta);
+    @Query("""
                 select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
                     al.id, al.apellido, al.nombre, al.dni,
                     c.id, c.anio, c.division,

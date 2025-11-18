@@ -49,8 +49,10 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
         Curso curso = cursoRepo.findById(req.getCursoId())
                 .orElseThrow(() -> new AsistenciaException("Curso no encontrado"));
 
-        var alumnos = alumnoRepo.findByCursoActual_IdAndEstadoNotIn(curso.getId(), 
-                List.of(EstadoAlumno.BORRADO, EstadoAlumno.EGRESADO, EstadoAlumno.EXCLUIDO_POR_REPETICION));
+        var alumnos = alumnoRepo.findByCursoActual_IdAndEstadoNotIn(
+                curso.getId(),
+                List.of(EstadoAlumno.BORRADO, EstadoAlumno.EGRESADO, EstadoAlumno.EXCLUIDO_POR_REPETICION)
+        );
 
         var presentes = new HashSet<>(Optional.ofNullable(req.getPresentesIds()).orElseGet(List::of));
         var overrides = Optional.ofNullable(req.getOverridesPorAlumnoId()).orElseGet(Map::of);
@@ -60,10 +62,15 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
         List<AsistenciaAlumno> result = new ArrayList<>();
 
         for (Alumno a : alumnos) {
-            EstadoAsistencia estadoBase = presentes.contains(a.getId()) ? EstadoAsistencia.PRESENTE : EstadoAsistencia.AUSENTE;
+            EstadoAsistencia estadoBase = presentes.contains(a.getId())
+                    ? EstadoAsistencia.PRESENTE
+                    : EstadoAsistencia.AUSENTE;
+
             EstadoAsistencia estadoFinal = overrides.getOrDefault(a.getId(), estadoBase);
 
-            var existente = asistenciaAlumnoRepo.findByAlumno_IdAndFecha(a.getId(), req.getFecha()).orElse(null);
+            var existente = asistenciaAlumnoRepo.findByAlumno_IdAndFecha(a.getId(), req.getFecha())
+                    .orElse(null);
+
             if (existente == null) {
                 existente = AsistenciaAlumno.builder()
                         .alumno(a)
@@ -75,8 +82,11 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
                 existente.setEstado(estadoFinal);
                 existente.setUsuario(usuario);
             }
+
             asistenciaAlumnoRepo.save(existente);
             result.add(existente);
+
+            actualizarEstadoLibreSiCorresponde(a, req.getFecha());
         }
 
         return AsistenciaAlumnoResponseList.builder()
@@ -84,6 +94,33 @@ public class AsistenciaAlumnoServiceImpl implements AsistenciaAlumnoService {
                 .code(200)
                 .mensaje("OK")
                 .build();
+    }
+
+
+    private void actualizarEstadoLibreSiCorresponde(Alumno alumno, LocalDate fechaReferencia) {
+        // Tomamos el año calendario de la fecha de la asistencia
+        LocalDate desde = LocalDate.of(fechaReferencia.getYear(), 1, 1);
+        LocalDate hasta = LocalDate.of(fechaReferencia.getYear(), 12, 31);
+
+        double ponderado = 0.0;
+
+        var ponderados = asistenciaAlumnoRepo
+                .sumarInasistenciasPorAlumnoEntreFechas(desde, hasta, List.of(alumno.getId()));
+
+        if (ponderados != null && !((List<?>) ponderados).isEmpty()) {
+            Object[] row = (Object[]) ((List<?>) ponderados).get(0);
+            if (row != null && row.length > 1 && row[1] instanceof Number n) {
+                ponderado = n.doubleValue();
+            } else if (row != null && row.length > 0 && row[0] instanceof Number n2) {
+                ponderado = n2.doubleValue();
+            }
+        }
+
+
+        if (ponderado > 25 && alumno.getEstado() != EstadoAlumno.LIBRE) {
+            alumno.setEstado(EstadoAlumno.LIBRE);
+            alumnoRepo.save(alumno);
+        }
     }
 
     @Transactional

@@ -1,6 +1,6 @@
 package com.grup14.luterano.mappers;
 
-import com.grup14.luterano.dto.AsistenciaAlumnoDto;
+import com.grup14.luterano.dto.asistencia.AsistenciaAlumnoDto;
 import com.grup14.luterano.entities.AsistenciaAlumno;
 
 public class AsistenciaAlumnoMapper {
