@@ -40,86 +40,100 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
         """)
     List<AsistenciaAlumno> findDetallePorCursoEntreFechas(Long cursoId, LocalDate desde, LocalDate hasta);
     @Query("""
-                select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
-                    al.id, al.apellido, al.nombre, al.dni,
-                    c.id, c.anio, c.division,
-                    count(a)
-                )
-                from AsistenciaAlumno a
-                join a.alumno al
-                left join al.cursoActual c
-                where a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                  and (:desde is null or a.fecha >= :desde)
-                  and (:hasta is null or a.fecha <= :hasta)
-                  and (al.estado is null or al.estado <> com.grup14.luterano.entities.enums.EstadoAlumno.BORRADO)
-                group by al.id, al.apellido, al.nombre, al.dni, c.id, c.anio, c.division
-                order by count(a) desc
-            """)
-    List<TardanzaRowDto> tardanzasTodosCursos(@Param("desde") LocalDate desde,
-                                              @Param("hasta") LocalDate hasta);
+        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
+            a.id,
+            a.apellido,
+            a.nombre,
+            c.id,
+            c.anio,
+            c.division,
+            c.nivel,
+            count(aa)  -- totalTardanzas
+        )
+        from AsistenciaAlumno aa
+            join aa.alumno a
+            join a.cursoActual c
+        where c.id = :cursoId
+          and aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or aa.fecha >= :desde)
+          and (:hasta is null or aa.fecha <= :hasta)
+        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        having count(aa) > 5
+        order by c.anio, c.division, a.apellido, a.nombre
+        """)
+    List<TardanzaRowDto> tardanzasPorCurso(Long cursoId, LocalDate desde, LocalDate hasta);
 
     @Query("""
-                select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
-                    al.id, al.apellido, al.nombre, al.dni,
-                    c.id, c.anio, c.division,
-                    count(a)
-                )
-                from AsistenciaAlumno a
-                join a.alumno al
-                left join al.cursoActual c
-                where a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                  and (:desde is null or a.fecha >= :desde)
-                  and (:hasta is null or a.fecha <= :hasta)
-                  and (al.estado is null or al.estado <> com.grup14.luterano.entities.enums.EstadoAlumno.BORRADO)
-                group by al.id, al.apellido, al.nombre, al.dni, c.id, c.anio, c.division
-                order by count(a) desc
-            """)
-    List<TardanzaRowDto> tardanzasTodosCursos(@Param("desde") LocalDate desde,
-                                              @Param("hasta") LocalDate hasta,
-                                              Pageable pageable);
+        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
+            a.id,
+            a.apellido,
+            a.nombre,
+            c.id,
+            c.anio,
+            c.division,
+            c.nivel,
+            count(aa)
+        )
+        from AsistenciaAlumno aa
+            join aa.alumno a
+            join a.cursoActual c
+        where c.id = :cursoId
+          and aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or aa.fecha >= :desde)
+          and (:hasta is null or aa.fecha <= :hasta)
+        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        having count(aa) > 5
+        order by c.anio, c.division, a.apellido, a.nombre
+        """)
+    List<TardanzaRowDto> tardanzasPorCurso(Long cursoId, LocalDate desde, LocalDate hasta, Pageable pageable);
+
+
+    // 🔹 TARDANZAS EN TODOS LOS CURSOS, SOLO ALUMNOS CON MÁS DE 5 LLEGADAS TARDE
+    @Query("""
+        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
+            a.id,
+            a.apellido,
+            a.nombre,
+            c.id,
+            c.anio,
+            c.division,
+            c.nivel,
+            count(aa)
+        )
+        from AsistenciaAlumno aa
+            join aa.alumno a
+            join a.cursoActual c
+        where aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or aa.fecha >= :desde)
+          and (:hasta is null or aa.fecha <= :hasta)
+        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        having count(aa) > 5
+        order by c.anio, c.division, a.apellido, a.nombre
+        """)
+    List<TardanzaRowDto> tardanzasTodosCursos(LocalDate desde, LocalDate hasta);
 
     @Query("""
-                select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
-                    al.id, al.apellido, al.nombre, al.dni,
-                    c.id, c.anio, c.division,
-                    count(a)
-                )
-                from AsistenciaAlumno a
-                join a.alumno al
-                join al.cursoActual c
-                where a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                  and c.id = :cursoId
-                  and (:desde is null or a.fecha >= :desde)
-                  and (:hasta is null or a.fecha <= :hasta)
-                  and (al.estado is null or al.estado <> com.grup14.luterano.entities.enums.EstadoAlumno.BORRADO)
-                group by al.id, al.apellido, al.nombre, al.dni, c.id, c.anio, c.division
-                order by count(a) desc
-            """)
-    List<TardanzaRowDto> tardanzasPorCurso(@Param("cursoId") Long cursoId,
-                                           @Param("desde") LocalDate desde,
-                                           @Param("hasta") LocalDate hasta);
-
-    @Query("""
-                select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
-                    al.id, al.apellido, al.nombre, al.dni,
-                    c.id, c.anio, c.division,
-                    count(a)
-                )
-                from AsistenciaAlumno a
-                join a.alumno al
-                join al.cursoActual c
-                where a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                  and c.id = :cursoId
-                  and (:desde is null or a.fecha >= :desde)
-                  and (:hasta is null or a.fecha <= :hasta)
-                  and (al.estado is null or al.estado <> com.grup14.luterano.entities.enums.EstadoAlumno.BORRADO)
-                group by al.id, al.apellido, al.nombre, al.dni, c.id, c.anio, c.division
-                order by count(a) desc
-            """)
-    List<TardanzaRowDto> tardanzasPorCurso(@Param("cursoId") Long cursoId,
-                                           @Param("desde") LocalDate desde,
-                                           @Param("hasta") LocalDate hasta,
-                                           Pageable pageable);
+        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
+            a.id,
+            a.apellido,
+            a.nombre,
+            c.id,
+            c.anio,
+            c.division,
+            c.nivel,
+            count(aa)
+        )
+        from AsistenciaAlumno aa
+            join aa.alumno a
+            join a.cursoActual c
+        where aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or aa.fecha >= :desde)
+          and (:hasta is null or aa.fecha <= :hasta)
+        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        having count(aa) > 5
+        order by c.anio, c.division, a.apellido, a.nombre
+        """)
+    List<TardanzaRowDto> tardanzasTodosCursos(LocalDate desde, LocalDate hasta, Pageable pageable);
 
 
     @Query("""
