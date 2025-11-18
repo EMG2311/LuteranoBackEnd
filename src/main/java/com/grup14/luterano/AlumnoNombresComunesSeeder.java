@@ -2,8 +2,10 @@ package com.grup14.luterano;
 
 import com.grup14.luterano.commond.GeneroEnum;
 import com.grup14.luterano.dto.CursoDto;
+import com.grup14.luterano.entities.Curso;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.entities.enums.TipoDoc;
+import com.grup14.luterano.repository.CursoRepository;
 import com.grup14.luterano.request.alumno.AlumnoRequest;
 import com.grup14.luterano.response.alumno.AlumnoResponse;
 import com.grup14.luterano.service.AlumnoService;
@@ -17,9 +19,8 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,13 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AlumnoNombresComunesSeeder implements CommandLineRunner {
 
     private final AlumnoService alumnoService;
+    private final CursoRepository cursoRepository;
 
     private static final int ALUMNOS_POR_CURSO = 30;
     private static final ZoneId Z = ZoneId.systemDefault();
     private static final ThreadLocalRandom R = ThreadLocalRandom.current();
     private static final AtomicInteger CORR = new AtomicInteger(1);
 
-    // ======== Pools de nombres/apellidos comunes (AR/ES/LatAm) ========
     private static final String[] MASC = {
             "Juan","Pedro","Nicolás","Matías","Lucas","Santiago","Diego","Martín","Facundo","Gabriel",
             "Bruno","Agustín","Franco","Emiliano","Tomás","Felipe","Gonzalo","Julián","Benjamín","Joaquín"
@@ -56,20 +57,22 @@ public class AlumnoNombresComunesSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("==> Sembrando alumnos con nombres/apellidos comunes (30 por curso, 1A..6B IDs 1..12)");
+        log.info("==> Iniciando seeder de alumnos (sin crear cursos ni aulas)");
 
-        // Año/División -> ID curso (según tu tabla/captura)
-        Map<String, Long> cursoId = new LinkedHashMap<>();
-        cursoId.put("1A", 1L);  cursoId.put("1B", 2L);
-        cursoId.put("2A", 3L);  cursoId.put("2B", 4L);
-        cursoId.put("3A", 5L);  cursoId.put("3B", 6L);
-        cursoId.put("4A", 7L);  cursoId.put("4B", 8L);
-        cursoId.put("5A", 9L);  cursoId.put("5B", 10L);
-        cursoId.put("6A", 11L); cursoId.put("6B", 12L);
+        List<Curso> cursos = cursoRepository.findAll();
+        if (cursos.isEmpty()) {
+            log.warn("No hay cursos en la base de datos, no se crearán alumnos.");
+            return;
+        }
 
-        cursoId.forEach((anioDiv, idCurso) -> {
+        log.info("Se crearán {} alumnos por curso. Cursos encontrados: {}", ALUMNOS_POR_CURSO, cursos.size());
+
+        for (Curso curso : cursos) {
+            log.info("Sembrando alumnos para curso {}°{} (id={})",
+                    curso.getAnio(), curso.getDivision(), curso.getId());
+
             CursoDto cursoDto = new CursoDto();
-            cursoDto.setId(idCurso);
+            cursoDto.setId(curso.getId());
 
             for (int i = 1; i <= ALUMNOS_POR_CURSO; i++) {
                 int seq = CORR.getAndIncrement();
@@ -87,9 +90,11 @@ public class AlumnoNombresComunesSeeder implements CommandLineRunner {
 
                 // Dirección y teléfono
                 String direccion = String.format("%s %d", pick(CALLES), 100 + (seq % 800));
-                String telefono = String.format("11-%04d-%04d", 1000 + (seq % 8000), 1000 + ((seq * 7) % 8000));
+                String telefono = String.format("11-%04d-%04d",
+                        1000 + (seq % 8000),
+                        1000 + ((seq * 7) % 8000));
 
-                // Fechas (≥18 años para pasar la validación)
+                // Fechas (≥18 años para pasar validaciones)
                 LocalDate nacimiento = LocalDate.now()
                         .minusYears(18 + (seq % 5)) // 18..22
                         .withMonth(3).withDayOfMonth(10);
@@ -118,18 +123,20 @@ public class AlumnoNombresComunesSeeder implements CommandLineRunner {
                         log.warn("No se creó {} {} (DNI {}): code={}, msg={}",
                                 req.getNombre(), req.getApellido(), req.getDni(), res.getCode(), res.getMensaje());
                     } else {
-                        log.debug("Creado: {} {} | DNI {} | Curso id={}", req.getNombre(), req.getApellido(), req.getDni(), idCurso);
+                        log.debug("Creado: {} {} | DNI {} | Curso id={}",
+                                req.getNombre(), req.getApellido(), req.getDni(), curso.getId());
                     }
                 } catch (Exception e) {
                     log.error("Error creando alumno (DNI {}): {}", req.getDni(), e.getMessage(), e);
                 }
             }
-        });
+        }
 
-        log.info("==> Siembra finalizada.");
+        log.info("==> Siembra de alumnos finalizada.");
     }
 
-    // ======== Utils ========
+    // ===================== Utils =====================
+
     private static String pick(String[] arr) {
         return arr[R.nextInt(arr.length)];
     }
@@ -141,7 +148,6 @@ public class AlumnoNombresComunesSeeder implements CommandLineRunner {
     private static String emailFrom(String nombre, String apellido, int seq) {
         String base = (normalize(nombre) + "." + normalize(apellido).replace(" ", "."))
                 .toLowerCase(Locale.ROOT);
-        // Limpiar caracteres no válidos para email
         base = base.replaceAll("[^a-z0-9._-]", "");
         return base + "." + seq + "@luterano.edu";
     }

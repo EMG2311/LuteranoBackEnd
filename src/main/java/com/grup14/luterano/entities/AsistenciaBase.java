@@ -2,6 +2,7 @@ package com.grup14.luterano.entities;
 
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 public abstract class AsistenciaBase {
 
     @Column(nullable = false)
+    @Past(message = "No se puede poner una fecha posterior a la actual")
     private LocalDate fecha;
 
     @Enumerated(EnumType.STRING)

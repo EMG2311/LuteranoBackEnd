@@ -120,31 +120,38 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
         List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(cursoActual.getId());
         List<com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto> materiasEstadoFinal = new ArrayList<>();
         int materiasDesaprobadas = 0;
+
         for (MateriaCurso mc : materiasCurso) {
             Long materiaId = mc.getMateria().getId();
             String materiaNombre = mc.getMateria().getNombre();
+
             Integer notaFinal = notaFinalService.calcularNotaFinal(alumno.getId(), materiaId, request.getAnio());
-            com.grup14.luterano.entities.enums.EstadoMateriaAlumno estadoFinal;
+
+            com.grup14.luterano.entities.enums.EstadoMateriaAlumno estadoMateria;
+
             if (notaFinal != null && notaFinal >= 6) {
-                estadoFinal = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.APROBADA;
+                estadoMateria = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.APROBADA;
             } else {
-                estadoFinal = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA;
+                estadoMateria = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA;
                 materiasDesaprobadas++;
             }
-            // Actualizar la entidad HistorialMateria
-            Optional<HistorialMateria> hmOpt = historialMateriaRepository.findByHistorialCurso_IdAndMateriaCurso_Id(historial.getId(), mc.getId());
-            if (hmOpt.isPresent()) {
-                HistorialMateria hm = hmOpt.get();
-                hm.setEstado(estadoFinal);
-                historialMateriaRepository.save(hm);
+
+            if (!request.getDryRun()) {
+                historialMateriaRepository
+                        .findByHistorialCurso_IdAndMateriaCurso_Id(historial.getId(), mc.getId())
+                        .ifPresent(hm -> {
+                            hm.setEstado(estadoMateria);   // <--- acá queda grabado el “estado final” de la materia
+                            historialMateriaRepository.save(hm);
+                        });
             }
+
             materiasEstadoFinal.add(
-                com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto.builder()
-                    .materiaId(materiaId)
-                    .materiaNombre(materiaNombre)
-                    .notaFinal(notaFinal)
-                    .estadoFinal(estadoFinal)
-                    .build()
+                    com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto.builder()
+                            .materiaId(materiaId)
+                            .materiaNombre(materiaNombre)
+                            .notaFinal(notaFinal)
+                            .estadoFinal(estadoMateria)
+                            .build()
             );
         }
 

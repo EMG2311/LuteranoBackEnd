@@ -41,18 +41,23 @@ public class AlumnoServiceImpl implements AlumnoService {
 
     private final HistorialMateriaRepository historialMateriaRepository;
     private final HistorialCursoRepository historialCursoRepository;
-
     private final CicloLectivoRepository cicloLectivoRepository;
+    private final MateriaCursoRepository materiaCursoRepository;
 
-    public AlumnoServiceImpl(AlumnoRepository alumnoRepository, CursoRepository cursoRepository,
-                             TutorRepository tutorRepository, CicloLectivoRepository cicloLectivoRepository,
-                             HistorialCursoRepository historialCursoRepository, HistorialMateriaRepository historialMateriaRepository) {
+    public AlumnoServiceImpl(AlumnoRepository alumnoRepository,
+                             CursoRepository cursoRepository,
+                             TutorRepository tutorRepository,
+                             CicloLectivoRepository cicloLectivoRepository,
+                             HistorialCursoRepository historialCursoRepository,
+                             HistorialMateriaRepository historialMateriaRepository,
+                             MateriaCursoRepository materiaCursoRepository) {
         this.alumnoRepository = alumnoRepository;
         this.cursoRepository = cursoRepository;
         this.tutorRepository = tutorRepository;
         this.historialCursoRepository = historialCursoRepository;
         this.cicloLectivoRepository = cicloLectivoRepository;
         this.historialMateriaRepository = historialMateriaRepository;
+        this.materiaCursoRepository = materiaCursoRepository;
     }
 
 
@@ -137,7 +142,23 @@ public class AlumnoServiceImpl implements AlumnoService {
 
         logger.info("Historial de curso creado automáticamente para alumno: DNI={}, Curso={}, Ciclo={}",
                 alumno.getDni(), curso.getAnio() + "°" + curso.getDivision().toString(), cicloActivo.getNombre());
+// Crear historial de materias en estado CURSANDO para todas las materias del curso
+        List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(curso.getId());
+        List<HistorialMateria> historialesMateria = new ArrayList<>();
 
+        for (MateriaCurso mc : materiasCurso) {
+            HistorialMateria hm = HistorialMateria.builder()
+                    .historialCurso(historialCurso)
+                    .materiaCurso(mc)
+                    .estado(EstadoMateriaAlumno.CURSANDO) // redundante, pero explícito
+                    .build();
+            historialesMateria.add(hm);
+        }
+
+        historialMateriaRepository.saveAll(historialesMateria);
+
+        logger.info("Se crearon {} historiales de materia en estado CURSANDO para el alumno DNI={}",
+                historialesMateria.size(), alumno.getDni());
         logger.info("Alumno creado correctamente: DNI={}, Nombre={} {}",
                 alumno.getDni(), alumno.getNombre(), alumno.getApellido());
 
@@ -304,6 +325,20 @@ public class AlumnoServiceImpl implements AlumnoService {
                 .fechaDesde(hoy)
                 .build();
         historialCursoRepository.save(nuevo);
+        // Crear historial de materias CURSANDO para el nuevo curso
+        List<MateriaCurso> materiasNuevoCurso = materiaCursoRepository.findByCursoId(cursoDestino.getId());
+        List<HistorialMateria> hmsNuevas = new ArrayList<>();
+
+        for (MateriaCurso mc : materiasNuevoCurso) {
+            HistorialMateria hmNueva = HistorialMateria.builder()
+                    .historialCurso(nuevo)
+                    .materiaCurso(mc)
+                    .estado(EstadoMateriaAlumno.CURSANDO)
+                    .build();
+            hmsNuevas.add(hmNueva);
+        }
+
+        historialMateriaRepository.saveAll(hmsNuevas);
 
         alumno.setCursoActual(cursoDestino);
         alumno.getHistorialCursos().add(nuevo);

@@ -166,7 +166,7 @@ public class ReporteNotasServiceImpl implements ReporteNotasService {
                 .orElseThrow(() -> new ReporteNotasException("No hay ciclo lectivo que contenga el año " + anio))
                 .getId();
 
-        List<HistorialCurso> hcs = historialCursoRepo.findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, cicloId);
+        List<HistorialCurso> hcs = historialCursoRepo.findByCursoAndCicloParaReporteAnual(cursoId, cicloId);
         List<Alumno> alumnos = hcs.stream().map(HistorialCurso::getAlumno).toList();
 
         if (alumnos.isEmpty()) {
