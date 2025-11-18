@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,4 +27,15 @@ public interface HistorialMateriaRepository extends JpaRepository<HistorialMater
     @Transactional
     @Modifying
     void deleteByHistorialCurso_Id(Long historialCursoId);
+
+    @Query("""
+    select count(hm)
+    from HistorialMateria hm
+    join hm.historialCurso hc
+    join hc.cicloLectivo cl
+    where hc.alumno.id = :alumnoId
+      and cl.fechaDesde < :inicioAnio
+      and hm.estado = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA
+""")
+    long contarPreviasDeAniosAnteriores(Long alumnoId, LocalDate inicioAnio);
 }

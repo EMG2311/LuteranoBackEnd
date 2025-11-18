@@ -3,6 +3,7 @@ package com.grup14.luterano.service.implementation;
 import com.grup14.luterano.dto.promocion.AlumnoPromocionDto;
 import com.grup14.luterano.entities.*;
 import com.grup14.luterano.entities.enums.EstadoAlumno;
+import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.promocion.PromocionMasivaRequest;
 import com.grup14.luterano.response.promocion.PromocionMasivaResponse;
@@ -29,7 +30,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     private final HistorialCursoRepository historialCursoRepository;
     private final MateriaCursoRepository materiaCursoRepository;
     private final NotaFinalService notaFinalService;
-    private final com.grup14.luterano.repository.HistorialMateriaRepository historialMateriaRepository;
+    private final HistorialMateriaRepository historialMateriaRepository;
 
     @Override
     @Transactional
@@ -40,9 +41,16 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
         CicloLectivo cicloLectivo = cicloLectivoRepository.findById(request.getCicloLectivoId())
                 .orElseThrow(() -> new RuntimeException("Ciclo lectivo no encontrado"));
 
-        // Obtener todos los alumnos activos (no egresados, borrados ni excluidos por repetición)
+        // Obtener todos los alumnos activos:
+        // excluimos EGRESADO, EGRESADO_CON_PREVIAS, BORRADO y EXCLUIDO_POR_REPETICION
         List<Alumno> alumnosActivos = alumnoRepository.findByEstadoNotIn(
-                List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION));
+                List.of(
+                        EstadoAlumno.EGRESADO,
+                        EstadoAlumno.EGRESADO_CON_PREVIAS,
+                        EstadoAlumno.BORRADO,
+                        EstadoAlumno.EXCLUIDO_POR_REPETICION
+                )
+        );
 
         List<AlumnoPromocionDto> resumen = new ArrayList<>();
         int promocionados = 0, repitentes = 0, egresados = 0, excluidos = 0, noProcesados = 0;
@@ -55,7 +63,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                 switch (resultado.getAccion()) {
                     case "PROMOCIONADO" -> promocionados++;
                     case "REPITENTE" -> repitentes++;
-                    case "EGRESADO" -> egresados++;
+                    case "EGRESADO", "EGRESADO_CON_PREVIAS" -> egresados++;
                     case "EXCLUIDO_POR_REPETICION" -> excluidos++;
                     case "NO_PROCESADO" -> noProcesados++;
                 }
@@ -93,10 +101,16 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                 .build();
     }
 
+    /**
+     * Procesa un alumno:
+     * - Calcula materias desaprobadas del AÑO ACTUAL
+     * - Suma previas de AÑOS ANTERIORES
+     * - Decide PROMOCION / REPITE / EGRESA / EGRESA_CON_PREVIAS
+     */
     private AlumnoPromocionDto procesarAlumno(Alumno alumno, PromocionMasivaRequest request, CicloLectivo cicloLectivo) {
         String cursoAnterior = formatearCurso(alumno.getCursoActual());
 
-        // Verificar si tiene historial curso en el ciclo lectivo
+        // Verificar si tiene historial curso en el ciclo lectivo actual
         Optional<HistorialCurso> historialOpt = historialCursoRepository
                 .findByAlumno_IdAndCicloLectivo_IdAndFechaHastaIsNull(alumno.getId(), cicloLectivo.getId());
 
@@ -119,7 +133,9 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
         // Obtener todas las materias del curso
         List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(cursoActual.getId());
         List<com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto> materiasEstadoFinal = new ArrayList<>();
-        int materiasDesaprobadas = 0;
+
+        // Materias desaprobadas del AÑO ACTUAL
+        int materiasDesaprobadasAnioActual = 0;
 
         for (MateriaCurso mc : materiasCurso) {
             Long materiaId = mc.getMateria().getId();
@@ -127,20 +143,19 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
             Integer notaFinal = notaFinalService.calcularNotaFinal(alumno.getId(), materiaId, request.getAnio());
 
-            com.grup14.luterano.entities.enums.EstadoMateriaAlumno estadoMateria;
-
+            EstadoMateriaAlumno estadoMateria;
             if (notaFinal != null && notaFinal >= 6) {
-                estadoMateria = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.APROBADA;
+                estadoMateria = EstadoMateriaAlumno.APROBADA;
             } else {
-                estadoMateria = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA;
-                materiasDesaprobadas++;
+                estadoMateria = EstadoMateriaAlumno.DESAPROBADA;
+                materiasDesaprobadasAnioActual++;
             }
 
             if (!request.getDryRun()) {
                 historialMateriaRepository
                         .findByHistorialCurso_IdAndMateriaCurso_Id(historial.getId(), mc.getId())
                         .ifPresent(hm -> {
-                            hm.setEstado(estadoMateria);   // <--- acá queda grabado el “estado final” de la materia
+                            hm.setEstado(estadoMateria);   // Estado final de la materia en este ciclo
                             historialMateriaRepository.save(hm);
                         });
             }
@@ -155,43 +170,81 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
             );
         }
 
-        // Aplicar reglas de promoción
-        if (cursoActual.getAnio() == 6) {
-            // 6to año -> Egresado
-            AlumnoPromocionDto dto = procesarEgreso(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
-            dto.setMateriasEstadoFinal(materiasEstadoFinal);
-            return dto;
-        } else if (materiasDesaprobadas < 3) {
-            // Menos de 3 materias -> Promociona
-            AlumnoPromocionDto dto = procesarPromocion(alumno, cursoActual, historial, request, cursoAnterior, materiasDesaprobadas);
-            dto.setMateriasEstadoFinal(materiasEstadoFinal);
-            return dto;
+        // === Previas de AÑOS ANTERIORES (DESAPROBADAS en ciclos previos) ===
+        long previasAnteriores = contarPreviasDeAniosAnteriores(alumno, request.getAnio());
+        int materiasPendientesTotales = materiasDesaprobadasAnioActual + (int) previasAnteriores;
+
+        boolean esUltimoAnio = cursoActual.getAnio() == 6;
+
+        // === LÓGICA DE DECISIÓN ===
+        // Regla general: si NO es 6to y tiene 3 o más pendientes (actual + previas) → REPITE
+        // 6to año SIEMPRE egresa:
+        //   - sin pendientes -> EGRESADO
+        //   - con 1 o más pendientes -> EGRESADO_CON_PREVIAS
+        AlumnoPromocionDto dto;
+
+        if (esUltimoAnio) {
+            // 6to: egresa siempre, pero distinguimos si tiene previas o no
+            dto = procesarEgreso(alumno, historial, request, cursoAnterior, materiasPendientesTotales);
+        } else if (materiasPendientesTotales >= 3) {
+            // 3 o más pendientes → repite
+            dto = procesarRepeticion(alumno, historial, request, cursoAnterior, materiasPendientesTotales);
         } else {
-            // 3 o más materias -> Repite
-            AlumnoPromocionDto dto = procesarRepeticion(alumno, historial, request, cursoAnterior, materiasDesaprobadas);
-            dto.setMateriasEstadoFinal(materiasEstadoFinal);
-            return dto;
+            // Menos de 3 pendientes → promociona
+            dto = procesarPromocion(alumno, cursoActual, historial, request, cursoAnterior, materiasPendientesTotales);
         }
+
+        dto.setMateriasEstadoFinal(materiasEstadoFinal);
+        return dto;
     }
 
-    private int contarMateriasDesaprobadas(Long alumnoId, Long cursoId, int anio) {
-        // Obtener materias desaprobadas en una sola consulta optimizada
-        return notaFinalService.contarMateriasDesaprobadasPorAlumno(alumnoId, cursoId, anio);
+    /**
+     * Cuenta la cantidad de materias "previas" (DESAPROBADAS) en años anteriores
+     * al año de referencia (request.getAnio()).
+     */
+    private long contarPreviasDeAniosAnteriores(Alumno alumno, int anioReferencia) {
+        long count = 0L;
+
+        // Historial completo del alumno
+        List<HistorialCurso> historiales = historialCursoRepository.findHistorialCompletoByAlumnoId(alumno.getId());
+
+        for (HistorialCurso hc : historiales) {
+            int anioCiclo = hc.getCicloLectivo().getFechaDesde().getYear();
+            if (anioCiclo < anioReferencia) {
+                List<HistorialMateria> hms = historialMateriaRepository.findAllByHistorialCursoId(hc.getId());
+                for (HistorialMateria hm : hms) {
+                    if (hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     private AlumnoPromocionDto procesarEgreso(Alumno alumno, HistorialCurso historial,
                                               PromocionMasivaRequest request, String cursoAnterior,
-                                              int materiasDesaprobadas) {
+                                              int materiasPendientesTotales) {
+
+        // Distinguimos EGRESADO vs EGRESADO_CON_PREVIAS
+        EstadoAlumno nuevoEstado = (materiasPendientesTotales > 0)
+                ? EstadoAlumno.EGRESADO_CON_PREVIAS
+                : EstadoAlumno.EGRESADO;
+
         if (!request.getDryRun()) {
             // Cerrar historial curso
             historial.setFechaHasta(LocalDate.now());
             historialCursoRepository.save(historial);
 
-            // Cambiar estado a egresado
-            alumno.setEstado(EstadoAlumno.EGRESADO);
+            // Cambiar estado a egresado / egresado con previas
+            alumno.setEstado(nuevoEstado);
             alumno.setCursoActual(null);
             alumnoRepository.save(alumno);
         }
+
+        String cursoNuevo = (nuevoEstado == EstadoAlumno.EGRESADO_CON_PREVIAS)
+                ? "EGRESADO CON PREVIAS"
+                : "EGRESADO";
 
         return AlumnoPromocionDto.builder()
                 .alumnoId(alumno.getId())
@@ -199,16 +252,19 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                 .apellido(alumno.getApellido())
                 .nombre(alumno.getNombre())
                 .cursoAnterior(cursoAnterior)
-                .cursoNuevo("EGRESADO")
-                .accion("EGRESADO")
-                .materiasDesaprobadas(materiasDesaprobadas)
+                .cursoNuevo(cursoNuevo)
+                .accion(nuevoEstado == EstadoAlumno.EGRESADO_CON_PREVIAS
+                        ? "EGRESADO_CON_PREVIAS"
+                        : "EGRESADO")
+                .materiasDesaprobadas(materiasPendientesTotales)
                 .repeticionesActuales(alumno.getCantidadRepeticiones() != null ? alumno.getCantidadRepeticiones() : 0)
                 .build();
     }
 
     private AlumnoPromocionDto procesarPromocion(Alumno alumno, Curso cursoActual, HistorialCurso historial,
                                                  PromocionMasivaRequest request, String cursoAnterior,
-                                                 int materiasDesaprobadas) {
+                                                 int materiasPendientesTotales) {
+
         // Buscar curso del año siguiente
         Optional<Curso> cursoSiguienteOpt = cursoRepository
                 .findByAnioAndDivision(cursoActual.getAnio() + 1, cursoActual.getDivision());
@@ -222,7 +278,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                     .cursoAnterior(cursoAnterior)
                     .accion("NO_PROCESADO")
                     .motivo("No existe curso del año siguiente")
-                    .materiasDesaprobadas(materiasDesaprobadas)
+                    .materiasDesaprobadas(materiasPendientesTotales)
                     .repeticionesActuales(alumno.getCantidadRepeticiones() != null ? alumno.getCantidadRepeticiones() : 0)
                     .build();
         }
@@ -242,15 +298,15 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
             HistorialCurso nuevoHistorial = HistorialCurso.builder()
                     .alumno(alumno)
                     .curso(cursoSiguiente)
-                    .cicloLectivo(cicloSiguiente) // Usar el ciclo lectivo del año siguiente
+                    .cicloLectivo(cicloSiguiente) // ciclo lectivo del año siguiente
                     .fechaDesde(LocalDate.now())
-                    .fechaHasta(null) // Se cerrará cuando termine el ciclo lectivo
+                    .fechaHasta(null) // se cerrará al final del ciclo
                     .build();
             historialCursoRepository.save(nuevoHistorial);
 
             // Actualizar curso actual del alumno
             alumno.setCursoActual(cursoSiguiente);
-            alumno.setCantidadRepeticiones(0); // Reset repeticiones al promocionar
+            alumno.setCantidadRepeticiones(0); // reset repeticiones al promocionar
             alumnoRepository.save(alumno);
         }
 
@@ -262,20 +318,19 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                 .cursoAnterior(cursoAnterior)
                 .cursoNuevo(cursoNuevo)
                 .accion("PROMOCIONADO")
-                .materiasDesaprobadas(materiasDesaprobadas)
+                .materiasDesaprobadas(materiasPendientesTotales)
                 .repeticionesActuales(alumno.getCantidadRepeticiones() != null ? alumno.getCantidadRepeticiones() : 0)
                 .build();
     }
 
     private AlumnoPromocionDto procesarRepeticion(Alumno alumno, HistorialCurso historial,
                                                   PromocionMasivaRequest request, String cursoAnterior,
-                                                  int materiasDesaprobadas) {
+                                                  int materiasPendientesTotales) {
 
         // Validar y obtener repeticiones actuales (manejar nulls para datos legacy)
         Integer repeticionesActuales = alumno.getCantidadRepeticiones();
         if (repeticionesActuales == null) {
             repeticionesActuales = 0;
-            // Actualizar el alumno con el valor por defecto
             alumno.setCantidadRepeticiones(0);
             if (!request.getDryRun()) {
                 alumnoRepository.save(alumno);
@@ -293,7 +348,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
                 // Cambiar estado a excluido
                 alumno.setEstado(EstadoAlumno.EXCLUIDO_POR_REPETICION);
-                alumno.setCursoActual(null); // Quitar curso actual
+                alumno.setCursoActual(null);
                 alumnoRepository.save(alumno);
             }
 
@@ -306,7 +361,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                     .cursoNuevo("EXCLUIDO")
                     .accion("EXCLUIDO_POR_REPETICION")
                     .motivo("Excede límite de repeticiones (" + maxRepeticiones + ")")
-                    .materiasDesaprobadas(materiasDesaprobadas)
+                    .materiasDesaprobadas(materiasPendientesTotales)
                     .repeticionesActuales(repeticionesActuales)
                     .build();
         }
@@ -321,17 +376,17 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
             // Incrementar contador de repeticiones
             alumno.setCantidadRepeticiones(repeticionesActuales + 1);
-            
+
             // Crear nuevo historial curso para el mismo curso pero en el ciclo siguiente
             HistorialCurso nuevoHistorial = HistorialCurso.builder()
                     .alumno(alumno)
-                    .curso(historial.getCurso()) // Mismo curso
-                    .cicloLectivo(cicloSiguiente) // Ciclo lectivo del año siguiente
+                    .curso(historial.getCurso()) // mismo curso
+                    .cicloLectivo(cicloSiguiente) // ciclo del año siguiente
                     .fechaDesde(LocalDate.now())
                     .fechaHasta(null)
                     .build();
             historialCursoRepository.save(nuevoHistorial);
-            
+
             alumnoRepository.save(alumno);
         }
 
@@ -343,7 +398,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
                 .cursoAnterior(cursoAnterior)
                 .cursoNuevo(cursoAnterior + " (Repite)")
                 .accion("REPITENTE")
-                .materiasDesaprobadas(materiasDesaprobadas)
+                .materiasDesaprobadas(materiasPendientesTotales)
                 .repeticionesActuales(repeticionesActuales + 1)
                 .build();
     }
@@ -359,25 +414,25 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
      */
     private CicloLectivo obtenerOcrearCicloLectivoSiguiente(CicloLectivo cicloActual) {
         int anioSiguiente = cicloActual.getFechaDesde().getYear() + 1;
-        
+
         // Buscar si ya existe el ciclo del año siguiente
         Optional<CicloLectivo> cicloSiguienteOpt = cicloLectivoRepository.findByAnio(anioSiguiente);
-        
+
         if (cicloSiguienteOpt.isPresent()) {
             log.debug("Ciclo lectivo {} ya existe", anioSiguiente);
             return cicloSiguienteOpt.get();
         }
-        
+
         // Crear el ciclo lectivo del año siguiente
         CicloLectivo nuevoCiclo = CicloLectivo.builder()
                 .nombre("Ciclo Lectivo " + anioSiguiente)
                 .fechaDesde(LocalDate.of(anioSiguiente, 1, 1))
                 .fechaHasta(LocalDate.of(anioSiguiente, 12, 31))
                 .build();
-        
+
         CicloLectivo cicloCreado = cicloLectivoRepository.save(nuevoCiclo);
         log.info("Ciclo lectivo {} creado automáticamente durante la promoción", anioSiguiente);
-        
+
         return cicloCreado;
     }
 }
