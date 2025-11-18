@@ -27,7 +27,9 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
           and aa.fecha between :desde and :hasta
         order by aa.fecha
         """)
-    List<AsistenciaAlumno> findDetallePorAlumnoEntreFechas(Long alumnoId, LocalDate desde, LocalDate hasta);
+    List<AsistenciaAlumno> findDetallePorAlumnoEntreFechas(@Param("alumnoId") Long alumnoId,
+                                                           @Param("desde") LocalDate desde,
+                                                           @Param("hasta") LocalDate hasta);
 
     @Query("""
         select aa
@@ -38,40 +40,23 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
           and aa.fecha between :desde and :hasta
         order by a.apellido, a.nombre, aa.fecha
         """)
-    List<AsistenciaAlumno> findDetallePorCursoEntreFechas(Long cursoId, LocalDate desde, LocalDate hasta);
-    @Query("""
-        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
-            a.id,
-            a.apellido,
-            a.nombre,
-            c.id,
-            c.anio,
-            c.division,
-            c.nivel,
-            count(aa)  -- totalTardanzas
-        )
-        from AsistenciaAlumno aa
-            join aa.alumno a
-            join a.cursoActual c
-        where c.id = :cursoId
-          and aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-          and (:desde is null or aa.fecha >= :desde)
-          and (:hasta is null or aa.fecha <= :hasta)
-        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
-        having count(aa) > 5
-        order by c.anio, c.division, a.apellido, a.nombre
-        """)
-    List<TardanzaRowDto> tardanzasPorCurso(Long cursoId, LocalDate desde, LocalDate hasta);
+    List<AsistenciaAlumno> findDetallePorCursoEntreFechas(@Param("cursoId") Long cursoId,
+                                                          @Param("desde") LocalDate desde,
+                                                          @Param("hasta") LocalDate hasta);
+
+    // =========================
+    //  TARDANZAS POR CURSO (>5)
+    // =========================
 
     @Query("""
         select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
             a.id,
             a.apellido,
             a.nombre,
+            a.dni,
             c.id,
             c.anio,
             c.division,
-            c.nivel,
             count(aa)
         )
         from AsistenciaAlumno aa
@@ -81,23 +66,57 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
           and aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
           and (:desde is null or aa.fecha >= :desde)
           and (:hasta is null or aa.fecha <= :hasta)
-        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        group by a.id, a.apellido, a.nombre, a.dni,
+                 c.id, c.anio, c.division
         having count(aa) > 5
         order by c.anio, c.division, a.apellido, a.nombre
         """)
-    List<TardanzaRowDto> tardanzasPorCurso(Long cursoId, LocalDate desde, LocalDate hasta, Pageable pageable);
+    List<TardanzaRowDto> tardanzasPorCurso(@Param("cursoId") Long cursoId,
+                                           @Param("desde") LocalDate desde,
+                                           @Param("hasta") LocalDate hasta);
 
-
-    // 🔹 TARDANZAS EN TODOS LOS CURSOS, SOLO ALUMNOS CON MÁS DE 5 LLEGADAS TARDE
     @Query("""
         select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
             a.id,
             a.apellido,
             a.nombre,
+            a.dni,
             c.id,
             c.anio,
             c.division,
-            c.nivel,
+            count(aa)
+        )
+        from AsistenciaAlumno aa
+            join aa.alumno a
+            join a.cursoActual c
+        where c.id = :cursoId
+          and aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or aa.fecha >= :desde)
+          and (:hasta is null or aa.fecha <= :hasta)
+        group by a.id, a.apellido, a.nombre, a.dni,
+                 c.id, c.anio, c.division
+        having count(aa) > 5
+        order by c.anio, c.division, a.apellido, a.nombre
+        """)
+    List<TardanzaRowDto> tardanzasPorCurso(@Param("cursoId") Long cursoId,
+                                           @Param("desde") LocalDate desde,
+                                           @Param("hasta") LocalDate hasta,
+                                           Pageable pageable);
+
+
+    // =========================
+    //  TARDANZAS TODOS LOS CURSOS (>5)
+    // =========================
+
+    @Query("""
+        select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
+            a.id,
+            a.apellido,
+            a.nombre,
+            a.dni,
+            c.id,
+            c.anio,
+            c.division,
             count(aa)
         )
         from AsistenciaAlumno aa
@@ -106,21 +125,23 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
         where aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
           and (:desde is null or aa.fecha >= :desde)
           and (:hasta is null or aa.fecha <= :hasta)
-        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        group by a.id, a.apellido, a.nombre, a.dni,
+                 c.id, c.anio, c.division
         having count(aa) > 5
         order by c.anio, c.division, a.apellido, a.nombre
         """)
-    List<TardanzaRowDto> tardanzasTodosCursos(LocalDate desde, LocalDate hasta);
+    List<TardanzaRowDto> tardanzasTodosCursos(@Param("desde") LocalDate desde,
+                                              @Param("hasta") LocalDate hasta);
 
     @Query("""
         select new com.grup14.luterano.dto.reporteTardanza.TardanzaRowDto(
             a.id,
             a.apellido,
             a.nombre,
+            a.dni,
             c.id,
             c.anio,
             c.division,
-            c.nivel,
             count(aa)
         )
         from AsistenciaAlumno aa
@@ -129,86 +150,92 @@ public interface AsistenciaAlumnoRepository extends JpaRepository<AsistenciaAlum
         where aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
           and (:desde is null or aa.fecha >= :desde)
           and (:hasta is null or aa.fecha <= :hasta)
-        group by a.id, a.apellido, a.nombre, c.id, c.anio, c.division, c.nivel
+        group by a.id, a.apellido, a.nombre, a.dni,
+                 c.id, c.anio, c.division
         having count(aa) > 5
         order by c.anio, c.division, a.apellido, a.nombre
         """)
-    List<TardanzaRowDto> tardanzasTodosCursos(LocalDate desde, LocalDate hasta, Pageable pageable);
+    List<TardanzaRowDto> tardanzasTodosCursos(@Param("desde") LocalDate desde,
+                                              @Param("hasta") LocalDate hasta,
+                                              Pageable pageable);
 
 
-    @Query("""
-                select aa.alumno.id,
-                       sum(
-                           case
-                               when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.AUSENTE
-                                    or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.JUSTIFICADO
-                                    or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.CON_LICENCIA
-                                   then 1.0
-                               when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                                    or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.RETIRO
-                                   then 0.25
-                               else 0.0
-                           end
-                       )
-                from AsistenciaAlumno aa
-                where aa.fecha between :desde and :hasta
-                  and aa.alumno.id in :alumnoIds
-                group by aa.alumno.id
-            """)
-    List<Object[]> sumarInasistenciasPorAlumnoEntreFechas(
-            LocalDate desde, LocalDate hasta, List<Long> alumnoIds
-    );
-
-    // Método para contar registros de asistencia por alumno
-    @Query("""
-                select aa.alumno.id, count(aa)
-                from AsistenciaAlumno aa
-                where aa.fecha between :desde and :hasta
-                  and aa.alumno.id in :alumnoIds
-                group by aa.alumno.id
-            """)
-    List<Object[]> contarRegistrosPorAlumnoEntreFechas(
-            LocalDate desde, LocalDate hasta, List<Long> alumnoIds
-    );
+    // =========================
+    //  INASISTENCIAS / ESTADÍSTICAS
+    // =========================
 
     @Query("""
-                    select a.estado, count(a)
-                    from AsistenciaAlumno a
-                    where a.alumno.id = :alumnoId
-                        and a.fecha between :desde and :hasta
-                    group by a.estado
-            """)
-    java.util.List<Object[]> contarPorEstadoEntreFechas(@Param("alumnoId") Long alumnoId,
-                                                        @Param("desde") LocalDate desde,
-                                                        @Param("hasta") LocalDate hasta);
+        select aa.alumno.id,
+               sum(
+                   case
+                       when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.AUSENTE
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.JUSTIFICADO
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.CON_LICENCIA
+                           then 1.0
+                       when aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+                            or aa.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.RETIRO
+                           then 0.25
+                       else 0.0
+                   end
+               )
+        from AsistenciaAlumno aa
+        where aa.fecha between :desde and :hasta
+          and aa.alumno.id in :alumnoIds
+        group by aa.alumno.id
+        """)
+    List<Object[]> sumarInasistenciasPorAlumnoEntreFechas(@Param("desde") LocalDate desde,
+                                                          @Param("hasta") LocalDate hasta,
+                                                          @Param("alumnoIds") List<Long> alumnoIds);
 
     @Query("""
-                select a 
-                from AsistenciaAlumno a
-                left join fetch a.alumno al
-                left join fetch al.cursoActual c
-                where a.alumno.id = :alumnoId
-                order by a.fecha desc
-            """)
+        select aa.alumno.id, count(aa)
+        from AsistenciaAlumno aa
+        where aa.fecha between :desde and :hasta
+          and aa.alumno.id in :alumnoIds
+        group by aa.alumno.id
+        """)
+    List<Object[]> contarRegistrosPorAlumnoEntreFechas(@Param("desde") LocalDate desde,
+                                                       @Param("hasta") LocalDate hasta,
+                                                       @Param("alumnoIds") List<Long> alumnoIds);
+
+    @Query("""
+        select a.estado, count(a)
+        from AsistenciaAlumno a
+        where a.alumno.id = :alumnoId
+          and a.fecha between :desde and :hasta
+        group by a.estado
+        """)
+    List<Object[]> contarPorEstadoEntreFechas(@Param("alumnoId") Long alumnoId,
+                                              @Param("desde") LocalDate desde,
+                                              @Param("hasta") LocalDate hasta);
+
+    @Query("""
+        select a 
+        from AsistenciaAlumno a
+        left join fetch a.alumno al
+        left join fetch al.cursoActual c
+        where a.alumno.id = :alumnoId
+        order by a.fecha desc
+        """)
     List<AsistenciaAlumno> findByAlumnoIdWithCurso(@Param("alumnoId") Long alumnoId);
 
     long deleteByAlumno_Id(Long alumnoId);
 
     long countByAlumno_Id(Long alumnoId);
-    
+
     /**
-     * Obtiene todas las tardanzas de un alumno en un rango de fechas con fecha y observación.
+     * Tardanzas de un alumno en un rango de fechas (para detalle).
      */
     @Query("""
-                select a
-                from AsistenciaAlumno a
-                where a.alumno.id = :alumnoId
-                  and a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
-                  and (:desde is null or a.fecha >= :desde)
-                  and (:hasta is null or a.fecha <= :hasta)
-                order by a.fecha desc
-            """)
+        select a
+        from AsistenciaAlumno a
+        where a.alumno.id = :alumnoId
+          and a.estado = com.grup14.luterano.entities.enums.EstadoAsistencia.TARDE
+          and (:desde is null or a.fecha >= :desde)
+          and (:hasta is null or a.fecha <= :hasta)
+        order by a.fecha desc
+        """)
     List<AsistenciaAlumno> findTardanzasPorAlumno(@Param("alumnoId") Long alumnoId,
-                                                   @Param("desde") LocalDate desde,
-                                                   @Param("hasta") LocalDate hasta);
+                                                  @Param("desde") LocalDate desde,
+                                                  @Param("hasta") LocalDate hasta);
 }

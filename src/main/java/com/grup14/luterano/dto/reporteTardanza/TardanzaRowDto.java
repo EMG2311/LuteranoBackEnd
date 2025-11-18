@@ -1,7 +1,11 @@
 package com.grup14.luterano.dto.reporteTardanza;
 
+import com.grup14.luterano.dto.reporteTardanza.TardanzaDetalleDto;
 import com.grup14.luterano.entities.enums.Division;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -20,7 +24,7 @@ public class TardanzaRowDto {
     private Integer cursoAnio;
     private Division cursoDivision;
     private long cantidadTardanzas;
-    
+
     // Lista de detalles de cada tardanza con fecha y observación
     private List<TardanzaDetalleDto> detalles;
 
@@ -50,5 +54,4 @@ public class TardanzaRowDto {
         this.cursoDivision = cursoDivision;
         this.cantidadTardanzas = cantidadTardanzas;
     }
-
 }

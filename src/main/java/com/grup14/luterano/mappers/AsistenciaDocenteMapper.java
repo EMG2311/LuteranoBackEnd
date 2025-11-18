@@ -1,6 +1,6 @@
 package com.grup14.luterano.mappers;
 
-import com.grup14.luterano.dto.asistencia.AsistenciaDocenteDto;
+import com.grup14.luterano.dto.AsistenciaDocenteDto;
 import com.grup14.luterano.entities.AsistenciaDocente;
 import com.grup14.luterano.entities.Docente;
 

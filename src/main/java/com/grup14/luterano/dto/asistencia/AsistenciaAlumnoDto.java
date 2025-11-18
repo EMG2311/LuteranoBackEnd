@@ -1,4 +1,4 @@
-package com.grup14.luterano.dto;
+package com.grup14.luterano.dto.asistencia;
 
 import com.grup14.luterano.entities.enums.EstadoAsistencia;
 import lombok.*;
