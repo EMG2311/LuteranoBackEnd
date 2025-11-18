@@ -24,7 +24,6 @@ public class TardanzaRowDto {
     // Lista de detalles de cada tardanza con fecha y observación
     private List<TardanzaDetalleDto> detalles;
 
-    // Constructor completo para uso manual
     public TardanzaRowDto(Long alumnoId, String apellido, String nombre, String dni,
                           Long cursoId, Integer cursoAnio, Division cursoDivision,
                           long cantidadTardanzas, List<TardanzaDetalleDto> detalles) {
@@ -39,7 +38,6 @@ public class TardanzaRowDto {
         this.detalles = detalles;
     }
 
-    // Constructor para JPQL (sin detalles, se llenan después)
     public TardanzaRowDto(Long alumnoId, String apellido, String nombre, String dni,
                           Long cursoId, Integer cursoAnio, Division cursoDivision,
                           long cantidadTardanzas) {
