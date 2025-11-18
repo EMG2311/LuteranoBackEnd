@@ -2,10 +2,7 @@ package com.grup14.luterano.request.alumno;
 
 import com.grup14.luterano.commond.GeneroEnum;
 import com.grup14.luterano.entities.enums.TipoDoc;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,7 +37,7 @@ public class AlumnoUpdateRequest {
     private String telefono;
     @Past(message = "La fecha de nacimiento debe ser anterior a la fecha actual")
     private Date fechaNacimiento;
-    @Past(message = "La fecha de ingreso debe ser anterior a la fecha actual")
+    @PastOrPresent(message = "La fecha de ingreso debe ser anterior a la fecha actual")
     private Date fechaIngreso;
 
 }

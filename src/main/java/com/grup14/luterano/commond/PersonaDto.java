@@ -54,6 +54,6 @@ public class PersonaDto {
     private Date fechaNacimiento;
 
     @NotNull(message = "La fecha de ingreso es obligatoria")
-    @Past(message = "La fecha de ingreso debe ser anterior a la fecha actual")
+    @PastOrPresent(message = "La fecha de ingreso debe ser anterior a la fecha actual")
     private Date fechaIngreso;
 }

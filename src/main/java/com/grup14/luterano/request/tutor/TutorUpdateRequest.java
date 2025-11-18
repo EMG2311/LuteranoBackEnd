@@ -6,6 +6,7 @@ import com.grup14.luterano.validation.MayorDeEdad;
 import com.grup14.luterano.validation.MayorDeEdadGruoup;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +46,6 @@ public class TutorUpdateRequest {
     @Past(message = "La fecha de nacimiento debe ser anterior a la fecha actual")
     @MayorDeEdad(groups = {MayorDeEdadGruoup.class})
     private Date fechaNacimiento;
-    @Past(message = "La fecha de ingreso debe ser anterior a la fecha actual")
+    @PastOrPresent(message = "La fecha de ingreso debe ser anterior a la fecha actual")
     private Date fechaIngreso;
 }
