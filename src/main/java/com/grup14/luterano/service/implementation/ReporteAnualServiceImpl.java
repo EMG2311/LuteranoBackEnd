@@ -145,13 +145,13 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         List<HistorialCurso> historialCursosAnteriores = historialCursoRepo.findHistorialCompletoByAlumnoId(alumno.getId());
 
         for (HistorialCurso hcAnterior : historialCursosAnteriores) {
-            // Solo considerar ciclos de años anteriores al año consultado
-            if (hcAnterior.getCicloLectivo().getFechaDesde().getYear() < anio) {
+            int anioCurso = hcAnterior.getCicloLectivo().getFechaDesde().getYear();
+            if (anioCurso < anio) {
                 List<HistorialMateria> hms = historialMateriaRepo.findAllByHistorialCursoId(hcAnterior.getId());
                 for (HistorialMateria hm : hms) {
-                    if (hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA) {
-                        materiasPreviasIds.add(hm.getMateriaCurso().getMateria().getId());
-                    }
+                    System.out.println("HM " + anioCurso + " - "
+                            + hm.getMateriaCurso().getMateria().getNombre()
+                            + " estadoBD=" + hm.getEstado());
                 }
             }
         }

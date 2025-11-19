@@ -42,7 +42,6 @@ public class NotaFinalServiceImpl implements NotaFinalService {
         List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
                 .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, desde, hasta);
 
-        // Filtrar por materia y obtener la más reciente
         MesaExamenAlumno mesaMasReciente = mesas.stream()
                 .filter(mea -> mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId))
                 .filter(mea -> mea.getNotaFinal() != null)
@@ -56,7 +55,7 @@ public class NotaFinalServiceImpl implements NotaFinalService {
                 })
                 .orElse(null);
 
-        // 2. Si tiene mesa de examen, usar esa nota
+        // 2. Si tiene mesa de examen, usar esa nota (manda sobre todo)
         if (mesaMasReciente != null) {
             return NotaFinalDetalleDto.desdeMesa(
                     mesaMasReciente.getNotaFinal(),
@@ -64,7 +63,7 @@ public class NotaFinalServiceImpl implements NotaFinalService {
             );
         }
 
-        // 3. Si no tiene mesa, calcular desde PG redondeado
+        // 3. Si no tiene mesa, calcular respetando la regla de etapas
         CalificacionesAlumnoAnioResponse reporteNotas = reporteNotasService.listarResumenPorAnio(alumnoId, anio);
 
         if (reporteNotas == null || reporteNotas.getCalificacionesAlumnoResumenDto() == null) {
@@ -81,9 +80,19 @@ public class NotaFinalServiceImpl implements NotaFinalService {
             return null;
         }
 
-        // Redondear el PG al entero más cercano (no truncar hacia abajo)
-        Integer notaFinalRedondeada = (int) Math.round(materia.getPg());
+        // 👉 NUEVO: usar las etapas para decidir APROBADA/DESAPROBADA
+        Double e1 = materia.getE1(); // promedio etapa 1
+        Double e2 = materia.getE2(); // promedio etapa 2
 
+        // Si alguna etapa está desaprobada (< 6) → no hay nota final aprobada
+        if ((e1 != null && e1 < 6.0) || (e2 != null && e2 < 6.0)) {
+            // La materia queda DESAPROBADA si no fue a mesa
+            // Devuelvo null para que promoción masiva la trate como desaprobada
+            return NotaFinalDetalleDto.desdePromedio(null, materia.getPg());
+        }
+
+        // Si ambas etapas están aprobadas (>=6), usar PG redondeado
+        Integer notaFinalRedondeada = (int) Math.round(materia.getPg());
         return NotaFinalDetalleDto.desdePromedio(notaFinalRedondeada, materia.getPg());
     }
 

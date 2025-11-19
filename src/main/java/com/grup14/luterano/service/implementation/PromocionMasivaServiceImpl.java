@@ -32,6 +32,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     private final NotaFinalService notaFinalService;
     private final HistorialMateriaRepository historialMateriaRepository;
 
+
     @Override
     @Transactional
     public PromocionMasivaResponse ejecutarPromocionMasiva(PromocionMasivaRequest request) {
@@ -44,7 +45,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
         // Obtener todos los alumnos activos (no egresados, borrados ni excluidos por repetición)
         List<Alumno> alumnosActivos = alumnoRepository.findByEstadoNotIn(
                 List.of(EstadoAlumno.EGRESADO, EstadoAlumno.BORRADO, EstadoAlumno.EXCLUIDO_POR_REPETICION, EstadoAlumno.EGRESADO_CON_PREVIAS));
-
+ 
         List<AlumnoPromocionDto> resumen = new ArrayList<>();
         int promocionados = 0, repitentes = 0, egresados = 0, excluidos = 0, noProcesados = 0;
 
