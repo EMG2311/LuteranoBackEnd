@@ -24,6 +24,8 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso, Long
 
     boolean existsByMateriaIdAndCursoId(Long materiaId, Long cursoId);
 
+    Optional<MateriaCurso> findByCurso_IdAndMateria_Id(Long cursoId, Long materiaId);
+
     Optional<MateriaCurso> findByMateriaIdAndCursoId(Long materiaId, Long cursoId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

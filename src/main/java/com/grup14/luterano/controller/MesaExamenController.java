@@ -4,6 +4,8 @@ import com.grup14.luterano.exeptions.MesaExamenException;
 import com.grup14.luterano.request.mesaExamen.AgregarConvocadosRequest;
 import com.grup14.luterano.request.mesaExamen.MesaExamenCreateRequest;
 import com.grup14.luterano.request.mesaExamen.MesaExamenUpdateRequest;
+import com.grup14.luterano.request.mesaExamen.MesasExamenMasivasRequest;
+import com.grup14.luterano.response.AlumnosDebenMateriaResponse;
 import com.grup14.luterano.response.mesaExamen.MesaExamenListResponse;
 import com.grup14.luterano.response.mesaExamen.MesaExamenResponse;
 import com.grup14.luterano.service.MesaExamenService;
@@ -36,6 +38,17 @@ public class MesaExamenController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(MesaExamenResponse.builder().code(-2).mensaje("Error no controlado " + e.getMessage()).build());
         }
+    }
+
+    @GetMapping("/cursos/{cursoId}/materias/{materiaId}/alumnos-deben")
+    public ResponseEntity<AlumnosDebenMateriaResponse> listarAlumnosQueDeben(
+            @PathVariable Long cursoId,
+            @PathVariable Long materiaId,
+            @RequestParam(required = false) Integer anio
+    ) {
+        AlumnosDebenMateriaResponse resp =
+                service.listarAlumnosQueDebenMateria(cursoId, materiaId, anio);
+        return ResponseEntity.ok(resp);
     }
 
     @PutMapping
@@ -142,5 +155,14 @@ public class MesaExamenController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(MesaExamenResponse.builder().code(-2).mensaje("Error no controlado " + e.getMessage()).build());
         }
+    }
+
+
+    @PostMapping("/masivas")
+    public ResponseEntity<MesaExamenListResponse> crearMesasMasivas(
+            @RequestBody MesasExamenMasivasRequest request
+    ) {
+        MesaExamenListResponse resp = service.crearMesasExamenMasivas(request);
+        return ResponseEntity.ok(resp);
     }
 }

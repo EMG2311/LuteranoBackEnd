@@ -1,7 +1,7 @@
 package com.grup14.luterano.response.mesaExamen;
 
 
-import com.grup14.luterano.dto.MesaExamenDto;
+import com.grup14.luterano.dto.mesaExamen.MesaExamenDto;
 import lombok.Builder;
 import lombok.Data;
 

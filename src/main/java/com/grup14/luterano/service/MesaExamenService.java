@@ -3,7 +3,9 @@ package com.grup14.luterano.service;
 import com.grup14.luterano.request.mesaExamen.AgregarConvocadosRequest;
 import com.grup14.luterano.request.mesaExamen.MesaExamenCreateRequest;
 import com.grup14.luterano.request.mesaExamen.MesaExamenUpdateRequest;
+import com.grup14.luterano.request.mesaExamen.MesasExamenMasivasRequest;
 import com.grup14.luterano.request.mesaExamenDocente.AsignarDocentesRequest;
+import com.grup14.luterano.response.AlumnosDebenMateriaResponse;
 import com.grup14.luterano.response.mesaExamen.MesaExamenListResponse;
 import com.grup14.luterano.response.mesaExamen.MesaExamenResponse;
 import com.grup14.luterano.response.mesaExamenDocente.DocentesDisponiblesResponse;
@@ -19,7 +21,7 @@ public interface MesaExamenService {
     MesaExamenResponse eliminar(Long id);
 
     MesaExamenResponse obtener(Long id);
-
+    AlumnosDebenMateriaResponse listarAlumnosQueDebenMateria(Long cursoId, Long materiaId, Integer anio);
     MesaExamenListResponse listarPorMateriaCurso(Long materiaCursoId);
 
     MesaExamenListResponse listarPorCurso(Long cursoId);
@@ -42,4 +44,5 @@ public interface MesaExamenService {
     MesaExamenDocentesResponse listarDocentesAsignados(Long mesaExamenId);
 
     MesaExamenDocentesResponse modificarDocente(Long mesaExamenId, Long docenteActualId, Long nuevoDocenteId);
+    MesaExamenListResponse crearMesasExamenMasivas(MesasExamenMasivasRequest request);
 }

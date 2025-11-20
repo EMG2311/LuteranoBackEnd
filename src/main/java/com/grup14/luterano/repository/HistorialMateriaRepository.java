@@ -1,6 +1,7 @@
 package com.grup14.luterano.repository;
 
 import com.grup14.luterano.entities.HistorialMateria;
+import com.grup14.luterano.entities.enums.EstadoMateriaAlumno;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,7 +24,7 @@ public interface HistorialMateriaRepository extends JpaRepository<HistorialMater
               where hm.historialCurso.id = :historialCursoId
             """)
     List<HistorialMateria> findAllByHistorialCursoId(@Param("historialCursoId") Long historialCursoId);
-
+    List<HistorialMateria> findByMateriaCurso_IdAndEstado(Long materiaCursoId, EstadoMateriaAlumno estado);
     @Transactional
     @Modifying
     void deleteByHistorialCurso_Id(Long historialCursoId);
@@ -38,4 +39,9 @@ public interface HistorialMateriaRepository extends JpaRepository<HistorialMater
       and hm.estado = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA
 """)
     long contarPreviasDeAniosAnteriores(Long alumnoId, LocalDate inicioAnio);
+    List<HistorialMateria> findByMateriaCurso_IdAndEstadoAndHistorialCurso_CicloLectivo_Anio(
+            Long materiaCursoId,
+            EstadoMateriaAlumno estado,
+            int anio
+    );
 }

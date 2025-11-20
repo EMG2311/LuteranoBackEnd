@@ -1,7 +1,7 @@
 package com.grup14.luterano.mappers;
 
-import com.grup14.luterano.dto.MesaExamenAlumnoDto;
-import com.grup14.luterano.dto.MesaExamenDto;
+import com.grup14.luterano.dto.mesaExamen.MesaExamenAlumnoDto;
+import com.grup14.luterano.dto.mesaExamen.MesaExamenDto;
 import com.grup14.luterano.entities.MesaExamen;
 
 import java.util.List;
