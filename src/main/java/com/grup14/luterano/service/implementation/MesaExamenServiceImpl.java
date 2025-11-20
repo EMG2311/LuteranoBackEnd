@@ -660,15 +660,23 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         TurnoExamen turno = turnoRepo.findById(req.getTurnoId())
                 .orElseThrow(() -> new MesaExamenException("Turno no encontrado"));
 
-        LocalDate fechaMesa = req.getFechaMesa();
+        LocalDate fechaMesa = req.getFechaMesa(); // 👉 puede ser null
 
-        // Validar fecha dentro del turno
-        if (fechaMesa.isBefore(turno.getFechaInicio()) || fechaMesa.isAfter(turno.getFechaFin())) {
-            throw new MesaExamenException("La fecha de la mesa debe estar dentro del turno (" +
-                    turno.getFechaInicio() + " a " + turno.getFechaFin() + ")");
+        // ✅ SOLO validar fecha si viene
+        if (fechaMesa != null) {
+            if (fechaMesa.isBefore(turno.getFechaInicio()) || fechaMesa.isAfter(turno.getFechaFin())) {
+                throw new MesaExamenException("La fecha de la mesa debe estar dentro del turno (" +
+                        turno.getFechaInicio() + " a " + turno.getFechaFin() + ")");
+            }
         }
 
-        int anioMesa = fechaMesa.getYear();
+        // ✅ Año para el reporte:
+        //    - si hay fecha, usamos el año de la fecha
+        //    - si no hay fecha, usamos el año del inicio del turno
+        int anioMesa = (fechaMesa != null)
+                ? fechaMesa.getYear()
+                : turno.getFechaInicio().getYear();
+
         Set<Long> materiasFiltro = (req.getMateriaIds() != null && !req.getMateriaIds().isEmpty())
                 ? new HashSet<>(req.getMateriaIds())
                 : null;
@@ -695,13 +703,13 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             for (MateriaCurso mc : materiasCurso) {
                 Long materiaId = mc.getMateria().getId();
 
-                // Filtrar filas del reporte para esa materia y esa condicion (EXAMEN o COLOQUIO)
+                // Filtrar filas del reporte para esa materia y esa condición (EXAMEN o COLOQUIO)
                 var filasMateria = reporteRinden.getFilas().stream()
                         .filter(f -> f.getMateriaId().equals(materiaId))
                         .filter(f -> condicionAplicaATipoMesa(req.getTipoMesa(), f.getCondicion()))
                         .toList();
 
-                // 👇 Si no hay NADIE con esa condición, NO creamos la mesa
+                // Si no hay NADIE con esa condición, NO creamos la mesa
                 if (filasMateria.isEmpty()) {
                     continue;
                 }
@@ -710,9 +718,13 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 MesaExamen mesa = new MesaExamen();
                 mesa.setMateriaCurso(mc);
                 mesa.setTurno(turno);
-                mesa.setFecha(fechaMesa);
                 mesa.setTipoMesa(req.getTipoMesa());
                 mesa.setEstado(EstadoMesaExamen.CREADA);
+
+                // ✅ Setear fecha solo si vino en el request
+                if (fechaMesa != null) {
+                    mesa.setFecha(fechaMesa);
+                }
 
                 // Asignar docente titular si existe
                 Docente titular = mc.getDocente();
@@ -769,6 +781,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 .mesas(dtos)
                 .build();
     }
+
 
     // ------ helpers -------
     private static void assertEditable(MesaExamen m) {
