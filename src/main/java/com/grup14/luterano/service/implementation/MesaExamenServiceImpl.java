@@ -650,9 +650,6 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         if (req.getTurnoId() == null) {
             throw new MesaExamenException("turnoId es obligatorio");
         }
-        if (req.getFechaMesa() == null) {
-            throw new MesaExamenException("fechaMesa es obligatoria");
-        }
         if (req.getCursoIds() == null || req.getCursoIds().isEmpty()) {
             throw new MesaExamenException("Debe enviar al menos un cursoId");
         }
