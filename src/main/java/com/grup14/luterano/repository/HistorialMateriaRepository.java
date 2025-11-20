@@ -29,19 +29,5 @@ public interface HistorialMateriaRepository extends JpaRepository<HistorialMater
     @Modifying
     void deleteByHistorialCurso_Id(Long historialCursoId);
 
-    @Query("""
-    select count(hm)
-    from HistorialMateria hm
-    join hm.historialCurso hc
-    join hc.cicloLectivo cl
-    where hc.alumno.id = :alumnoId
-      and cl.fechaDesde < :inicioAnio
-      and hm.estado = com.grup14.luterano.entities.enums.EstadoMateriaAlumno.DESAPROBADA
-""")
-    long contarPreviasDeAniosAnteriores(Long alumnoId, LocalDate inicioAnio);
-    List<HistorialMateria> findByMateriaCurso_IdAndEstadoAndHistorialCurso_CicloLectivo_Anio(
-            Long materiaCursoId,
-            EstadoMateriaAlumno estado,
-            int anio
-    );
+
 }
