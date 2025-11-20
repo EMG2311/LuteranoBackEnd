@@ -25,7 +25,7 @@ public interface MesaExamenValidacionService {
      * Valida la configuración de la mesa antes de guardar
      */
     void validarConfiguracionMesa(MesaExamen mesa);
-    
+    void validarConfiguracionMesa(MesaExamen mesa, boolean fechaObligatoria);
     /**
      * Valida que se pueda cambiar el tipo de mesa
      */

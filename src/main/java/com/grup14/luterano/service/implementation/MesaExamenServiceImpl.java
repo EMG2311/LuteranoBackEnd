@@ -763,7 +763,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 }
 
                 // Validar configuración completa (docentes + alumnos)
-                validacionService.validarConfiguracionMesa(mesa);
+                validacionService.validarConfiguracionMesa(mesa, false);
 
                 mesaRepo.save(mesa);
                 mesasCreadas.add(mesa);
