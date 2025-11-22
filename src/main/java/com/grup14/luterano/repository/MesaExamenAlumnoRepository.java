@@ -3,6 +3,8 @@ package com.grup14.luterano.repository;
 import com.grup14.luterano.entities.MesaExamenAlumno;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,17 @@ public interface MesaExamenAlumnoRepository extends JpaRepository<MesaExamenAlum
     boolean existsByMesaExamen_IdAndAlumno_Id(Long mesaId, Long alumnoId);
 
     List<MesaExamenAlumno> findByMesaExamen_Id(Long mesaId);
+    @Query("""
+    SELECT CASE WHEN COUNT(mea) > 0 THEN TRUE ELSE FALSE END
+    FROM MesaExamenAlumno mea
+    JOIN mea.mesaExamen me
+    JOIN me.materiaCurso mc
+    JOIN mc.materia mat
+    WHERE mea.alumno.id = :alumnoId
+      AND mat.id = :materiaId
+""")
+    boolean existeMesaParaAlumnoMateria(Long alumnoId, Long materiaId);
+
 
     @Transactional
     @Modifying

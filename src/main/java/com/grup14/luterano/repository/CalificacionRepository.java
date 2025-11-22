@@ -14,6 +14,21 @@ import java.util.Optional;
 public interface CalificacionRepository extends JpaRepository<Calificacion, Long> {
     List<Calificacion> findByHistorialMateria_Id(Long historialMateriaId);
 
+
+    @Query("""
+        SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END
+        FROM Calificacion c
+        JOIN c.historialMateria hm
+        JOIN hm.historialCurso hc
+        WHERE hc.alumno.id = :alumnoId
+          AND hm.materiaCurso.id = :materiaCursoId
+          AND year(hc.cicloLectivo.fechaDesde) = :cicloLectivoAnio
+          AND c.nota < 6
+    """)
+    boolean existeEtapaDesaprobada(@Param("alumnoId") Long alumnoId,
+                                   @Param("materiaCursoId") Long materiaCursoId,
+                                   @Param("cicloLectivoAnio") int cicloLectivoAnio);
+
     boolean existsByHistorialMateria_IdAndEtapaAndNumeroNota(Long hmId, int etapa, int numeroNota);
 
     @Query("""

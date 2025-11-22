@@ -30,4 +30,8 @@ public class CicloLectivo {
             this.nombre = "Ciclo Lectivo " + this.fechaDesde.getYear();
         }
     }
+
+    public Integer getAnio(){
+        return fechaDesde.getYear();
+    }
 }

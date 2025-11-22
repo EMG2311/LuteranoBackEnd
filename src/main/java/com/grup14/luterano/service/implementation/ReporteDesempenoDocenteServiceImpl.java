@@ -2,10 +2,8 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.reporteDesempeno.ReporteDesempenoDocenteDto;
 import com.grup14.luterano.dto.reporteDesempeno.ReporteDesempenoMateriaDto;
-import com.grup14.luterano.repository.CalificacionRepository;
-import com.grup14.luterano.repository.CicloLectivoRepository;
-import com.grup14.luterano.repository.HistorialCursoRepository;
-import com.grup14.luterano.repository.MateriaCursoRepository;
+import com.grup14.luterano.entities.*;
+import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.reporteDesempeno.ReporteDesempenoResponse;
 import com.grup14.luterano.service.NotaFinalService;
 import com.grup14.luterano.service.ReporteDesempenoDocenteService;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,8 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
     private final MateriaCursoRepository materiaCursoRepository;
     private final HistorialCursoRepository historialCursoRepository;
     private final CicloLectivoRepository cicloLectivoRepository;
-    private final NotaFinalService notaFinalService;
+    private final NotaFinalService notaFinalService; // ya no lo usamos acá, pero lo dejamos inyectado
+    private final MesaExamenAlumnoRepository mesaExamenAlumnoRepo;
 
     @Override
     public ReporteDesempenoResponse generarReporteDesempeno(int cicloLectivoAnio) {
@@ -37,13 +37,13 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
         var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
                 .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
 
-        // Obtener todas las materias-curso del ciclo
+        // Obtener todas las materias-curso con docente para ese ciclo
         List<Object[]> materiasConDocente = materiaCursoRepository.findMateriasConDocentePorCiclo(cicloLectivoAnio);
 
         Map<Long, List<ReporteDesempenoDocenteDto>> resultadosPorMateria = new HashMap<>();
 
         for (Object[] row : materiasConDocente) {
-            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivoAnio);
+            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivo);
 
             Long materiaId = resultado.getMateriaId();
             resultadosPorMateria.computeIfAbsent(materiaId, k -> new ArrayList<>()).add(resultado);
@@ -54,7 +54,9 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
 
         for (Map.Entry<Long, List<ReporteDesempenoDocenteDto>> entry : resultadosPorMateria.entrySet()) {
             ReporteDesempenoMateriaDto reporteMateria = construirReporteMateria(entry.getValue());
-            reportesMaterias.add(reporteMateria);
+            if (reporteMateria != null) {
+                reportesMaterias.add(reporteMateria);
+            }
         }
 
         // Ordenar por nombre de materia
@@ -81,11 +83,15 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
     public ReporteDesempenoResponse generarReportePorMateria(int cicloLectivoAnio, Long materiaId) {
         log.info("Generando reporte de desempeño para materia {} en año: {}", materiaId, cicloLectivoAnio);
 
-        List<Object[]> materiasConDocente = materiaCursoRepository.findMateriasConDocentePorCicloYMateria(cicloLectivoAnio, materiaId);
+        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
+                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
+
+        List<Object[]> materiasConDocente = materiaCursoRepository
+                .findMateriasConDocentePorCicloYMateria(cicloLectivoAnio, materiaId);
 
         List<ReporteDesempenoDocenteDto> resultados = new ArrayList<>();
         for (Object[] row : materiasConDocente) {
-            resultados.add(procesarMateriaCurso(row, cicloLectivoAnio));
+            resultados.add(procesarMateriaCurso(row, cicloLectivo));
         }
 
         if (resultados.isEmpty()) {
@@ -96,9 +102,6 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
         }
 
         ReporteDesempenoMateriaDto reporteMateria = construirReporteMateria(resultados);
-
-        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
-                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
 
         return ReporteDesempenoResponse.builder()
                 .code(0)
@@ -118,12 +121,16 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
     public ReporteDesempenoResponse generarReportePorDocente(int cicloLectivoAnio, Long docenteId) {
         log.info("Generando reporte de desempeño para docente {} en año: {}", docenteId, cicloLectivoAnio);
 
-        List<Object[]> materiasConDocente = materiaCursoRepository.findMateriasConDocentePorCicloYDocente(cicloLectivoAnio, docenteId);
+        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
+                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
+
+        List<Object[]> materiasConDocente = materiaCursoRepository
+                .findMateriasConDocentePorCicloYDocente(cicloLectivoAnio, docenteId);
 
         Map<Long, List<ReporteDesempenoDocenteDto>> resultadosPorMateria = new HashMap<>();
 
         for (Object[] row : materiasConDocente) {
-            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivoAnio);
+            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivo);
 
             Long materiaId = resultado.getMateriaId();
             resultadosPorMateria.computeIfAbsent(materiaId, k -> new ArrayList<>()).add(resultado);
@@ -138,13 +145,15 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
 
         List<ReporteDesempenoMateriaDto> reportesMaterias = new ArrayList<>();
         for (List<ReporteDesempenoDocenteDto> resultados : resultadosPorMateria.values()) {
-            reportesMaterias.add(construirReporteMateria(resultados));
+            ReporteDesempenoMateriaDto reporteMateria = construirReporteMateria(resultados);
+            if (reporteMateria != null) {
+                reportesMaterias.add(reporteMateria);
+            }
         }
 
-        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
-                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
-
-        String nombreDocente = reportesMaterias.get(0).getResultadosPorDocente().get(0).getNombreCompletoDocente();
+        String nombreDocente = reportesMaterias.get(0)
+                .getResultadosPorDocente().get(0)
+                .getNombreCompletoDocente();
 
         return ReporteDesempenoResponse.builder()
                 .code(0)
@@ -160,59 +169,203 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
                 .build();
     }
 
-    private ReporteDesempenoDocenteDto procesarMateriaCurso(Object[] row, int cicloLectivoAnio) {
-        // Extraer datos de la query (ajustar según la query real)
-        Long materiaCursoId = (Long) row[0];
-        Long materiaId = (Long) row[1];
-        String nombreMateria = (String) row[2];
-        Long docenteId = (Long) row[3];
-        String apellidoDocente = (String) row[4];
-        String nombreDocente = (String) row[5];
-        Long cursoId = (Long) row[6];
-        Integer anio = (Integer) row[7];
-        String nivel = (String) row[8];
-        String division = (String) row[9];
+    @Override
+    public ReporteDesempenoResponse generarReportePorCurso(int cicloLectivoAnio, Long cursoId) {
+        log.info("Generando reporte de desempeño para curso {} en año: {}", cursoId, cicloLectivoAnio);
 
-        // Obtener alumnos que cursaron esa materia en ese año
-        List<Long> alumnosIds = historialCursoRepository.findAlumnosIdsPorCursoYCiclo(cursoId, cicloLectivoAnio);
+        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
+                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
+
+        List<Object[]> materiasConDocente = materiaCursoRepository
+                .findMateriasConDocentePorCicloYCurso(cicloLectivoAnio, cursoId);
+
+        Map<Long, List<ReporteDesempenoDocenteDto>> resultadosPorMateria = new HashMap<>();
+
+        for (Object[] row : materiasConDocente) {
+            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivo);
+
+            Long materiaId = resultado.getMateriaId();
+            resultadosPorMateria.computeIfAbsent(materiaId, k -> new ArrayList<>()).add(resultado);
+        }
+
+        if (resultadosPorMateria.isEmpty()) {
+            return ReporteDesempenoResponse.builder()
+                    .code(-1)
+                    .mensaje("No se encontraron datos para el curso en el año especificado")
+                    .build();
+        }
+
+        List<ReporteDesempenoMateriaDto> reportesMaterias = new ArrayList<>();
+        for (List<ReporteDesempenoDocenteDto> resultados : resultadosPorMateria.values()) {
+            ReporteDesempenoMateriaDto reporteMateria = construirReporteMateria(resultados);
+            if (reporteMateria != null) {
+                reportesMaterias.add(reporteMateria);
+            }
+        }
+
+        // Obtener información del curso para el resumen
+        String infoCurso = String.format("%s %s %s",
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getAnio(),
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getNivel(),
+                reportesMaterias.get(0).getResultadosPorDocente().get(0).getDivision());
+
+        return ReporteDesempenoResponse.builder()
+                .code(0)
+                .mensaje("Reporte por curso generado exitosamente")
+                .cicloLectivoAnio(cicloLectivoAnio)
+                .nombreCicloLectivo(cicloLectivo.getNombre())
+                .totalMaterias(reportesMaterias.size())
+                .totalDocentes(calcularTotalDocentes(reportesMaterias))
+                .totalAlumnos(calcularTotalAlumnos(reportesMaterias))
+                .totalCursos(1) // Solo un curso
+                .resultadosPorMateria(reportesMaterias)
+                .resumenEjecutivo("Análisis específico del curso " + infoCurso)
+                .hallazgosImportantes(generarHallazgos(reportesMaterias))
+                .recomendaciones(generarRecomendaciones(reportesMaterias))
+                .build();
+    }
+
+    /**
+     * Procesa una fila de "materia-curso-docente" y calcula el desempeño
+     * usando la misma lógica de aprobado/desaprobado que ReporteNotasServiceImpl.
+     */
+    private ReporteDesempenoDocenteDto procesarMateriaCurso(Object[] row, CicloLectivo cicloLectivo) {
+        // Extraer datos de la query (ajustar según la query real)
+        Long materiaCursoId   = (Long) row[0];
+        Long materiaId        = (Long) row[1];
+        String nombreMateria  = (String) row[2];
+        Long docenteId        = (Long) row[3];
+        String apellidoDocente= (String) row[4];
+        String nombreDocente  = (String) row[5];
+        Long cursoId          = (Long) row[6];
+        Integer anio          = (Integer) row[7];
+        String nivel          = (String) row[8];
+        String division       = (String) row[9];
+
+        int cicloAnio = cicloLectivo.getAnio();
+
+        // Alumnos que cursaron ese curso en ese ciclo
+        List<Long> alumnosIds = historialCursoRepository
+                .findAlumnosIdsPorCursoYCiclo(cursoId, cicloAnio);
 
         int totalAlumnos = alumnosIds.size();
         int aprobados = 0;
         int desaprobados = 0;
 
         BigDecimal sumaNotas = BigDecimal.ZERO;
+        int totalConNota = 0;
+
         BigDecimal notaMinima = BigDecimal.valueOf(10);
         BigDecimal notaMaxima = BigDecimal.ZERO;
 
+        // Rango para calificaciones (año calendario)
+        LocalDate desdeCalif = LocalDate.of(cicloAnio, 1, 1);
+        LocalDate hastaCalif = LocalDate.of(cicloAnio, 12, 31);
+
+        // Rango para mesas (según fechas del ciclo)
+        LocalDate desdeMesas = cicloLectivo.getFechaDesde();
+        LocalDate hastaMesas = cicloLectivo.getFechaHasta();
+
+        // Todas las calificaciones del año para esos alumnos
+        List<Calificacion> califs = alumnosIds.isEmpty()
+                ? List.of()
+                : calificacionRepository.findByAlumnosAndAnio(alumnosIds, desdeCalif, hastaCalif);
+
+        // Todas las mesas del ciclo para esos alumnos
+        List<MesaExamenAlumno> mesasAlumnos = alumnosIds.isEmpty()
+                ? List.of()
+                : mesaExamenAlumnoRepo.findByAlumno_IdInAndMesaExamen_FechaBetween(
+                alumnosIds, desdeMesas, hastaMesas
+        );
+
         for (Long alumnoId : alumnosIds) {
-            Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, materiaId, cicloLectivoAnio);
+            // Calificaciones de este alumno en esta materia
+            List<Calificacion> califsAlumnoMateria = califs.stream()
+                    .filter(c -> c.getHistorialMateria().getHistorialCurso().getAlumno().getId().equals(alumnoId))
+                    .filter(c -> c.getHistorialMateria().getMateriaCurso().getMateria().getId().equals(materiaId))
+                    .toList();
 
-            if (notaFinal != null) {
-                BigDecimal nota = BigDecimal.valueOf(notaFinal);
-                sumaNotas = sumaNotas.add(nota);
+            Integer[] e1Notas = new Integer[]{null, null, null, null};
+            Integer[] e2Notas = new Integer[]{null, null, null, null};
 
-                if (notaFinal >= 6) {
-                    aprobados++;
-                } else {
-                    desaprobados++;
+            for (Calificacion c : califsAlumnoMateria) {
+                Integer n = c.getNumeroNota();
+                if (n == null || n < 1 || n > 4) continue;
+                int idx = n - 1;
+
+                if (c.getEtapa() == 1) e1Notas[idx] = c.getNota();
+                else if (c.getEtapa() == 2) e2Notas[idx] = c.getNota();
+            }
+
+            Double e1 = promedio(e1Notas);
+            Double e2 = promedio(e2Notas);
+            Double pg = promedioGeneral(e1, e2);
+
+            // Mesas de este alumno en esta materia (en el ciclo)
+            List<MesaExamenAlumno> mesasAlumnoMateria = mesasAlumnos.stream()
+                    .filter(mea -> mea.getAlumno().getId().equals(alumnoId) &&
+                            mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId))
+                    .sorted(Comparator.comparing(
+                            mea -> mea.getMesaExamen().getFecha(),
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
+
+            Integer notaMasAlta = null;
+            for (MesaExamenAlumno mesa : mesasAlumnoMateria) {
+                Integer notaMesa = mesa.getNotaFinal();
+                if (notaMesa == null) continue;
+                if (notaMasAlta == null || notaMesa > notaMasAlta) {
+                    notaMasAlta = notaMesa;
                 }
+            }
 
-                if (nota.compareTo(notaMinima) < 0) notaMinima = nota;
-                if (nota.compareTo(notaMaxima) > 0) notaMaxima = nota;
+            boolean apr1 = e1 != null && e1 >= 6.0;
+            boolean apr2 = e2 != null && e2 >= 6.0;
+            boolean aprobado;
+            Double pfa;
+
+            if (notaMasAlta != null) {
+                pfa = notaMasAlta.doubleValue();
+                aprobado = notaMasAlta >= 6;
+            } else if (apr1 && apr2) {
+                pfa = pg;
+                aprobado = true;
+            } else {
+                pfa = pg;
+                aprobado = false;
+            }
+
+            if (aprobado) aprobados++;
+            else desaprobados++;
+
+            if (pfa != null) {
+                BigDecimal notaBD = BigDecimal.valueOf(pfa);
+                sumaNotas = sumaNotas.add(notaBD);
+                totalConNota++;
+
+                if (notaBD.compareTo(notaMinima) < 0) notaMinima = notaBD;
+                if (notaBD.compareTo(notaMaxima) > 0) notaMaxima = notaBD;
             }
         }
 
         BigDecimal porcentajeAprobacion = totalAlumnos > 0
-                ? BigDecimal.valueOf(aprobados * 100.0 / totalAlumnos).setScale(2, RoundingMode.HALF_UP)
+                ? BigDecimal.valueOf(aprobados * 100.0 / totalAlumnos)
+                .setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         BigDecimal porcentajeReprobacion = totalAlumnos > 0
-                ? BigDecimal.valueOf(desaprobados * 100.0 / totalAlumnos).setScale(2, RoundingMode.HALF_UP)
+                ? BigDecimal.valueOf(desaprobados * 100.0 / totalAlumnos)
+                .setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        BigDecimal promedioGeneral = (aprobados + desaprobados) > 0
-                ? sumaNotas.divide(BigDecimal.valueOf(aprobados + desaprobados), 2, RoundingMode.HALF_UP)
+        BigDecimal promedioGeneral = totalConNota > 0
+                ? sumaNotas.divide(BigDecimal.valueOf(totalConNota), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
+
+        // Ajustar nota mínima si nunca se actualizó
+        if (notaMinima.equals(BigDecimal.valueOf(10)) || totalConNota == 0) {
+            notaMinima = BigDecimal.ZERO;
+        }
 
         String estadoAnalisis = determinarEstadoAnalisis(porcentajeAprobacion);
 
@@ -234,9 +387,9 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
                 .porcentajeAprobacion(porcentajeAprobacion)
                 .porcentajeReprobacion(porcentajeReprobacion)
                 .promedioGeneral(promedioGeneral)
-                .notaMinima(notaMinima.equals(BigDecimal.valueOf(10)) ? BigDecimal.ZERO : notaMinima)
+                .notaMinima(notaMinima)
                 .notaMaxima(notaMaxima)
-                .cicloLectivoAnio(cicloLectivoAnio)
+                .cicloLectivoAnio(cicloAnio)
                 .estadoAnalisis(estadoAnalisis)
                 .build();
     }
@@ -250,7 +403,8 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
         int totalAprobados = resultados.stream().mapToInt(ReporteDesempenoDocenteDto::getAlumnosAprobados).sum();
 
         BigDecimal promedioAprobacion = totalAlumnos > 0
-                ? BigDecimal.valueOf(totalAprobados * 100.0 / totalAlumnos).setScale(2, RoundingMode.HALF_UP)
+                ? BigDecimal.valueOf(totalAprobados * 100.0 / totalAlumnos)
+                .setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         BigDecimal promedioReprobacion = BigDecimal.valueOf(100).subtract(promedioAprobacion);
@@ -367,65 +521,10 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
     }
 
     @Override
-    public ReporteDesempenoResponse generarReportePorCurso(int cicloLectivoAnio, Long cursoId) {
-        log.info("Generando reporte de desempeño para curso {} en año: {}", cursoId, cicloLectivoAnio);
-
-        List<Object[]> materiasConDocente = materiaCursoRepository.findMateriasConDocentePorCicloYCurso(cicloLectivoAnio, cursoId);
-
-        Map<Long, List<ReporteDesempenoDocenteDto>> resultadosPorMateria = new HashMap<>();
-
-        for (Object[] row : materiasConDocente) {
-            ReporteDesempenoDocenteDto resultado = procesarMateriaCurso(row, cicloLectivoAnio);
-
-            Long materiaId = resultado.getMateriaId();
-            resultadosPorMateria.computeIfAbsent(materiaId, k -> new ArrayList<>()).add(resultado);
-        }
-
-        if (resultadosPorMateria.isEmpty()) {
-            return ReporteDesempenoResponse.builder()
-                    .code(-1)
-                    .mensaje("No se encontraron datos para el curso en el año especificado")
-                    .build();
-        }
-
-        List<ReporteDesempenoMateriaDto> reportesMaterias = new ArrayList<>();
-        for (List<ReporteDesempenoDocenteDto> resultados : resultadosPorMateria.values()) {
-            reportesMaterias.add(construirReporteMateria(resultados));
-        }
-
-        var cicloLectivo = cicloLectivoRepository.findByAnio(cicloLectivoAnio)
-                .orElseThrow(() -> new RuntimeException("No existe ciclo lectivo para el año: " + cicloLectivoAnio));
-
-        // Obtener información del curso para el resumen
-        String infoCurso = String.format("%s %s %s", 
-                reportesMaterias.get(0).getResultadosPorDocente().get(0).getAnio(),
-                reportesMaterias.get(0).getResultadosPorDocente().get(0).getNivel(),
-                reportesMaterias.get(0).getResultadosPorDocente().get(0).getDivision());
-
-        return ReporteDesempenoResponse.builder()
-                .code(0)
-                .mensaje("Reporte por curso generado exitosamente")
-                .cicloLectivoAnio(cicloLectivoAnio)
-                .nombreCicloLectivo(cicloLectivo.getNombre())
-                .totalMaterias(reportesMaterias.size())
-                .totalDocentes(calcularTotalDocentes(reportesMaterias))
-                .totalAlumnos(calcularTotalAlumnos(reportesMaterias))
-                .totalCursos(1) // Solo un curso
-                .resultadosPorMateria(reportesMaterias)
-                .resumenEjecutivo("Análisis específico del curso " + infoCurso)
-                .hallazgosImportantes(generarHallazgos(reportesMaterias))
-                .recomendaciones(generarRecomendaciones(reportesMaterias))
-                .build();
-    }
-
-    @Override
     public ReporteDesempenoResponse generarReporteNotasIndividuales(int cicloLectivoAnio) {
         log.info("Generando reporte de notas individuales para año: {}", cicloLectivoAnio);
-        
+
         // TODO: Implementar análisis de las 4 notas individuales por etapa
-        // Este método analizará cada nota individual (1-4) de cada etapa (1-2)
-        // calculando porcentajes de notas < 6 por docente y materia
-        
         return ReporteDesempenoResponse.builder()
                 .code(0)
                 .mensaje("Funcionalidad en desarrollo - análisis de notas individuales")
@@ -434,5 +533,29 @@ public class ReporteDesempenoDocenteServiceImpl implements ReporteDesempenoDocen
                 .hallazgosImportantes(List.of("Funcionalidad en desarrollo"))
                 .recomendaciones(List.of("Se implementará próximamente"))
                 .build();
+    }
+
+    // Helpers de promedio (mismos conceptos que en ReporteNotasServiceImpl)
+    private static Double promedio(Integer[] notas) {
+        int suma = 0, n = 0;
+        for (Integer v : notas) {
+            if (v != null) {
+                suma += v;
+                n++;
+            }
+        }
+        if (n == 0) return null;
+        return redondear1((double) suma / n);
+    }
+
+    private static Double promedioGeneral(Double e1, Double e2) {
+        if (e1 == null && e2 == null) return null;
+        if (e1 == null) return e2;
+        if (e2 == null) return e1;
+        return redondear1((e1 + e2) / 2.0);
+    }
+
+    private static Double redondear1(double v) {
+        return Math.round(v * 10.0) / 10.0;
     }
 }
