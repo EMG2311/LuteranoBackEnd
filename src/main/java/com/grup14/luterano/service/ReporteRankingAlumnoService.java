@@ -6,21 +6,9 @@ import com.grup14.luterano.response.reporteRankingAlumno.RankingTodosCursosRespo
 
 public interface ReporteRankingAlumnoService {
 
-    /**
-     * Obtiene el ranking de alumnos con mejor promedio de un curso específico.
-     * Si hay empates en el top 3, devuelve más de 3 alumnos.
-     */
-    RankingAlumnosCursoResponse rankingAlumnosPorCurso(Long cursoId, int anio);
+    RankingAlumnosCursoResponse rankingAlumnosPorCurso(Long cursoId, int anio, int top);
 
-    /**
-     * Obtiene el ranking de alumnos con mejor promedio de todo el colegio.
-     * Si hay empates en el top 3, devuelve más de 3 alumnos.
-     */
-    RankingAlumnosColegioResponse rankingAlumnosColegio(int anio);
+    RankingAlumnosColegioResponse rankingAlumnosColegio(int anio, int top);
 
-    /**
-     * Obtiene todos los cursos con el ranking de sus 3 mejores alumnos.
-     * Si hay empates en el top 3, devuelve más de 3 alumnos por curso.
-     */
-    RankingTodosCursosResponse rankingTodosCursos(int anio);
+    RankingTodosCursosResponse rankingTodosCursos(int anio, int top);
 }

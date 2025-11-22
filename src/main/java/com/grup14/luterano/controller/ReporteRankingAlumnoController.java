@@ -31,9 +31,10 @@ public class ReporteRankingAlumnoController {
     @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de un curso específico")
     public ResponseEntity<RankingAlumnosCursoResponse> rankingAlumnosPorCurso(
             @PathVariable Long cursoId,
-            @RequestParam int anio) {
+            @RequestParam int anio,
+            @RequestParam(name = "top", defaultValue = "3") int top) {
         try {
-            RankingAlumnosCursoResponse response = rankingService.rankingAlumnosPorCurso(cursoId, anio);
+            RankingAlumnosCursoResponse response = rankingService.rankingAlumnosPorCurso(cursoId, anio, top);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(422).body(RankingAlumnosCursoResponse.builder()
@@ -57,12 +58,13 @@ public class ReporteRankingAlumnoController {
     }
 
     @GetMapping("/colegio")
-    @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de todo el colegio", 
-               description = "Proceso que puede tomar tiempo para cálculos dinámicos")
+    @Operation(summary = "Obtiene el ranking de alumnos con mejor promedio de todo el colegio",
+            description = "Proceso que puede tomar tiempo para cálculos dinámicos")
     public ResponseEntity<RankingAlumnosColegioResponse> rankingAlumnosColegio(
-            @RequestParam int anio) {
+            @RequestParam int anio,
+            @RequestParam(name = "top", defaultValue = "3") int top) {
         try {
-            RankingAlumnosColegioResponse response = rankingService.rankingAlumnosColegio(anio);
+            RankingAlumnosColegioResponse response = rankingService.rankingAlumnosColegio(anio, top);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(422).body(RankingAlumnosColegioResponse.builder()
@@ -84,9 +86,10 @@ public class ReporteRankingAlumnoController {
     @GetMapping("/todos-cursos")
     @Operation(summary = "Obtiene todos los cursos con el ranking de sus mejores alumnos")
     public ResponseEntity<RankingTodosCursosResponse> rankingTodosCursos(
-            @RequestParam int anio) {
+            @RequestParam int anio,
+            @RequestParam(name = "top", defaultValue = "3") int top) {
         try {
-            RankingTodosCursosResponse response = rankingService.rankingTodosCursos(anio);
+            RankingTodosCursosResponse response = rankingService.rankingTodosCursos(anio, top);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(422).body(RankingTodosCursosResponse.builder()
