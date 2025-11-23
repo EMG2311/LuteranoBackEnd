@@ -11,6 +11,7 @@ import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,8 @@ public class MesaExamen {
     @Id
     @GeneratedValue
     private Long id;
-
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
     private LocalDate fecha;
     
     @Enumerated(EnumType.STRING)
@@ -80,5 +82,9 @@ public class MesaExamen {
             case COLOQUIO -> alumnoMesa.getCondicionRinde() == com.grup14.luterano.entities.enums.CondicionRinde.COLOQUIO;
             case EXAMEN -> true;  // Cualquier condición puede rendir examen final
         };
+    }
+
+    public boolean tieneHorarioDefinido() {
+        return fecha != null && horaInicio != null && horaFin != null;
     }
 }

@@ -1,18 +1,56 @@
 package com.grup14.luterano.repository;
 
 import com.grup14.luterano.entities.MesaExamen;
+import com.grup14.luterano.entities.enums.TipoMesa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface MesaExamenRepository extends JpaRepository<MesaExamen, Long> {
-
     boolean existsByAulaId(Long aulaId);
+    List<MesaExamen> findByTurno_IdAndTipoMesaAndMateriaCurso_Materia_Id(
+            Long turnoId, TipoMesa tipoMesa, Long materiaId
+    );
+
+    @Query("""
+        SELECT DISTINCT me
+        FROM MesaExamenDocente med
+        JOIN med.mesaExamen me
+        WHERE med.docente.id IN :docenteIds
+          AND me.fecha = :fecha
+          AND me.id <> :mesaId
+          AND me.horaInicio < :horaFin
+          AND me.horaFin > :horaInicio
+    """)
+    List<MesaExamen> findMesasConflictoParaDocentesEnHorario(@Param("fecha") LocalDate fecha,
+                                                             @Param("horaInicio") LocalTime horaInicio,
+                                                             @Param("horaFin") LocalTime horaFin,
+                                                             @Param("docenteIds") List<Long> docenteIds,
+                                                             @Param("mesaId") Long mesaId);
+
+    // Mesas que generan conflicto para un docente en particular
+    @Query("""
+        SELECT DISTINCT me
+        FROM MesaExamenDocente med
+        JOIN med.mesaExamen me
+        WHERE med.docente.id = :docenteId
+          AND me.fecha = :fecha
+          AND me.id <> :mesaId
+          AND me.horaInicio < :horaFin
+          AND me.horaFin > :horaInicio
+    """)
+    List<MesaExamen> findMesasConflictoParaDocenteEnHorario(@Param("docenteId") Long docenteId,
+                                                            @Param("fecha") LocalDate fecha,
+                                                            @Param("horaInicio") LocalTime horaInicio,
+                                                            @Param("horaFin") LocalTime horaFin,
+                                                            @Param("mesaId") Long mesaId);
 
     @Query("""
               select distinct m from MesaExamen m

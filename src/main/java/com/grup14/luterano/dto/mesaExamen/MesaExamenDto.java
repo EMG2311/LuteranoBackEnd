@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -13,9 +14,10 @@ import java.util.List;
 public class MesaExamenDto {
     private Long id;
     private LocalDate fecha;
-
-    private Long turnoId;          // NEW
-    private String turnoNombre;    // NEW
+    private LocalTime horaInicio;
+    private LocalTime horaFin;
+    private Long turnoId;
+    private String turnoNombre;
 
     private Long materiaCursoId;
     private String materiaNombre;

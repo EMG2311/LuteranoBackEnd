@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -40,4 +41,46 @@ public interface MesaExamenDocenteRepository extends JpaRepository<MesaExamenDoc
     boolean existeDocenteEnOtraMesaEnFecha(@Param("docenteId") Long docenteId,
                                            @Param("fecha") LocalDate fecha,
                                            @Param("mesaExamenId") Long mesaExamenId);
+
+    /**
+     * Devuelve los IDs de docentes que ya tienen una mesa
+     * en la misma fecha y con horario que se solapa.
+     *
+     * Se excluye la mesa con id = :mesaId (para usar en edición).
+     */
+    @Query("""
+           select distinct med.docente.id
+           from MesaExamenDocente med
+           join med.mesaExamen me
+           where me.fecha = :fecha
+             and med.docente.id in :docenteIds
+             and (:mesaId is null or me.id <> :mesaId)
+             and me.horaInicio < :horaFin
+             and me.horaFin > :horaInicio
+           """)
+    List<Long> findDocentesConflictoEnFechaYHorario(
+            @Param("fecha") LocalDate fecha,
+            @Param("horaInicio") LocalTime horaInicio,
+            @Param("horaFin") LocalTime horaFin,
+            @Param("docenteIds") List<Long> docenteIds,
+            @Param("mesaId") Long mesaId
+    );
+
+    @Query("""
+           select case when count(med) > 0 then true else false end
+           from MesaExamenDocente med
+           join med.mesaExamen me
+           where me.fecha = :fecha
+             and med.docente.id = :docenteId
+             and me.id <> :mesaId
+             and me.horaInicio < :horaFin
+             and me.horaFin > :horaInicio
+           """)
+    boolean existeDocenteEnOtraMesaEnFechaYHorario(
+            @Param("docenteId") Long docenteId,
+            @Param("fecha") LocalDate fecha,
+            @Param("horaInicio") LocalTime horaInicio,
+            @Param("horaFin") LocalTime horaFin,
+            @Param("mesaId") Long mesaId
+    );
 }

@@ -31,6 +31,8 @@ public class MesaExamenMapper {
         return MesaExamenDto.builder()
                 .id(m.getId())
                 .fecha(m.getFecha())
+                .horaInicio(m.getHoraInicio())
+                .horaFin(m.getHoraFin())
                 .turnoId(m.getTurno() != null ? m.getTurno().getId() : null)
                 .turnoNombre(m.getTurno() != null ? m.getTurno().getNombre() : null)
                 .materiaCursoId(mc.getId())
