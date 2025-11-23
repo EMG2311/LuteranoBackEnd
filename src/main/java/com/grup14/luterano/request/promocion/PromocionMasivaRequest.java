@@ -26,9 +26,8 @@ public class PromocionMasivaRequest {
     private Boolean procesarEgresados = true;
 
     @Builder.Default
-    @Min(value = 1, message = "El máximo de repeticiones debe ser al menos 1")
-    @Max(value = 5, message = "El máximo de repeticiones no puede ser mayor a 5")
-    private Integer maxRepeticiones = 2;
+    @Min(value = 0, message = "El máximo de repeticiones debe ser al menos 1")
+    private Integer maxRepeticiones = 0;
 
     @Builder.Default
     private Boolean dryRun = false; // Para simular sin hacer cambios
