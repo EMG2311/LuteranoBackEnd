@@ -18,6 +18,7 @@ import com.grup14.luterano.response.mesaExamen.MesaExamenListResponse;
 import com.grup14.luterano.response.mesaExamen.MesaExamenResponse;
 import com.grup14.luterano.response.mesaExamenDocente.DocentesDisponiblesResponse;
 import com.grup14.luterano.response.mesaExamenDocente.MesaExamenDocentesResponse;
+import com.grup14.luterano.service.ElegibilidadMesaExamenService;
 import com.grup14.luterano.service.MesaExamenService;
 import com.grup14.luterano.service.MesaExamenValidacionService;
 import com.grup14.luterano.service.ReporteRindenService;
@@ -52,6 +53,8 @@ public class MesaExamenServiceImpl implements MesaExamenService {
     private final MesaExamenValidacionService validacionService;
     private final ReporteRindenService reporteRindenService;
     private final HistorialMateriaRepository historialMateriaRepository;
+    private final ElegibilidadMesaExamenService elegibilidadMesaExamenService;
+    private final CicloLectivoRepository cicloLectivoRepository;
 
     // ================================================================
     // CRUD MESA
@@ -239,36 +242,41 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             throw new MesaExamenException("Debe enviar alumnoIds");
         }
 
-        // Año lectivo de la cursada (enero-febrero-marzo pertenecer al año anterior)
-        int anioCursada = resolverAnioCursada(m.getFecha());
-        Long materiaId = m.getMateriaCurso().getMateria().getId();
+        LocalDate fechaMesa = m.getFecha();
+        if (fechaMesa == null) {
+            throw new MesaExamenException("La mesa debe tener fecha para poder agregar convocados");
+        }
 
-        var reporteRinden = reporteRindenService
-                .listarRindenPorCurso(m.getMateriaCurso().getCurso().getId(), anioCursada);
+        MateriaCurso mc = m.getMateriaCurso();
 
         for (Long aId : req.getAlumnoIds()) {
+            // Si ya está convocado, lo salteamos
             if (mesaAluRepo.existsByMesaExamen_IdAndAlumno_Id(mesaId, aId)) {
                 continue;
             }
 
-            Alumno a = alumnoRepo.findById(aId)
+            Alumno alumno = alumnoRepo.findById(aId)
                     .orElseThrow(() -> new MesaExamenException("Alumno no encontrado: " + aId));
 
-            var filaAlumnoOpt = reporteRinden.getFilas().stream()
-                    .filter(f -> f.getAlumnoId().equals(aId)
-                            && f.getMateriaId().equals(materiaId))
-                    .findFirst();
+            // Determinar si debe rendir y en qué condición (COLOQUIO / EXAMEN)
+            var condOpt = elegibilidadMesaExamenService
+                    .determinarCondicionRinde(alumno, mc, fechaMesa);
 
-            CondicionRinde condicionRinde;
-            if (filaAlumnoOpt.isPresent()) {
-                condicionRinde = filaAlumnoOpt.get().getCondicion();
-            } else {
-                // Buscar si tiene la materia pendiente en años previos
-                condicionRinde = obtenerCondicionDesdeHistorial(m, a, materiaId, anioCursada);
+            if (condOpt.isEmpty()) {
+                throw new MesaExamenException("El alumno " + alumno.getApellido() + ", " + alumno.getNombre()
+                        + " no debe esta materia para esta fecha de mesa.");
+            }
+
+            var condicionRinde = condOpt.get();
+
+            // Verificar que esa condición sea compatible con el tipo de mesa
+            if (!condicionAplicaATipoMesa(m.getTipoMesa(), condicionRinde)) {
+                throw new MesaExamenException("La condición " + condicionRinde
+                        + " no es válida para una mesa de tipo " + m.getTipoMesa());
             }
 
             MesaExamenAlumno link = MesaExamenAlumno.builder()
-                    .alumno(a)
+                    .alumno(alumno)
                     .mesaExamen(m)
                     .estado(EstadoConvocado.CONVOCADO)
                     .condicionRinde(condicionRinde)
@@ -276,11 +284,12 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     .turno(m.getTurno())
                     .build();
 
+            // Validar reglas adicionales
             try {
                 validacionService.validarInscribirAlumno(m, link);
             } catch (IllegalArgumentException e) {
                 throw new MesaExamenException("No se puede agregar el alumno " +
-                        a.getApellido() + ", " + a.getNombre() + ": " + e.getMessage());
+                        alumno.getApellido() + ", " + alumno.getNombre() + ": " + e.getMessage());
             }
 
             m.getAlumnos().add(link);
@@ -826,8 +835,15 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
         }
 
+        // Fecha "base" lógica para calcular año lectivo (si no hay fecha, usamos inicio de turno)
         LocalDate base = (fechaMesa != null) ? fechaMesa : turno.getFechaInicio();
         int anioCursada = resolverAnioCursada(base);
+
+        // Obtener ciclo lectivo correspondiente a ese año
+        LocalDate pivote = LocalDate.of(anioCursada, 7, 1);
+        CicloLectivo ciclo = cicloLectivoRepository
+                .findByFechaDesdeBeforeAndFechaHastaAfter(pivote, pivote)
+                .orElseThrow(() -> new MesaExamenException("No hay ciclo lectivo para el año " + anioCursada));
 
         Set<Long> materiasFiltro = (req.getMateriaIds() != null && !req.getMateriaIds().isEmpty())
                 ? new HashSet<>(req.getMateriaIds())
@@ -839,8 +855,20 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             Curso curso = cursoRepository.findById(cursoId)
                     .orElseThrow(() -> new MesaExamenException("Curso no encontrado: " + cursoId));
 
-            var reporteRinden = reporteRindenService.listarRindenPorCurso(cursoId, anioCursada);
+            // Alumnos del curso en ese ciclo (excluyendo inactivos)
+            List<HistorialCurso> hcs = historialCursoRepository
+                    .findAbiertosByCursoAndCicloExcluyendoInactivos(cursoId, ciclo.getId());
 
+            List<Alumno> alumnos = hcs.stream()
+                    .map(HistorialCurso::getAlumno)
+                    .distinct()
+                    .toList();
+
+            if (alumnos.isEmpty()) {
+                continue;
+            }
+
+            // Materias del curso
             List<MateriaCurso> materiasCurso = materiaCursoRepo.findByCursoId(cursoId);
 
             if (materiasFiltro != null) {
@@ -852,15 +880,35 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             for (MateriaCurso mc : materiasCurso) {
                 Long materiaId = mc.getMateria().getId();
 
-                var filasMateria = reporteRinden.getFilas().stream()
-                        .filter(f -> f.getMateriaId().equals(materiaId))
-                        .filter(f -> condicionAplicaATipoMesa(req.getTipoMesa(), f.getCondicion()))
-                        .toList();
+                // Determinar qué alumnos deben esta materia para esta fecha
+                List<Alumno> alumnosQueDeben = new ArrayList<>();
+                Map<Long, CondicionRinde> condPorAlumno = new HashMap<>();
 
-                if (filasMateria.isEmpty()) {
+                for (Alumno alumno : alumnos) {
+                    var condOpt = elegibilidadMesaExamenService
+                            .determinarCondicionRinde(alumno, mc, base);
+
+                    if (condOpt.isEmpty()) {
+                        continue;
+                    }
+
+                    CondicionRinde cond = condOpt.get();
+
+                    // ¿Es compatible con el tipo de mesa que estoy generando?
+                    if (!condicionAplicaATipoMesa(req.getTipoMesa(), cond)) {
+                        continue;
+                    }
+
+                    alumnosQueDeben.add(alumno);
+                    condPorAlumno.put(alumno.getId(), cond);
+                }
+
+                // Si nadie debe esa materia → no crear mesa
+                if (alumnosQueDeben.isEmpty()) {
                     continue;
                 }
 
+                // Crear mesa
                 MesaExamen mesa = new MesaExamen();
                 mesa.setMateriaCurso(mc);
                 mesa.setTurno(turno);
@@ -870,8 +918,9 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                 if (fechaMesa != null) {
                     mesa.setFecha(fechaMesa);
                 }
-                // en masiva podrías agregar horaInicio/horaFin en el request
+                // Horario, si algún día lo agregás al request masivo, se setea acá.
 
+                // Asignar docente titular si existe
                 Docente titular = mc.getDocente();
                 if (titular != null) {
                     MesaExamenDocente med = MesaExamenDocente.builder()
@@ -882,15 +931,15 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     mesa.getDocentes().add(med);
                 }
 
-                for (var fila : filasMateria) {
-                    Alumno alumno = alumnoRepo.findById(fila.getAlumnoId())
-                            .orElseThrow(() -> new MesaExamenException("Alumno no encontrado: " + fila.getAlumnoId()));
+                // Convocar alumnos
+                for (Alumno alumno : alumnosQueDeben) {
+                    CondicionRinde cond = condPorAlumno.get(alumno.getId());
 
                     MesaExamenAlumno link = MesaExamenAlumno.builder()
                             .alumno(alumno)
                             .mesaExamen(mesa)
                             .estado(EstadoConvocado.CONVOCADO)
-                            .condicionRinde(fila.getCondicion())
+                            .condicionRinde(cond)
                             .notaFinal(null)
                             .turno(turno)
                             .build();
@@ -905,6 +954,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     mesa.getAlumnos().add(link);
                 }
 
+                // Validar configuración completa (docentes + alumnos)
                 validacionService.validarConfiguracionMesa(mesa, false);
 
                 mesaRepo.save(mesa);
@@ -912,7 +962,7 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
         }
 
-        // sincronizar finales por materia+turno (1A y 1B juntas)
+        // Sincronizar finales por materia+turno (1A / 1B) como ya venías haciendo
         for (MesaExamen mesa : mesasCreadas) {
             sincronizarMesasFinalMateria(mesa);
         }
@@ -938,52 +988,6 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         }
     }
 
-    private CondicionRinde obtenerCondicionDesdeHistorial(MesaExamen mesa,
-                                                          Alumno alumno,
-                                                          Long materiaId,
-                                                          int anioMesa) {
-        if (mesa.getTipoMesa() == TipoMesa.COLOQUIO) {
-            throw new MesaExamenException(
-                    "No se encontró información de rendimiento para el alumno " +
-                            alumno.getApellido() + ", " + alumno.getNombre() +
-                            " en el curso actual. Para coloquio solo se permiten alumnos del cursado vigente.");
-        }
-
-        List<HistorialCurso> historialCompleto =
-                historialCursoRepository.findHistorialCompletoByAlumnoId(alumno.getId());
-
-        boolean tieneMateriaPendiente = false;
-
-        for (HistorialCurso hc : historialCompleto) {
-            int anioCurso = hc.getCicloLectivo().getFechaDesde().getYear();
-            if (anioCurso >= anioMesa) {
-                continue;
-            }
-
-            List<HistorialMateria> hms = historialMateriaRepository.findAllByHistorialCursoId(hc.getId());
-
-            for (HistorialMateria hm : hms) {
-                if (hm.getMateriaCurso() != null
-                        && hm.getMateriaCurso().getMateria().getId().equals(materiaId)
-                        && hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA) {
-                    tieneMateriaPendiente = true;
-                    break;
-                }
-            }
-
-            if (tieneMateriaPendiente) {
-                break;
-            }
-        }
-
-        if (!tieneMateriaPendiente) {
-            throw new MesaExamenException(
-                    "El alumno " + alumno.getApellido() + ", " + alumno.getNombre() +
-                            " no tiene esta materia pendiente según su historial académico.");
-        }
-
-        return CondicionRinde.EXAMEN;
-    }
 
     private void actualizarMateriaPendienteComoAprobada(MesaExamen mesa, MesaExamenAlumno ma) {
         Alumno alumno = ma.getAlumno();
