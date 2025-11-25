@@ -18,7 +18,7 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/asistencia-docente")
-@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR') or hasRole('AUXILIAR')")
 @RequiredArgsConstructor
 @Tag(
         name = "Asistencia Docente Controller",
