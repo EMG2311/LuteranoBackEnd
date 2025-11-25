@@ -35,65 +35,87 @@ public class NotaFinalServiceImpl implements NotaFinalService {
     @Override
     @Transactional(readOnly = true)
     public NotaFinalDetalleDto obtenerNotaFinalDetallada(Long alumnoId, Long materiaId, int anio) {
-        // 1. Buscar mesa de examen más reciente en el año
+
+        // 1) MESAS DEL AÑO (ajustá rango si tus mesas de dic/ene/feb son de otro año)
         LocalDate desde = LocalDate.of(anio, 1, 1);
-        LocalDate hasta = LocalDate.of(anio, 12, 31);
+        // Si querés incluir mesas de febrero del año siguiente (previas de verano):
+         LocalDate hasta = LocalDate.of(anio + 1, 3, 31);
 
         List<MesaExamenAlumno> mesas = mesaExamenAlumnoRepo
                 .findByAlumno_IdAndMesaExamen_FechaBetween(alumnoId, desde, hasta);
 
-        MesaExamenAlumno mesaMasReciente = mesas.stream()
-                .filter(mea -> mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId))
-                .filter(mea -> mea.getNotaFinal() != null)
+        List<MesaExamenAlumno> mesasMateria = new ArrayList<>();
+        for (MesaExamenAlumno mea : mesas) {
+            if (mea.getMesaExamen().getMateriaCurso().getMateria().getId().equals(materiaId)) {
+                mesasMateria.add(mea);
+            }
+        }
+
+        // Mesa aprobada más reciente (nota >= 6)
+        MesaExamenAlumno mesaAprobadaMasReciente = mesasMateria.stream()
+                .filter(mea -> mea.getNotaFinal() != null && mea.getNotaFinal() >= 6)
                 .max((a, b) -> {
-                    LocalDate fechaA = a.getMesaExamen().getFecha();
-                    LocalDate fechaB = b.getMesaExamen().getFecha();
-                    if (fechaA == null && fechaB == null) return 0;
-                    if (fechaA == null) return -1;
-                    if (fechaB == null) return 1;
-                    return fechaA.compareTo(fechaB);
+                    LocalDate fa = a.getMesaExamen().getFecha();
+                    LocalDate fb = b.getMesaExamen().getFecha();
+                    if (fa == null && fb == null) return 0;
+                    if (fa == null) return -1;
+                    if (fb == null) return 1;
+                    return fa.compareTo(fb);
                 })
                 .orElse(null);
 
-        // 2. Si tiene mesa de examen, usar esa nota (manda sobre todo)
-        if (mesaMasReciente != null) {
+        // 2) NOTAS DE CURSADA (E1, E2, PG)
+        CalificacionesAlumnoAnioResponse reporteNotas =
+                reporteNotasService.listarResumenPorAnio(alumnoId, anio);
+
+        Double e1 = null;
+        Double e2 = null;
+        Double pg = null;
+
+        if (reporteNotas != null && reporteNotas.getCalificacionesAlumnoResumenDto() != null) {
+            CalificacionesMateriaResumenDto materia = reporteNotas.getCalificacionesAlumnoResumenDto()
+                    .getMaterias().stream()
+                    .filter(m -> m.getMateriaId().equals(materiaId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (materia != null) {
+                e1 = materia.getE1();
+                e2 = materia.getE2();
+                pg = materia.getPg();
+            }
+        }
+
+        // Cursada aprobada: las 2 etapas >= 6 y PG presente
+        boolean cursadaAprobada =
+                pg != null &&
+                        (e1 == null || e1 >= 6.0) &&
+                        (e2 == null || e2 >= 6.0);
+        // Si querés ser ultra estricto con etapas:
+        // boolean cursadaAprobada = (e1 != null && e1 >= 6.0) && (e2 != null && e2 >= 6.0) && pg != null;
+
+        Integer notaCursada = (pg != null) ? (int) Math.round(pg) : null;
+
+        // 3) DECISIÓN FINAL
+
+        // 3.1 Si tiene MESA APROBADA → la mesa manda (salva la materia)
+        if (mesaAprobadaMasReciente != null) {
             return NotaFinalDetalleDto.desdeMesa(
-                    mesaMasReciente.getNotaFinal(),
-                    mesaMasReciente.getMesaExamen().getId()
+                    mesaAprobadaMasReciente.getNotaFinal(),
+                    mesaAprobadaMasReciente.getMesaExamen().getId()
             );
         }
 
-        // 3. Si no tiene mesa, calcular respetando la regla de etapas
-        CalificacionesAlumnoAnioResponse reporteNotas = reporteNotasService.listarResumenPorAnio(alumnoId, anio);
-
-        if (reporteNotas == null || reporteNotas.getCalificacionesAlumnoResumenDto() == null) {
-            return null;
+        // 3.2 Sin mesa aprobada: se evalúa sólo por cursada
+        if (cursadaAprobada && notaCursada != null) {
+            // Aprobado por cursada
+            return NotaFinalDetalleDto.desdePromedio(notaCursada, pg);
         }
 
-        CalificacionesMateriaResumenDto materia = reporteNotas.getCalificacionesAlumnoResumenDto()
-                .getMaterias().stream()
-                .filter(m -> m.getMateriaId().equals(materiaId))
-                .findFirst()
-                .orElse(null);
-
-        if (materia == null || materia.getPg() == null) {
-            return null;
-        }
-
-        // 👉 NUEVO: usar las etapas para decidir APROBADA/DESAPROBADA
-        Double e1 = materia.getE1(); // promedio etapa 1
-        Double e2 = materia.getE2(); // promedio etapa 2
-
-        // Si alguna etapa está desaprobada (< 6) → no hay nota final aprobada
-        if ((e1 != null && e1 < 6.0) || (e2 != null && e2 < 6.0)) {
-            // La materia queda DESAPROBADA si no fue a mesa
-            // Devuelvo null para que promoción masiva la trate como desaprobada
-            return NotaFinalDetalleDto.desdePromedio(null, materia.getPg());
-        }
-
-        // Si ambas etapas están aprobadas (>=6), usar PG redondeado
-        Integer notaFinalRedondeada = (int) Math.round(materia.getPg());
-        return NotaFinalDetalleDto.desdePromedio(notaFinalRedondeada, materia.getPg());
+        // 3.3 No hay mesa aprobada y la cursada NO aprueba → materia desaprobada
+        // Podés devolver null o una nota <6. Para que promo masiva lo trate como DESAPROBADA,
+        // con null ya alcanza.
+        return NotaFinalDetalleDto.desdePromedio(null, pg);
     }
 
     @Override

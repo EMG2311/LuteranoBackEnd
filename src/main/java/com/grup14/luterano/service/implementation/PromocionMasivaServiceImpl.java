@@ -36,6 +36,7 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
     @Override
     @Transactional
     public PromocionMasivaResponse ejecutarPromocionMasiva(PromocionMasivaRequest request) {
+        log.info("año: "+request.getAnio());
         log.info("Iniciando promoción masiva para año {} - DryRun: {}", request.getAnio(), request.getDryRun());
 
         // Validar que existe el ciclo lectivo
@@ -134,6 +135,8 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
         // Obtener todas las materias del curso
         List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(cursoActual.getId());
+        log.info("PromoMasiva - Alumno {} ({}) curso {} - materiasCurso.size = {}",
+                alumno.getId(), alumno.getApellido(), formatearCurso(cursoActual), materiasCurso.size());
         List<com.grup14.luterano.dto.promocion.MateriaEstadoFinalDto> materiasEstadoFinal = new ArrayList<>();
 
         int materiasDesaprobadas = 0;
