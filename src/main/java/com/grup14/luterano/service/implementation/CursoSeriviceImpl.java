@@ -8,6 +8,7 @@ import com.grup14.luterano.mappers.CursoMapper;
 import com.grup14.luterano.repository.*;
 import com.grup14.luterano.request.curso.CursoRequest;
 import com.grup14.luterano.request.curso.CursoUpdateRequest;
+import com.grup14.luterano.request.curso.IntercambiarAulasRequest;
 import com.grup14.luterano.response.curso.CursoResponse;
 import com.grup14.luterano.response.curso.CursoResponseList;
 import com.grup14.luterano.service.CursoService;
@@ -216,6 +217,45 @@ public class CursoSeriviceImpl implements CursoService {
                 .cursoDtos(cursos.stream().map(CursoMapper::toDto).toList())
                 .code(200)
                 .mensaje("OK")
+                .build();
+    }
+    @Override
+    @Transactional
+    public CursoResponse intercambiarAulas(IntercambiarAulasRequest req) {
+        if (req.getCursoId1() == null || req.getCursoId2() == null) {
+            throw new CursoException("Ambos IDs de curso son obligatorios");
+        }
+        if (req.getCursoId1().equals(req.getCursoId2())) {
+            throw new CursoException("Los cursos deben ser distintos");
+        }
+        Curso curso1 = cursoRepository.findById(req.getCursoId1())
+                .orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + req.getCursoId1()));
+        Curso curso2 = cursoRepository.findById(req.getCursoId2())
+                .orElseThrow(() -> new CursoException("Curso no encontrado con ID: " + req.getCursoId2()));
+
+        Aula aula1 = curso1.getAula();
+        Aula aula2 = curso2.getAula();
+
+        // Validar que ambos cursos tengan aula asignada
+        if (aula1 == null && aula2 == null) {
+            throw new CursoException("Ninguno de los cursos tiene aula asignada");
+        }
+
+        // Intercambiar las aulas
+        curso1.setAula(aula2);
+        if (aula2 != null) aula2.setCurso(curso1);
+        curso2.setAula(aula1);
+        if (aula1 != null) aula1.setCurso(curso2);
+
+        cursoRepository.save(curso1);
+        cursoRepository.save(curso2);
+        if (aula1 != null) aulaRepository.save(aula1);
+        if (aula2 != null) aulaRepository.save(aula2);
+
+        return CursoResponse.builder()
+                .curso(CursoMapper.toDto(curso1))
+                .code(0)
+                .mensaje("Aulas intercambiadas correctamente entre los cursos")
                 .build();
     }
 

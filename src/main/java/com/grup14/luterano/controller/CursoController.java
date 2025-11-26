@@ -156,5 +156,18 @@ public class CursoController {
         }
     }
 
+    @PostMapping("/intercambiar-aulas")
+    @Operation(summary = "Intercambia las aulas entre dos cursos", description = "Recibe los IDs de dos cursos y les intercambia el aula asignada.")
+    public ResponseEntity<CursoResponse> intercambiarAulas(@RequestBody @Validated com.grup14.luterano.request.curso.IntercambiarAulasRequest req) {
+        try {
+            return ResponseEntity.ok(cursoService.intercambiarAulas(req));
+        } catch (CursoException e) {
+            return ResponseEntity.status(422).body(CursoResponse.builder().code(-1).mensaje(e.getMessage()).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CursoResponse.builder().code(-2).mensaje("Error no controlado: " + e.getMessage()).build());
+        }
+    }
+
 
 }
