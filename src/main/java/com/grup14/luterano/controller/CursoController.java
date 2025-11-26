@@ -80,7 +80,7 @@ public class CursoController {
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasRole('DOCENTE') or hasRole('ADMIN') or hasRole('DIRECTOR')")
     @Operation(summary = "Lista todos los cursos", description = "Devuelve una lista de todos los cursos.")
     public ResponseEntity<CursoResponseList> listCursos() {
         try {
