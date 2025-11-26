@@ -82,7 +82,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             cursoDto = CursoMapper.toDto(alumno.getCursoActual());
         }
 
-        // 1) Reutilizamos resumen de notas por materia del servicio existente
+        // 1) Resumen de notas por materia del servicio existente
         CalificacionesAlumnoResumenDto califResumen = Optional.ofNullable(
                 reporteNotasService.listarResumenPorAnio(alumno.getId(), anio)
         ).map(r -> r.getCalificacionesAlumnoResumenDto()).orElse(null);
@@ -93,7 +93,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                     .collect(Collectors.toMap(CalificacionesMateriaResumenDto::getMateriaId, x -> x));
         }
 
-        // 2) Notas finales de mesa en el año (separamos por tipo: coloquio y examen)
+        // 2) Notas finales de mesa en el año (coloquio y examen)
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
         List<MesaExamenAlumno> finales = mesaExamenAlumnoRepo
@@ -107,7 +107,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             var materia = mea.getMesaExamen().getMateriaCurso().getMateria();
             Long mId = materia.getId();
 
-            // Mantener el comportamiento anterior para notaFinal general
+            // Final general (última mesa del año para esa materia)
             MesaExamenAlumno current = ultimoFinalPorMateria.get(mId);
             if (current == null || (current.getMesaExamen().getFecha() != null &&
                     mea.getMesaExamen().getFecha() != null &&
@@ -115,7 +115,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 ultimoFinalPorMateria.put(mId, mea);
             }
 
-            // Separar por tipo de condición
+            // Separar por condición
             if (mea.getCondicionRinde() != null) {
                 switch (mea.getCondicionRinde()) {
                     case COLOQUIO -> {
@@ -138,20 +138,26 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             }
         }
 
-        // 3) Previas: materias del historial con estado DESAPROBADA de años ANTERIORES
-        List<Long> materiasPreviasIds = new ArrayList<>();
+        // 3) Previas: materias DESAPROBADAS en años ANTERIORES al año consultado
+        //    (si luego aprueban por mesa, tu lógica de promoción/mesa ya debería
+        //     haber actualizado el estado a APROBADA y por lo tanto dejará de ser previa)
+        Set<Long> materiasPreviasSet = new LinkedHashSet<>();
 
-        // Buscar en TODOS los historiales de cursos de años anteriores al año consultado
-        List<HistorialCurso> historialCursosAnteriores = historialCursoRepo.findHistorialCompletoByAlumnoId(alumno.getId());
-
-        for (HistorialCurso hcAnterior : historialCursosAnteriores) {
+        List<HistorialCurso> historialCursos = historialCursoRepo.findHistorialCompletoByAlumnoId(alumno.getId());
+        for (HistorialCurso hcAnterior : historialCursos) {
             int anioCurso = hcAnterior.getCicloLectivo().getFechaDesde().getYear();
-            if (anioCurso < anio) {
-                List<HistorialMateria> hms = historialMateriaRepo.findAllByHistorialCursoId(hcAnterior.getId());
-                for (HistorialMateria hm : hms) {
-                    System.out.println("HM " + anioCurso + " - "
-                            + hm.getMateriaCurso().getMateria().getNombre()
-                            + " estadoBD=" + hm.getEstado());
+
+            // Solo años anteriores al que se está consultando
+            if (anioCurso >= anio) continue;
+
+            List<HistorialMateria> hmsAnio = historialMateriaRepo.findAllByHistorialCursoId(hcAnterior.getId());
+            for (HistorialMateria hm : hmsAnio) {
+                if (hm.getEstado() == EstadoMateriaAlumno.DESAPROBADA
+                        && hm.getMateriaCurso() != null
+                        && hm.getMateriaCurso().getMateria() != null) {
+
+                    Long materiaId = hm.getMateriaCurso().getMateria().getId();
+                    materiasPreviasSet.add(materiaId);
                 }
             }
         }
@@ -181,8 +187,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 case JUSTIFICADO -> justificados += count;
                 case CON_LICENCIA -> conLicencia += count;
                 case RETIRO -> retiros += count;
-                default -> {
-                }
+                default -> { }
             }
         }
 
@@ -196,9 +201,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 .build();
 
         // 5) Armar lista de materias con mezcla de datos (resumen + finales + estado materia)
-        // Si no hubo calificaciones, intentar derivar materias desde historial
 
-        // Obtener los HistorialMateria del alumno para el año consultado
+        // HistorialMateria del alumno para el año consultado
         List<HistorialMateria> hms = new ArrayList<>();
         if (hc != null) {
             hms = historialMateriaRepo.findAllByHistorialCursoId(hc.getId());
@@ -213,7 +217,8 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 MesaExamenAlumno meaColoquio = ultimoColoquisPorMateria.get(mId);
                 MesaExamenAlumno meaExamen = ultimoExamenPorMateria.get(mId);
 
-                String estadoFinal = mea == null ? null : (mea.getNotaFinal() != null && mea.getNotaFinal() >= 6 ? "APROBADO" : "DESAPROBADO");
+                String estadoFinal = mea == null ? null :
+                        (mea.getNotaFinal() != null && mea.getNotaFinal() >= 6 ? "APROBADO" : "DESAPROBADO");
                 Integer notaColoquio = meaColoquio != null ? meaColoquio.getNotaFinal() : null;
                 Integer notaExamen = meaExamen != null ? meaExamen.getNotaFinal() : null;
 
@@ -244,7 +249,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
             }
         }
 
-        // Si hubo finales de materias que no aparecen en promedios (p.ej sin cursada), agregarlas
+        // Si hubo finales de materias que no aparecen en promedios (sin cursada), agregarlas
         for (var entry : ultimoFinalPorMateria.entrySet()) {
             Long mId = entry.getKey();
             if (materias.containsKey(mId)) continue;
@@ -281,14 +286,16 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                     .build());
         }
 
-        // Ordenar por nombre de materia
-        var coll = java.text.Collator.getInstance(new java.util.Locale.Builder().setLanguage("es").setRegion("AR").build());
+        // Ordenar materias por nombre
+        var coll = java.text.Collator.getInstance(
+                new java.util.Locale.Builder().setLanguage("es").setRegion("AR").build());
         coll.setStrength(java.text.Collator.PRIMARY);
         List<MateriaAnualDetalleDto> materiasList = new ArrayList<>(materias.values());
         materiasList.sort(java.util.Comparator.comparing(MateriaAnualDetalleDto::getMateriaNombre,
                 java.util.Comparator.nullsLast(coll)));
 
-        // Si no teníamos hms (sin historial del ciclo), inferir previas desde las materias desaprobadas por promedio/nota final
+        // Fallback: si NO hay historial de ese año pero sí promedios,
+        // inferir previas desde PG / nota final del año consultado.
         if (hms.isEmpty() && porMateria != null) {
             for (var entry : porMateria.entrySet()) {
                 Long mId = entry.getKey();
@@ -297,20 +304,21 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 MesaExamenAlumno mea = ultimoFinalPorMateria.get(mId);
                 boolean desaprobadoPorFinal = mea != null && mea.getNotaFinal() != null && mea.getNotaFinal() < 6;
                 if (desaprobadoPorPromedio || desaprobadoPorFinal) {
-                    materiasPreviasIds.add(mId);
+                    materiasPreviasSet.add(mId);
                 }
             }
         }
 
-        // Calcular promedioFinalCurso si no viene en HistorialCurso
-        BigDecimal promedioFinalCurso = null;
+        // 6) Promedio final del curso
+        BigDecimal promedioFinalCurso;
         if (hc != null && hc.getPromedio() != null) {
             promedioFinalCurso = hc.getPromedio();
         } else {
-            promedioFinalCurso = calcularPromedioCursoDesdeMaterias(alumno.getId(), anio, ultimoFinalPorMateria, porMateria);
+            promedioFinalCurso = calcularPromedioCursoDesdeMaterias(
+                    alumno.getId(), anio, ultimoFinalPorMateria, porMateria);
         }
 
-        // Legajo: por ahora asumimos DNI como legajo si no hay campo específico
+        // Legajo: por ahora asumimos DNI como legajo
         String legajo = alumno.getDni();
 
         ReporteAnualAlumnoDto dto = ReporteAnualAlumnoDto.builder()
@@ -324,7 +332,7 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
                 .materias(materiasList)
                 .promedioFinalCurso(promedioFinalCurso)
                 .inasistencias(inasDto)
-                .materiasPreviasIds(materiasPreviasIds)
+                .materiasPreviasIds(new ArrayList<>(materiasPreviasSet))
                 .build();
 
         return ReporteAnualAlumnoResponse.builder()
@@ -342,7 +350,6 @@ public class ReporteAnualServiceImpl implements ReporteAnualService {
         int n = 0;
         for (var entry : porMateria.entrySet()) {
             Long mId = entry.getKey();
-            // Usar NotaFinalService para calcular la nota final
             Integer notaFinal = notaFinalService.calcularNotaFinal(alumnoId, mId, anio);
             if (notaFinal != null) {
                 suma += notaFinal;
