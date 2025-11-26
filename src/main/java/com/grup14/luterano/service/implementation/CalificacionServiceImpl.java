@@ -1,7 +1,9 @@
 package com.grup14.luterano.service.implementation;
 
+import com.grup14.luterano.entities.Alumno;
 import com.grup14.luterano.entities.Calificacion;
 import com.grup14.luterano.entities.HistorialMateria;
+import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.exeptions.CalificacionException;
 import com.grup14.luterano.mappers.CalificacionMapper;
 import com.grup14.luterano.repository.*;
@@ -34,7 +36,7 @@ public class CalificacionServiceImpl implements CalificacionService {
     public CalificacionResponse crearCalificacion(CalificacionRequest req) {
         var alumno = alumnoRepo.findById(req.getAlumnoId())
                 .orElseThrow(() -> new CalificacionException("Alumno no encontrado"));
-
+        validarAlumnoPuedeTenerCalificaciones(alumno);
         LocalDate fechaNota = (req.getFecha() != null) ? req.getFecha() : LocalDate.now();
 
         var ciclo = cicloRepo.findByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(fechaNota, fechaNota)
@@ -78,6 +80,10 @@ public class CalificacionServiceImpl implements CalificacionService {
 
         var cal = calificacionRepo.findOwned(alumnoId, materiaId, califId)
                 .orElseThrow(() -> new CalificacionException("Calificación no encontrada para ese alumno y materia"));
+        Alumno alumno = cal.getHistorialMateria()
+                .getHistorialCurso()
+                .getAlumno();
+        validarAlumnoPuedeTenerCalificaciones(alumno);
         return CalificacionResponse.builder()
                 .calificacion(CalificacionMapper.toDto(cal))
                 .code(0)
@@ -91,6 +97,12 @@ public class CalificacionServiceImpl implements CalificacionService {
         var cal = calificacionRepo.findOwned(req.getAlumnoId(), req.getMateriaId(), req.getCalifId())
                 .orElseThrow(() -> new CalificacionException(
                         "Calificación no encontrada para ese alumno y materia"));
+
+        Alumno alumno = cal.getHistorialMateria()
+                .getHistorialCurso()
+                .getAlumno();
+        validarAlumnoPuedeTenerCalificaciones(alumno);
+
         if (req.getNota() != null) {
             cal.setNota(req.getNota());
         }
@@ -112,7 +124,10 @@ public class CalificacionServiceImpl implements CalificacionService {
     public CalificacionResponse eliminar(Long alumnoId, Long materiaId, Long califId) {
         var cal = calificacionRepo.findOwned(alumnoId, materiaId, califId)
                 .orElseThrow(() -> new CalificacionException("Calificación no encontrada para ese alumno y materia"));
-
+        Alumno alumno = cal.getHistorialMateria()
+                .getHistorialCurso()
+                .getAlumno();
+        validarAlumnoPuedeTenerCalificaciones(alumno);
         calificacionRepo.delete(cal);
 
         return CalificacionResponse.builder()
@@ -124,6 +139,11 @@ public class CalificacionServiceImpl implements CalificacionService {
 
     @Transactional(readOnly = true)
     public CalificacionListResponse listarPorAnio(Long alumnoId, int anio) {
+        var alumno = alumnoRepo.findById(alumnoId)
+                .orElseThrow(() -> new CalificacionException("Alumno no encontrado"));
+
+        validarAlumnoPuedeTenerCalificaciones(alumno);
+
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
 
@@ -139,6 +159,11 @@ public class CalificacionServiceImpl implements CalificacionService {
 
     @Transactional(readOnly = true)
     public CalificacionListResponse listarPorAnioYEtapa(Long alumnoId, int anio, int etapa) {
+        var alumno = alumnoRepo.findById(alumnoId)
+                .orElseThrow(() -> new CalificacionException("Alumno no encontrado"));
+
+        validarAlumnoPuedeTenerCalificaciones(alumno);
+
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
 
@@ -154,7 +179,10 @@ public class CalificacionServiceImpl implements CalificacionService {
 
     @Transactional(readOnly = true)
     public CalificacionListResponse listarPorMateria(Long alumnoId, Long materiaId) {
+        var alumno = alumnoRepo.findById(alumnoId)
+                .orElseThrow(() -> new CalificacionException("Alumno no encontrado"));
 
+        validarAlumnoPuedeTenerCalificaciones(alumno);
         boolean cursaOMaterializoHM =
                 historialMateriaRepo.existsByHistorialCurso_Alumno_IdAndMateriaCurso_Materia_Id(alumnoId, materiaId)
                         || historialCursoRepo.existsAlumnoCursoMateria(alumnoId, materiaId);
@@ -171,6 +199,20 @@ public class CalificacionServiceImpl implements CalificacionService {
                 .code(0)
                 .mensaje("Ok")
                 .build();
+    }
+
+    private void validarAlumnoPuedeTenerCalificaciones(Alumno alumno) {
+        if (alumno == null) {
+            throw new CalificacionException("Alumno no encontrado");
+        }
+
+        if (alumno.getEstado() == EstadoAlumno.BORRADO
+                || alumno.getEstado() == EstadoAlumno.EXCLUIDO_POR_REPETICION) {
+
+            throw new CalificacionException(
+                    "No se pueden gestionar calificaciones para alumnos en estado " + alumno.getEstado()
+            );
+        }
     }
 
 
