@@ -75,6 +75,7 @@ public class MateriaController {
 
     @GetMapping("/list")
     @Operation(summary = "Lista todas las materias")
+    @PreAuthorize("hasRole('DOCENTE') or hasRole('ADMIN')")
     public ResponseEntity<MateriaResponseList> listarMaterias() {
         try {
             return ResponseEntity.ok(materiaService.listarMaterias());

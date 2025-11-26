@@ -30,6 +30,7 @@ public class ReporteNotasController {
             summary = "Resumen de notas por materia (E1/E2/PG) para un año",
             description = "Agrupa notas por materia y calcula promedios de cada etapa y general."
     )
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR') or hasRole('DOCENTE')")
     public ResponseEntity<CalificacionesAlumnoAnioResponse> resumenNotasAlumnoPorAnio(
             @PathVariable Long alumnoId,
             @RequestParam int anio
@@ -54,6 +55,7 @@ public class ReporteNotasController {
             summary = "Resumen de notas por materia (E1/E2/PG) para un año",
             description = "Agrupa notas por materia y calcula promedios de cada etapa y general."
     )
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('PRECEPTOR') or hasRole('DOCENTE')")
     public ResponseEntity<CalificacionesCursoAnioResponse> resumenNotasCursoPorAnio(
             @PathVariable Long cursoId,
             @RequestParam int anio
