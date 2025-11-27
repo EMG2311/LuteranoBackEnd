@@ -10,9 +10,10 @@ import java.util.List;
 
 @Entity
 @SuperBuilder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @EqualsAndHashCode(callSuper = true)
 public class Tutor extends Persona {
     @Id
