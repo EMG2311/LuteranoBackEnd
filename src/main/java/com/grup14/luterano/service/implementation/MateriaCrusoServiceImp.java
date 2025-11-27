@@ -111,7 +111,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
         Curso curso = cursoRepository.findById(cursoId)
                 .orElseThrow(() -> new MateriaCursoException("El curso con id " + cursoId + " no existe"));
 
-        List<MateriaCursoDto> materias = materiaCursoRepository.findByCursoId(curso.getId())
+        List<MateriaCursoDto> materias = materiaCursoRepository.findByCursoIdAndMateria_ActivaTrue(curso.getId())
                 .stream()
                 .map(MateriaCursoMapper::toDto)
                 .collect(Collectors.toList());

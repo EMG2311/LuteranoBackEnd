@@ -170,4 +170,5 @@ public interface MateriaCursoRepository extends JpaRepository<MateriaCurso, Long
             """)
     List<Long> findMateriasIdsPorAlumnoCiclo(@Param("alumnoId") Long alumnoId,
                                              @Param("cicloLectivoId") Long cicloLectivoId);
+    List<MateriaCurso> findByCursoIdAndMateria_ActivaTrue(Long cursoId);
 }
