@@ -161,7 +161,7 @@ public class ModuloController {
 
     @GetMapping("/reservas/estado")
     @Operation(summary = "Devuelve los módulos con su estado de ocupación para un espacio áulico y fecha específica")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'PRECEPTOR', 'DOCENTE','AUXILIAR')")
     public ResponseEntity<ModuloReservaEstadoResponse> obtenerModulosConReservas(
             @RequestParam Long espacioAulicoId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
