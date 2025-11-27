@@ -15,7 +15,6 @@ import java.util.Date;
 @NoArgsConstructor
 @MappedSuperclass
 @SuperBuilder
-@Data
 public class Persona {
     private String nombre;
     private String apellido;
