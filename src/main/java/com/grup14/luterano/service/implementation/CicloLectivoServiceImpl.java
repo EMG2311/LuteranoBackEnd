@@ -127,5 +127,25 @@ public class CicloLectivoServiceImpl implements CicloLectivoService {
 
     }
 
+    @Override
+    public CicloLectivoResponse getCicloLectivoActual() {
+
+        LocalDate hoy = LocalDate.now();
+
+        CicloLectivo cicloActual = cicloLectivoRepository
+                .findFirstByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(hoy, hoy)
+                .orElseThrow(() -> new CicloLectivoException(
+                        "No existe un ciclo lectivo vigente para la fecha: " + hoy
+                ));
+
+        CicloLectivoDto dto = CicloLectivoMapper.toDto(cicloActual);
+
+        return CicloLectivoResponse.builder()
+                .CicloLectivo(dto)
+                .code(0)
+                .mensaje("Ciclo lectivo vigente obtenido correctamente.")
+                .build();
+    }
+
 
 }

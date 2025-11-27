@@ -22,6 +22,9 @@ public interface CicloLectivoRepository extends JpaRepository<CicloLectivo, Long
     // Para reporte de desempeño docente: buscar ciclo por año
     @Query("SELECT cl FROM CicloLectivo cl WHERE YEAR(cl.fechaDesde) = :anio")
     Optional<CicloLectivo> findByAnio(@Param("anio") Integer anio);
-
+    Optional<CicloLectivo> findFirstByFechaDesdeLessThanEqualAndFechaHastaGreaterThanEqual(
+            LocalDate fechaDesde,
+            LocalDate fechaHasta
+    );
 
 }

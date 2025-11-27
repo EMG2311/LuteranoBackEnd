@@ -11,5 +11,5 @@ public interface CicloLectivoService {
     CicloLectivoResponse getCicloLectivoById(Long id);
 
     CicloLectivoResponseList ListCiclosLectivos();
-
+    CicloLectivoResponse getCicloLectivoActual();
 }

@@ -119,5 +119,28 @@ public class CicloLectivoController {
             );
         }
     }
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('DOCENTE') or hasRole('AUXILIAR') or hasRole('PRECEPTOR')")
+    @GetMapping("/actual")
+    public ResponseEntity<CicloLectivoResponse> getCicloLectivoActual() {
+        try{
+            CicloLectivoResponse response = cicloLectivoService.getCicloLectivoActual();
+            return ResponseEntity.ok(response);
+        }catch (CicloLectivoException e) {
+            return ResponseEntity.status(422).body(
+                    CicloLectivoResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    CicloLectivoResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build()
+            );
+        }
+
+    }
 }
 
