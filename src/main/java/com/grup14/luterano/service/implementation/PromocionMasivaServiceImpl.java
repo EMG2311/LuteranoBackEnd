@@ -281,13 +281,26 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
             // Crear nuevo historial para el curso siguiente
             HistorialCurso nuevoHistorial = HistorialCurso.builder()
-                    .alumno(alumno)
-                    .curso(cursoSiguiente)
-                    .cicloLectivo(cicloSiguiente)
-                    .fechaDesde(LocalDate.now())
-                    .fechaHasta(null)
-                    .build();
+                .alumno(alumno)
+                .curso(cursoSiguiente)
+                .cicloLectivo(cicloSiguiente)
+                .fechaDesde(LocalDate.now())
+                .fechaHasta(null)
+                .build();
             historialCursoRepository.save(nuevoHistorial);
+
+            // Crear historiales de materias en estado CURSANDO para el nuevo curso
+            List<MateriaCurso> materiasNuevoCurso = materiaCursoRepository.findByCursoId(cursoSiguiente.getId());
+            List<HistorialMateria> hmsNuevas = new ArrayList<>();
+            for (MateriaCurso mc : materiasNuevoCurso) {
+            HistorialMateria hmNueva = HistorialMateria.builder()
+                .historialCurso(nuevoHistorial)
+                .materiaCurso(mc)
+                .estado(EstadoMateriaAlumno.CURSANDO)
+                .build();
+            hmsNuevas.add(hmNueva);
+            }
+            historialMateriaRepository.saveAll(hmsNuevas);
 
             // Actualizar curso actual del alumno
             alumno.setCursoActual(cursoSiguiente);
@@ -363,13 +376,26 @@ public class PromocionMasivaServiceImpl implements PromocionMasivaService {
 
             // Crear nuevo historial curso para el mismo curso pero en el ciclo siguiente
             HistorialCurso nuevoHistorial = HistorialCurso.builder()
-                    .alumno(alumno)
-                    .curso(historial.getCurso())
-                    .cicloLectivo(cicloSiguiente)
-                    .fechaDesde(LocalDate.now())
-                    .fechaHasta(null)
-                    .build();
+                .alumno(alumno)
+                .curso(historial.getCurso())
+                .cicloLectivo(cicloSiguiente)
+                .fechaDesde(LocalDate.now())
+                .fechaHasta(null)
+                .build();
             historialCursoRepository.save(nuevoHistorial);
+
+            // Crear historiales de materias en estado CURSANDO para el curso repetido
+            List<MateriaCurso> materiasCurso = materiaCursoRepository.findByCursoId(historial.getCurso().getId());
+            List<HistorialMateria> hmsNuevas = new ArrayList<>();
+            for (MateriaCurso mc : materiasCurso) {
+            HistorialMateria hmNueva = HistorialMateria.builder()
+                .historialCurso(nuevoHistorial)
+                .materiaCurso(mc)
+                .estado(EstadoMateriaAlumno.CURSANDO)
+                .build();
+            hmsNuevas.add(hmNueva);
+            }
+            historialMateriaRepository.saveAll(hmsNuevas);
 
             alumnoRepository.save(alumno);
         }
