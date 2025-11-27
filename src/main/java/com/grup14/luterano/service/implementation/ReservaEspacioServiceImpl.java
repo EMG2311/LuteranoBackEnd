@@ -2,6 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.ReservaEspacioDto;
 import com.grup14.luterano.entities.*;
+import com.grup14.luterano.entities.enums.EstadoAlumno;
 import com.grup14.luterano.entities.enums.EstadoReserva;
 import com.grup14.luterano.exeptions.ReservaEspacioException;
 import com.grup14.luterano.mappers.ReservaEspacioMapper;
@@ -59,7 +60,17 @@ public class ReservaEspacioServiceImpl implements ReservaEspacioService {
         int capacidadEspacio = espacio.getCapacidad();
 
 // Contar la cantidad de alumnos asignados al curso
-        int totalAlumnos = (int) alumnoRepository.countByCursoActual_Id(cursoId);
+        List<EstadoAlumno> estadosExcluidos = List.of(
+                EstadoAlumno.BORRADO,
+                EstadoAlumno.EGRESADO,
+                EstadoAlumno.LIBRE,
+                EstadoAlumno.EXCLUIDO_POR_REPETICION,
+                EstadoAlumno.EGRESADO_CON_PREVIAS
+        );
+
+        // Contar la cantidad de alumnos asignados al curso (excluyendo borrados, libres, egresados, excluidos, etc.)
+        int totalAlumnos = (int) alumnoRepository
+                .countByCursoActual_IdAndEstadoNotIn(cursoId, estadosExcluidos);
 
         if (totalAlumnos > capacidadEspacio) {
             throw new ReservaEspacioException(

@@ -39,6 +39,6 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long>, JpaSpecif
     //Cuenta el número total de alumnos asignados al curso actual
 
     long countByCursoActual_Id(Long cursoId);
-
+    long countByCursoActual_IdAndEstadoNotIn(Long cursoId, List<EstadoAlumno> estados);
 
 }
