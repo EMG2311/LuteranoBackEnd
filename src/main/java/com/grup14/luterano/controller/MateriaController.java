@@ -107,4 +107,19 @@ public class MateriaController {
                             .build());
         }
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Lista todas las materias")
+    @PreAuthorize("hasRole('DOCENTE') or hasRole('ADMIN')")
+    public ResponseEntity<MateriaResponse> getBydId(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(materiaService.getMateriaById(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(MateriaResponse.builder()
+                            .code(-2)
+                            .mensaje("Error no controlado: " + e.getMessage())
+                            .build());
+        }
+    }
 }

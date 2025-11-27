@@ -17,4 +17,6 @@ public interface MateriaService {
     // Borrado lógico
     MateriaResponse borrarMateria(Long id);
 
+    MateriaResponse getMateriaById(Long id);
+
 }
