@@ -90,6 +90,8 @@ public class DocenteController {
 
     @GetMapping("/list")
     @Operation(summary = "Lista todos los docentes")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DIRECTOR') or hasRole('AUXILIAR')")
+
     public ResponseEntity<DocenteResponseList> listDocentes() {
         try {
             return ResponseEntity.ok(docenteService.listDocentes());
