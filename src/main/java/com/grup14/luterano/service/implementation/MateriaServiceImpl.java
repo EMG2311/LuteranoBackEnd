@@ -2,6 +2,7 @@ package com.grup14.luterano.service.implementation;
 
 import com.grup14.luterano.dto.MateriaDto;
 import com.grup14.luterano.entities.Materia;
+import com.grup14.luterano.exeptions.MateriaException;
 import com.grup14.luterano.mappers.MateriaMapper;
 import com.grup14.luterano.repository.MateriaCursoRepository;
 import com.grup14.luterano.repository.MateriaRepository;
@@ -124,6 +125,16 @@ public class MateriaServiceImpl implements MateriaService {
             .code(0)
             .mensaje("Se eliminó (lógicamente) la materia y se cerraron inscripciones")
             .build();
+        }
+        @Override
+        public MateriaResponse getMateriaById(Long id){
+            Materia materia = materiaRepository.findById(id)
+                    .orElseThrow(() -> new MateriaException("Materia no encontrada"));
+            return MateriaResponse.builder()
+                    .materiaDto(MateriaMapper.toDto(materia))
+                    .code(0)
+                    .mensaje("Se eliminó (lógicamente) la materia y se cerraron inscripciones")
+                    .build();
         }
 }
 
