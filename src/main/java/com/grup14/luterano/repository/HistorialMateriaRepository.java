@@ -29,5 +29,7 @@ public interface HistorialMateriaRepository extends JpaRepository<HistorialMater
     @Modifying
     void deleteByHistorialCurso_Id(Long historialCursoId);
 
+    boolean existsByMateriaCurso_Id(Long materiaCursoId);
+
 
 }

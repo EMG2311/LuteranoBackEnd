@@ -7,10 +7,7 @@ import com.grup14.luterano.entities.Materia;
 import com.grup14.luterano.entities.MateriaCurso;
 import com.grup14.luterano.exeptions.MateriaCursoException;
 import com.grup14.luterano.mappers.MateriaCursoMapper;
-import com.grup14.luterano.repository.CursoRepository;
-import com.grup14.luterano.repository.DocenteRepository;
-import com.grup14.luterano.repository.MateriaCursoRepository;
-import com.grup14.luterano.repository.MateriaRepository;
+import com.grup14.luterano.repository.*;
 import com.grup14.luterano.response.MateriaCurso.MateriaCursoListResponse;
 import com.grup14.luterano.response.MateriaCurso.MateriaCursoResponse;
 import com.grup14.luterano.service.MateriaCursoService;
@@ -29,7 +26,7 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
         private final MateriaCursoRepository materiaCursoRepository;
         private final DocenteRepository docenteRepository;
         private final com.grup14.luterano.repository.HorarioClaseModuloRepository horarioClaseModuloRepository;
-
+        private final HistorialMateriaRepository historialMateriaRepository;
     @Override
     public MateriaCursoResponse asignarMateriasACurso(List<Long> materiaIds, Long cursoId) {
         Curso curso = cursoRepository.findById(cursoId)
@@ -85,6 +82,12 @@ public class MateriaCrusoServiceImp implements MateriaCursoService {
             if (materiaCurso == null) {
                 noAsignadas.add(materiaId);
                 continue;
+            }
+            if (historialMateriaRepository.existsByMateriaCurso_Id(materiaCurso.getId())) {
+                throw new MateriaCursoException(
+                        "No se puede eliminar la asignación porque existen historiales de materia asociados. " +
+                                "Solo se puede desasignar el docente o inactivar la materia."
+                );
             }
 
             materiaCursoRepository.delete(materiaCurso);
