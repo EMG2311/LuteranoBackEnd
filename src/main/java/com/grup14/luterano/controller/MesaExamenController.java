@@ -162,7 +162,12 @@ public class MesaExamenController {
     public ResponseEntity<MesaExamenListResponse> crearMesasMasivas(
             @RequestBody MesasExamenMasivasRequest request
     ) {
-        MesaExamenListResponse resp = service.crearMesasExamenMasivas(request);
-        return ResponseEntity.ok(resp);
+        try {
+            return ResponseEntity.ok(service.crearMesasExamenMasivas(request));
+        } catch (MesaExamenException e) {
+            return ResponseEntity.status(422).body(MesaExamenListResponse.builder().code(-1).mensaje(e.getMessage()).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(MesaExamenListResponse.builder().code(-2).mensaje("Error no controlado " + e.getMessage()).build());
+        }
     }
 }

@@ -123,4 +123,32 @@ public interface MesaExamenRepository extends JpaRepository<MesaExamen, Long> {
             where m.id = :id
             """)
     Optional<MesaExamen> findByIdWithAlumnos(Long id);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END
+        FROM MesaExamen m
+        WHERE m.fecha = :fecha
+          AND m.aula.id = :aulaId
+          AND (:mesaId IS NULL OR m.id <> :mesaId)
+          AND m.horaInicio < :horaFin
+          AND m.horaFin > :horaInicio
+    """)
+    boolean existsAulaEnUsoEnHorario(@Param("aulaId") Long aulaId,
+                                     @Param("fecha") LocalDate fecha,
+                                     @Param("horaInicio") LocalTime horaInicio,
+                                     @Param("horaFin") LocalTime horaFin,
+                                     @Param("mesaId") Long mesaId);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END
+        FROM MesaExamen m
+        WHERE m.turno.id = :turnoId
+          AND m.materiaCurso.id = :materiaCursoId
+          AND m.tipoMesa = :tipoMesa
+          AND (:mesaId IS NULL OR m.id <> :mesaId)
+    """)
+    boolean existsOtraMesaMismoTipoMateriaTurno(@Param("turnoId") Long turnoId,
+                                                @Param("materiaCursoId") Long materiaCursoId,
+                                                @Param("tipoMesa") TipoMesa tipoMesa,
+                                                @Param("mesaId") Long mesaId);
 }

@@ -97,6 +97,12 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         }
         m.setEstado(EstadoMesaExamen.CREADA);
 
+        // 👉 No permitir dos mesas del mismo TIPO para la misma materiaCurso+turno
+        validarUnicidadMesaPorMateriaTurnoTipo(m, null);
+
+        // 👉 Validar conflicto de aula (sólo si ya hay fecha + horario + aula)
+        validarConflictoAula(m, null);
+
         // Validar configuración (sin docentes todavía)
         validacionService.validarConfiguracionMesa(m);
 
@@ -154,6 +160,12 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
             m.setTipoMesa(req.getTipoMesa());
         }
+
+        // 👉 No permitir dos mesas del mismo TIPO para la misma materiaCurso+turno
+        validarUnicidadMesaPorMateriaTurnoTipo(m, m.getId());
+
+        // 👉 Validar conflicto de aula con los datos finales de fecha/hora/aula
+        validarConflictoAula(m, m.getId());
 
         // Validar configuración antes de guardar
         validacionService.validarConfiguracionMesa(m);
@@ -919,6 +931,10 @@ public class MesaExamenServiceImpl implements MesaExamenService {
                     mesa.setFecha(fechaMesa);
                 }
                 // Horario, si algún día lo agregás al request masivo, se setea acá.
+                // Si además seteás aula, podés reutilizar validarConflictoAula(mesa, null).
+
+                // 👉 No permitir dos mesas del mismo TIPO para la misma materiaCurso+turno
+                validarUnicidadMesaPorMateriaTurnoTipo(mesa, null);
 
                 // Asignar docente titular si existe
                 Docente titular = mc.getDocente();
@@ -987,7 +1003,6 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             throw new MesaExamenException("La mesa está finalizada y no puede modificarse.");
         }
     }
-
 
     private void actualizarMateriaPendienteComoAprobada(MesaExamen mesa, MesaExamenAlumno ma) {
         Alumno alumno = ma.getAlumno();
@@ -1070,8 +1085,8 @@ public class MesaExamenServiceImpl implements MesaExamenService {
         if (base == null || otra == null) return false;
         if (base.getTipoMesa() != TipoMesa.EXAMEN || otra.getTipoMesa() != TipoMesa.EXAMEN) return false;
         if (base.getTurno() == null || otra.getTurno() == null) return false;
-        if (base.getMateriaCurso() == null || otra.getMateriaCurso() == null) return false;
-        if (base.getMateriaCurso().getMateria() == null || otra.getMateriaCurso().getMateria() == null) return false;
+        if (base.getMateriaCurso() == null || base.getMateriaCurso().getMateria() == null) return false;
+        if (otra.getMateriaCurso() == null || otra.getMateriaCurso().getMateria() == null) return false;
 
         boolean mismoTurno = Objects.equals(base.getTurno().getId(), otra.getTurno().getId());
         boolean mismaMateria = Objects.equals(
@@ -1151,6 +1166,81 @@ public class MesaExamenServiceImpl implements MesaExamenService {
             }
 
             mesaRepo.save(otra);
+        }
+    }
+
+    /**
+     * Valida que no exista otra mesa en el mismo aula, en la misma fecha,
+     * con franja horaria superpuesta.
+     *
+     * No hace nada si falta fecha/hora/aula (para no romper pasos intermedios).
+     *
+     * @param mesa      mesa a validar
+     * @param excluirId id de mesa a excluir del chequeo (para update), puede ser null
+     */
+    private void validarConflictoAula(MesaExamen mesa, Long excluirId) {
+        if (mesa == null) return;
+        if (mesa.getAula() == null) return;
+        if (mesa.getFecha() == null) return;
+        if (mesa.getHoraInicio() == null || mesa.getHoraFin() == null) return;
+
+        Long aulaId = mesa.getAula().getId();
+
+        boolean existeConflicto = mesaRepo.existsAulaEnUsoEnHorario(
+                aulaId,
+                mesa.getFecha(),
+                mesa.getHoraInicio(),
+                mesa.getHoraFin(),
+                excluirId
+        );
+
+        if (existeConflicto) {
+            String nombreAula = mesa.getAula().getNombre() != null
+                    ? mesa.getAula().getNombre()
+                    : ("ID " + aulaId);
+
+            throw new MesaExamenException(
+                    "El aula " + nombreAula +
+                            " ya está asignada a otra mesa en ese horario (" +
+                            mesa.getFecha() + " " +
+                            mesa.getHoraInicio() + "–" + mesa.getHoraFin() + ")."
+            );
+        }
+    }
+
+    /**
+     * Valida que no exista OTRA mesa del mismo tipo (EXAMEN/COLOQUIO)
+     * para el mismo MateriaCurso y el mismo turno.
+     *
+     * Es decir: para la combinación (turno, materiaCurso, tipoMesa) sólo puede existir una.
+     */
+    private void validarUnicidadMesaPorMateriaTurnoTipo(MesaExamen mesa, Long excluirId) {
+        if (mesa == null) return;
+        if (mesa.getMateriaCurso() == null) return;
+        if (mesa.getTurno() == null) return;
+        if (mesa.getTipoMesa() == null) return;
+
+        Long turnoId = mesa.getTurno().getId();
+        Long materiaCursoId = mesa.getMateriaCurso().getId();
+        TipoMesa tipoMesa = mesa.getTipoMesa();
+
+        boolean existe = mesaRepo.existsOtraMesaMismoTipoMateriaTurno(
+                turnoId,
+                materiaCursoId,
+                tipoMesa,
+                excluirId
+        );
+
+        if (existe) {
+            String materiaNombre = mesa.getMateriaCurso().getMateria() != null
+                    ? mesa.getMateriaCurso().getMateria().getNombre()
+                    : "Materia";
+
+            throw new MesaExamenException(
+                    "Ya existe una mesa de tipo " + tipoMesa +
+                            " para " + materiaNombre +
+                            " en ese turno para este curso."
+            );
         }
     }
 }
