@@ -114,7 +114,13 @@ public class MateriaController {
     public ResponseEntity<MateriaResponse> getBydId(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(materiaService.getMateriaById(id));
-        } catch (Exception e) {
+        } catch (MateriaException e) {
+            return ResponseEntity.status(422).body(
+                    MateriaResponse.builder()
+                            .code(-1)
+                            .mensaje(e.getMessage())
+                            .build());
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(MateriaResponse.builder()
                             .code(-2)
